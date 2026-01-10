@@ -117,7 +117,7 @@
         }
 
         .btn:active {
-            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            /* box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); */
             transform: scale(0.96);
         }
 
@@ -158,13 +158,12 @@
             font-size: 0.9rem;
             text-align: right;
         }
-        /* Nút = trong Dark Mode */
-[data-theme="dark"] .btn.equal {
-    background-color: orangered;
-    color: #fff;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-}
 
+        [data-theme="dark"] .btn.equal {
+            background-color: orangered;
+            color: #fff;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+        }
     </style>
 </head>
 
