@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +23,12 @@
             --accent-color: #4da3ff;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
         body {
             background-color: var(--bg-color);
@@ -38,8 +44,16 @@
             padding: 25px;
             background-color: var(--bg-color);
             border-radius: 40px;
-            box-shadow: 15px 15px 30px var(--shadow-dark), -15px -15px 30px var(--shadow-light);
+            /* box-shadow: 15px 15px 30px var(--shadow-dark), -15px -15px 30px var(--shadow-light); */
             position: relative;
+        }
+
+        body {
+            background: linear-gradient(135deg, #4facfe, #8f5cff);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .header {
@@ -66,8 +80,17 @@
             overflow: hidden;
         }
 
-        #history-mini { font-size: 0.8rem; color: var(--accent-color); height: 20px; }
-        #result { font-size: 2rem; font-weight: bold; color: var(--text-color); }
+        #history-mini {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            height: 20px;
+        }
+
+        #result {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
 
         /* Bố cục nút */
         .buttons {
@@ -77,12 +100,20 @@
         }
 
         .btn {
-            width: 55px; height: 55px; border: none; border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            border: none;
+            border-radius: 50%;
             background-color: var(--bg-color);
-            font-size: 1.1rem; font-weight: 600; color: var(--text-color);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
             box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
-            cursor: pointer; transition: 0.2s;
-            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .btn:active {
@@ -90,22 +121,46 @@
             transform: scale(0.96);
         }
 
-        .btn.op { color: var(--accent-color); }
-        .btn.clear { color: #ff5252; }
+        .btn.op {
+            color: var(--accent-color);
+        }
+
+        .btn.clear {
+            color: #ff5252;
+        }
+
         .btn.equal {
-            background-color: var(--accent-color); color: white;
-            grid-column: span 2; width: 125px; border-radius: 30px;
+            background-color: var(--accent-color);
+            color: white;
+            grid-column: span 2;
+            width: 125px;
+            border-radius: 30px;
         }
 
         /* Panel Lịch sử */
         #history-panel {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); border-radius: 40px;
-            padding: 25px; display: none; flex-direction: column; z-index: 10;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            border-radius: 40px;
+            padding: 25px;
+            display: none;
+            flex-direction: column;
+            z-index: 10;
         }
-        .hist-item { border-bottom: 1px solid var(--shadow-dark); padding: 8px 0; font-size: 0.9rem; text-align: right; }
+
+        .hist-item {
+            border-bottom: 1px solid var(--shadow-dark);
+            padding: 8px 0;
+            font-size: 0.9rem;
+            text-align: right;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="calculator">
@@ -115,7 +170,8 @@
                 <i class="fas fa-times" onclick="toggleHistory()" style="cursor:pointer"></i>
             </div>
             <div id="history-list" style="overflow-y: auto; flex-grow: 1;"></div>
-            <button class="btn" onclick="clearHistory()" style="width:100%; border-radius:10px; margin-top:10px">Xóa hết</button>
+            <button class="btn" onclick="clearHistory()" style="width:100%; border-radius:10px; margin-top:10px">Xóa
+                hết</button>
         </div>
 
         <div class="header">
@@ -134,17 +190,17 @@
             <button class="btn" onclick="press('8')">8</button>
             <button class="btn" onclick="press('9')">9</button>
             <button class="btn clear" onclick="clean()">AC</button>
-            
+
             <button class="btn" onclick="press('4')">4</button>
             <button class="btn" onclick="press('5')">5</button>
             <button class="btn" onclick="press('6')">6</button>
             <button class="btn op" onclick="press('/')">÷</button>
-            
+
             <button class="btn" onclick="press('1')">1</button>
             <button class="btn" onclick="press('2')">2</button>
             <button class="btn" onclick="press('3')">3</button>
             <button class="btn op" onclick="press('*')">×</button>
-            
+
             <button class="btn" onclick="press('0')">0</button>
             <button class="btn" onclick="press('.')">.</button>
             <button class="btn" onclick="press('00')">00</button>
@@ -168,10 +224,10 @@
         function press(val) {
             if (isDone) {
                 // Nếu vừa tính xong mà ấn số mới thì xóa màn hình, nếu ấn phép tính thì giữ lại kết quả tính tiếp
-                if (!['+','-','*','/'].includes(val)) currentInput = "";
+                if (!['+', '-', '*', '/'].includes(val)) currentInput = "";
                 isDone = false;
             }
-            
+
             // Fix lỗi null: Kiểm tra nếu currentInput đang là chuỗi trống thì không cộng dồn sai cách
             currentInput = currentInput.toString() + val;
             render();
@@ -197,15 +253,15 @@
             try {
                 let expression = currentInput.replace(/÷/g, '/').replace(/×/g, '*');
                 let res = eval(expression);
-                
+
                 // Tránh lỗi số thập phân quá dài
                 if (res.toString().includes('.')) res = parseFloat(res.toFixed(4));
 
                 miniHistEl.innerText = currentInput + " =";
-                
+
                 // Lưu vào lịch sử
                 saveLog(`${currentInput} = ${res}`);
-                
+
                 currentInput = res.toString();
                 render();
                 isDone = true;
@@ -248,4 +304,5 @@
         };
     </script>
 </body>
+
 </html>
