@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        :root {
+            --bg-color: #e0e5ec;
+            --text-color: #444;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --accent-color: #007bff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #222529;
+            --text-color: #eee;
+            --shadow-light: #32363c;
+            --shadow-dark: #121416;
+            --accent-color: #4da3ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .calculator {
+            width: 320px;
+            padding: 25px;
+            background-color: var(--bg-color);
+            border-radius: 40px;
+            /* box-shadow: 15px 15px 30px var(--shadow-dark), -15px -15px 30px var(--shadow-light); */
+            position: relative;
+        }
+
+        body {
+            background: linear-gradient(135deg, #4facfe, #8f5cff);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        /* Màn hình */
+        .screen {
+            width: 100%;
+            height: 90px;
+            background-color: var(--bg-color);
+            border-radius: 20px;
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            margin-bottom: 25px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        #history-mini {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            height: 20px;
+        }
+
+        #result {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* Bố cục nút */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .btn {
+            width: 55px;
+            height: 55px;
+            border: none;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn:active {
+            /* box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); */
+            transform: scale(0.96);
+        }
+
+        .btn.op {
+            color: var(--accent-color);
+        }
+
+        .btn.clear {
+            color: #ff5252;
+        }
+
+        .btn.equal {
+            background-color: var(--bg-color);
+            color: #000;
+            grid-column: span 2;
+            width: 125px;
+            border-radius: 30px;
+        }
+
+        /* Panel Lịch sử */
+        #history-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            border-radius: 40px;
+            padding: 25px;
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .hist-item {
+            border-bottom: 1px solid var(--shadow-dark);
+            padding: 8px 0;
+            font-size: 0.9rem;
+            text-align: right;
+        }
+
+        [data-theme="dark"] .btn.equal {
+            background-color: #222529;
+            color: #fff;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+        }
+
+        [data-theme="dark"] .hist-item {
+            color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="calculator">
+        <div id="history-panel">
+            <div class="header">
+                <span>Lịch sử</span>
+                <i class="fas fa-times" onclick="toggleHistory()" style="cursor:pointer"></i>
+            </div>
+            <div id="history-list" style="overflow-y: auto; flex-grow: 1;"></div>
+            <button class="btn" onclick="clearHistory()" style="width:100%; border-radius:10px; margin-top:10px">Xóa
+                hết</button>
+        </div>
+
+        <div class="header">
+            <i class="fas fa-history" onclick="toggleHistory()" style="cursor:pointer"></i>
+            <span style="font-weight: bold; font-size: 0.9rem;">Calculator</span>
+            <i class="fas fa-moon" id="theme-btn" style="cursor:pointer"></i>
+        </div>
+
+        <div class="screen">
+            <div id="history-mini"></div>
+            <div id="result">0</div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn" onclick="press('7')">7</button>
+            <button class="btn" onclick="press('8')">8</button>
+            <button class="btn" onclick="press('9')">9</button>
+            <button class="btn clear" onclick="clean()">AC</button>
+
+            <button class="btn" onclick="press('4')">4</button>
+            <button class="btn" onclick="press('5')">5</button>
+            <button class="btn" onclick="press('6')">6</button>
+            <button class="btn op" onclick="press('/')">÷</button>
+
+            <button class="btn" onclick="press('1')">1</button>
+            <button class="btn" onclick="press('2')">2</button>
+            <button class="btn" onclick="press('3')">3</button>
+            <button class="btn op" onclick="press('*')">×</button>
+
+            <button class="btn" onclick="press('0')">0</button>
+            <button class="btn" onclick="press('.')">.</button>
+            <button class="btn" onclick="press('00')">00</button>
+            <button class="btn op" onclick="press('-')">-</button>
+
+            <button class="btn" onclick="undo()"><i class="fas fa-backspace"></i></button>
+            <button class="btn op" onclick="press('+')">+</button>
+            <button class="btn equal" onclick="equal()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = "";
+        let isDone = false;
+        let logs = [];
+
+        const resultEl = document.getElementById('result');
+        const miniHistEl = document.getElementById('history-mini');
+        const histListEl = document.getElementById('history-list');
+
+        function press(val) {
+            if (isDone) {
+                // Nếu vừa tính xong mà ấn số mới thì xóa màn hình, nếu ấn phép tính thì giữ lại kết quả tính tiếp
+                if (!['+', '-', '*', '/'].includes(val)) currentInput = "";
+                isDone = false;
+            }
+
+            // Fix lỗi null: Kiểm tra nếu currentInput đang là chuỗi trống thì không cộng dồn sai cách
+            currentInput = currentInput.toString() + val;
+            render();
+        }
+
+        function render() {
+            resultEl.innerText = currentInput || "0";
+        }
+
+        function clean() {
+            currentInput = "";
+            miniHistEl.innerText = "";
+            render();
+        }
+
+        function undo() {
+            currentInput = currentInput.toString().slice(0, -1);
+            render();
+        }
+
+        function equal() {
+            if (!currentInput) return;
+            try {
+                let expression = currentInput.replace(/÷/g, '/').replace(/×/g, '*');
+                let res = eval(expression);
+
+                // Tránh lỗi số thập phân quá dài
+                if (res.toString().includes('.')) res = parseFloat(res.toFixed(4));
+
+                miniHistEl.innerText = currentInput + " =";
+
+                // Lưu vào lịch sử
+                saveLog(`${currentInput} = ${res}`);
+
+                currentInput = res.toString();
+                render();
+                isDone = true;
+            } catch (e) {
+                resultEl.innerText = "Error";
+                currentInput = "";
+            }
+        }
+
+        // Quản lý lịch sử
+        function saveLog(msg) {
+            logs.push(msg);
+            const div = document.createElement('div');
+            div.className = 'hist-item';
+            div.innerText = msg;
+            histListEl.prepend(div);
+        }
+
+        function toggleHistory() {
+            const panel = document.getElementById('history-panel');
+            panel.style.display = (panel.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function clearHistory() {
+            logs = [];
+            histListEl.innerHTML = "";
+        }
+
+        // Dark Mode
+        const themeBtn = document.getElementById('theme-btn');
+        themeBtn.onclick = () => {
+            const mode = document.documentElement.getAttribute('data-theme');
+            if (mode === 'light') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeBtn.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeBtn.classList.replace('fa-sun', 'fa-moon');
+            }
+        };
+    </script>
+</body>
+
+</html>
