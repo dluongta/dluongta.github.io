@@ -386,20 +386,20 @@
   }
 
   // Simple starfield background
-  let stars = [];
-  function buildStars(){
-    stars = [];
-    const n = Math.floor((canvas.width / DPR) * (canvas.height / DPR) / 12000);
-    for (let i = 0; i < n; i++){
-      stars.push({
-        x: Math.random() * (canvas.width / DPR),
-        y: Math.random() * (canvas.height / DPR),
-        r: Math.random() * 1.6 + 0.2,
-        a: 0.2 + Math.random() * 0.6,
-        tw: Math.random() * Math.PI * 2
-      });
-    }
-  }
+  // let stars = [];
+  // function buildStars(){
+  //   stars = [];
+  //   const n = Math.floor((canvas.width / DPR) * (canvas.height / DPR) / 12000);
+  //   for (let i = 0; i < n; i++){
+  //     stars.push({
+  //       x: Math.random() * (canvas.width / DPR),
+  //       y: Math.random() * (canvas.height / DPR),
+  //       r: Math.random() * 1.6 + 0.2,
+  //       a: 0.2 + Math.random() * 0.6,
+  //       tw: Math.random() * Math.PI * 2
+  //     });
+  //   }
+  // }
   function drawBackground(ctx, now){
     // gradient vignette
     const w = canvas.width / DPR, h = canvas.height / DPR;
@@ -411,18 +411,18 @@
     ctx.fillRect(0,0,w,h);
 
     // stars
-    if (stars.length === 0) buildStars();
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    for (let s of stars){
-      const tw = Math.sin(now/1000 + s.tw) * 0.5 + 0.5;
-      ctx.globalAlpha = s.a * tw * 0.9;
-      ctx.beginPath();
-      ctx.fillStyle = 'rgba(255,255,255,1)';
-      ctx.arc(s.x, s.y, s.r * (0.6 + tw*0.8), 0, Math.PI*2);
-      ctx.fill();
-    }
-    ctx.restore();
+    // if (stars.length === 0) buildStars();
+    // ctx.save();
+    // ctx.globalCompositeOperation = 'lighter';
+    // for (let s of stars){
+    //   const tw = Math.sin(now/1000 + s.tw) * 0.5 + 0.5;
+    //   ctx.globalAlpha = s.a * tw * 0.9;
+    //   ctx.beginPath();
+    //   ctx.fillStyle = 'rgba(255,255,255,1)';
+    //   ctx.arc(s.x, s.y, s.r * (0.6 + tw*0.8), 0, Math.PI*2);
+    //   ctx.fill();
+    // }
+    // ctx.restore();
   }
 
   // UI handlers
@@ -454,7 +454,7 @@
     clearTimeout(resize._t);
     resize._t = setTimeout(() => {
       buildSequence();
-      buildStars();
+      // buildStars();
       // reassign current stage targets to fit new layout
       const now = performance.now();
       const targets = sequence[seqIndex] || sequence[0];
