@@ -126,6 +126,14 @@
 </div>
 
 <script>
+let voices = [];
+
+speechSynthesis.onvoiceschanged = () => {
+  voices = speechSynthesis.getVoices();
+};
+</script>
+
+<script>
   const textEl = document.getElementById("text");
   const recordBtn = document.getElementById("recordBtn");
   const viBtn = document.getElementById("viBtn");
@@ -141,23 +149,27 @@
     enBtn.classList.toggle("active", lang === "en-US");
   }
 
-  function speak() {
-    if (!textEl.value.trim()) {
-      alert("Vui lòng nhập văn bản");
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(textEl.value);
-    utterance.lang = currentLang;
-
-    const voices = speechSynthesis.getVoices();
-    const voice = voices.find(v => v.lang === currentLang);
-
-    if (voice) utterance.voice = voice;
-
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utterance);
+function speak() {
+  if (!textEl.value.trim()) {
+    alert("Vui lòng nhập văn bản");
+    return;
   }
+
+  speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(textEl.value);
+  utterance.lang = currentLang;
+
+  const voice = voices.find(v => v.lang === currentLang)
+             || voices.find(v => v.lang.startsWith(currentLang.split("-")[0]));
+
+  if (voice) {
+    utterance.voice = voice;
+  }
+
+  speechSynthesis.speak(utterance);
+}
+
 
   async function translateText(target) {
     if (!textEl.value.trim()) return alert("Chưa có nội dung");
