@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Text Speech</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f4f6f8;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      padding: 15px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 15px 0;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #6c63ff;
+    }
+
+    button.primary {
+      background: #4caf50;
+      color: white;
+      font-weight: bold;
+    }
+
+    button.blue {
+      background: #2196f3;
+      color: white;
+    }
+
+    button.purple {
+      background: #6c63ff;
+      color: white;
+    }
+
+    button.red {
+      background: #e53935;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .modes {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .active {
+      background: #2196f3 !important;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <h1>🔊 Read Text + Translate + Speech Recognition</h1>
+
+  <textarea id="text" placeholder="Nhập hoặc ghi âm nội dung..."></textarea>
+
+  <div class="row">
+    <button onclick="copyText()">📋 Sao chép</button>
+    <button onclick="clearText()">❌ Xóa</button>
+  </div>
+
+  <div class="row">
+    <button class="purple" onclick="translateText('en')">🌐 Dịch sang English</button>
+    <button class="purple" onclick="translateText('vi')">🌐 Dịch sang Tiếng Việt</button>
+  </div>
+
+  <h3>🎙️ Chọn ngôn ngữ đọc</h3>
+  <div class="modes">
+    <button id="viBtn" class="active" onclick="setLang('vi-VN')">🇻🇳 Tiếng Việt</button>
+    <button id="enBtn" onclick="setLang('en-US')">🇺🇸 English</button>
+  </div>
+
+  <div class="row">
+    <button id="recordBtn" class="blue" onclick="toggleRecord()">🎤 Ghi âm</button>
+  </div>
+
+  <div class="row">
+    <button class="primary" onclick="speak()">▶️ Đọc ngay</button>
+  </div>
+</div>
+
+<script>
+  const textEl = document.getElementById("text");
+  const recordBtn = document.getElementById("recordBtn");
+  const viBtn = document.getElementById("viBtn");
+  const enBtn = document.getElementById("enBtn");
+
+  let currentLang = "vi-VN";
+  let isRecording = false;
+  let recognition = null;
+
+  function setLang(lang) {
+    currentLang = lang;
+    viBtn.classList.toggle("active", lang === "vi-VN");
+    enBtn.classList.toggle("active", lang === "en-US");
+  }
+
+  function speak() {
+    if (!textEl.value.trim()) {
+      alert("Vui lòng nhập văn bản");
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(textEl.value);
+    utterance.lang = currentLang;
+
+    const voices = speechSynthesis.getVoices();
+    const voice = voices.find(v => v.lang === currentLang);
+
+    if (voice) utterance.voice = voice;
+
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utterance);
+  }
+
+  async function translateText(target) {
+    if (!textEl.value.trim()) return alert("Chưa có nội dung");
+
+    const source = target === "vi" ? "en" : "vi";
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(textEl.value)}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+    textEl.value = data[0][0][0];
+
+    setLang(target === "vi" ? "vi-VN" : "en-US");
+  }
+
+  function copyText() {
+    navigator.clipboard.writeText(textEl.value);
+    alert("Đã sao chép");
+  }
+
+  function clearText() {
+    textEl.value = "";
+  }
+
+  function toggleRecord() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Trình duyệt không hỗ trợ ghi âm");
+      return;
+    }
+
+    if (!recognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.lang = currentLang;
+
+      recognition.onresult = e => {
+        let text = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            text += e.results[i][0].transcript;
+          }
+        }
+        textEl.value += text;
+      };
+
+      recognition.onend = () => {
+        isRecording = false;
+        recordBtn.textContent = "🎤 Ghi âm";
+        recordBtn.classList.remove("red");
+      };
+    }
+
+    if (isRecording) {
+      recognition.stop();
+    } else {
+      recognition.lang = currentLang;
+      recognition.start();
+      isRecording = true;
+      recordBtn.textContent = "⏹️ Dừng";
+      recordBtn.classList.add("red");
+    }
+  }
+</script>
+</body>
+</html>

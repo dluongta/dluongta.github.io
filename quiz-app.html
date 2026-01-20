@@ -1,372 +1,380 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Programming Quiz</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Programming Quiz</title>
 
-<style>
-* { box-sizing: border-box; }
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  margin: 0;
-  height: 100vh;
-}
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      margin: 0;
+      height: 100vh;
+    }
 
-/* ===== SIDEBAR ===== */
-.sidebar {
-  width: 120px;
-  background: #f4f4f4;
-  padding: 10px;
-  border-right: 1px solid #ccc;
-}
+    .sidebar {
+      width: 120px;
+      background: #f4f4f4;
+      padding: 10px;
+      border-right: 1px solid #ccc;
+    }
 
-.sidebar button {
-  width: 100%;
-  margin-bottom: 6px;
-  padding: 10px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  background: #ddd;
-  transition: 0.2s;
-}
+    .sidebar button {
+      width: 100%;
+      margin-bottom: 6px;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      background: #ddd;
+    }
 
-/* Active page */
-.sidebar button.active {
-  background: #2196F3;
-  color: white;
-}
+    .sidebar button.active {
+      background: #2196F3;
+      color: white;
+    }
 
-/* Answered */
-.sidebar button.answered {
-  background: white;
-  color: #2196F3;
-  border: 2px solid #2196F3;
-}
+    .sidebar button.answered {
+      background: white;
+      color: #2196F3;
+      border: 2px solid #2196F3;
+    }
 
-/* Hover whole page */
-.sidebar button.group-hover {
-  background: #0b7dda !important;
-  color: white !important;
-}
+    .sidebar button.group-hover {
+      background: #0b7dda !important;
+      color: white !important;
+    }
 
-/* Submitted */
-.sidebar button.correct { background: green; color: white; }
-.sidebar button.incorrect { background: red; color: white; }
+    .sidebar button.group-hover {
+      background: #2196F3 !important;
+      color: white !important;
+      border: none !important;
+    }
 
-/* ===== MAIN ===== */
-.main {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
+    .sidebar button.group-hover,
+    .sidebar button.answered:hover,
+    .sidebar button.active:hover {
+      background: #2196F3 !important;
+      color: white !important;
+      border: none !important;
+    }
 
-#timer {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 15px;
-}
+    .sidebar button.correct {
+      background: green;
+      color: white;
+    }
 
-/* ===== QUESTION ===== */
-.question {
-  margin-bottom: 25px;
-  padding-left: 15px;
-}
+    .sidebar button.incorrect {
+      background: red;
+      color: white;
+    }
 
-.question.correct-question { border-left: 5px solid green; }
-.question.incorrect-question { border-left: 5px solid red; }
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
 
-.question-type {
-  color: #777;
-  font-style: italic;
-  margin: 6px 0 12px;
-}
+    #timer {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
 
-/* ===== OPTIONS ===== */
-.option {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  cursor: pointer;
-}
+    .question {
+      margin-bottom: 25px;
+      padding-left: 15px;
+    }
 
-.option input { display: none; }
+    .question.correct-question {
+      border-left: 5px solid green;
+    }
 
-.custom-check {
-  width: 22px;
-  height: 22px;
-  border: 2px solid #2196F3;
-  border-radius: 50%;
-  margin-right: 10px;
-  position: relative;
-}
+    .question.incorrect-question {
+      border-left: 5px solid red;
+    }
 
-.option input:checked + .custom-check {
-  background: #2196F3;
-}
+    .question-type {
+      color: #777;
+      font-style: italic;
+      margin: 6px 0 12px;
+    }
 
-.option input:checked + .custom-check::after {
-  content: "";
-  position: absolute;
-  left: 6px;
-  top: 2px;
-  width: 6px;
-  height: 12px;
-  border-right: 3px solid white;
-  border-bottom: 3px solid white;
-  transform: rotate(45deg);
-}
+    .option {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
 
-/* ===== ANSWER COLOR ===== */
-.correct-answer { color: green; font-weight: bold; }
-.wrong-answer { color: red; font-weight: bold; }
+    .option input {
+      display: none;
+    }
 
-/* ===== TEXT ===== */
-input[type="text"] {
-  padding: 8px;
-  font-size: 16px;
-  width: 300px;
-}
+    .custom-check {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #2196F3;
+      border-radius: 50%;
+      margin-right: 10px;
+      position: relative;
+    }
 
-/* ===== BUTTONS ===== */
-button {
-  background: #2196F3;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  cursor: pointer;
-  margin-right: 10px;
-}
+    .option input:checked+.custom-check {
+      background: #2196F3;
+    }
 
-button:disabled { background: #999; }
+    .option input:checked+.custom-check::after {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 2px;
+      width: 6px;
+      height: 12px;
+      border-right: 3px solid white;
+      border-bottom: 3px solid white;
+      transform: rotate(45deg);
+    }
 
-/* ===== HR STYLE ===== */
-hr {
-  border: none;
-  border-bottom: 1px solid #ccc;
-  margin: 20px 0;
-}
+    .correct-answer {
+      color: green;
+      font-weight: bold;
+    }
 
-/* ===== RESULTS ===== */
-#results {
-  margin-top: 20px;
-  font-weight: bold;
-  font-size: 18px;
-}
-.action-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  max-width: 400px;     
-  width: 100%;
-}
+    .wrong-answer {
+      color: red;
+      font-weight: bold;
+    }
 
-.action-buttons button {
-  width: 100%;
-  margin-right: 0;
-}
+    input[type="text"] {
+      padding: 8px;
+      font-size: 16px;
+      width: 300px;
+    }
 
-@media (max-width: 600px) {
-  .action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
 
-  .action-buttons button {
-    width: 100%;
-    margin-right: 0;
-  }
-}
+    button:disabled {
+      background: #999;
+    }
 
+    hr {
+      border: none;
+      border-bottom: 1px solid #ccc;
+      margin: 20px 0;
+    }
 
-</style>
+    #results {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 400px;
+    }
+
+    .sidebar button.group-hover {
+      background: #2196F3 !important;
+      color: white !important;
+      border: none !important;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="sidebar" id="sidebar"></div>
+  <div class="sidebar" id="sidebar"></div>
 
-<div class="main">
-  <div id="timer">Time Left: 00:03:00</div>
-  <div id="quiz"></div>
+  <div class="main">
+    <div id="timer">Time Left: 00:03:00</div>
+    <div id="quiz"></div>
 
-<div class="action-buttons">
-  <button id="prevBtn">Previous</button>
-  <button id="nextBtn">Next</button>
-  <button id="resetBtn">Reset</button>
-  <button id="submitBtn">Submit</button>
-</div>
+    <div class="action-buttons">
+      <button id="prevBtn">Previous</button>
+      <button id="nextBtn">Next</button>
+      <button id="resetBtn">Reset</button>
+      <button id="submitBtn">Submit</button>
+    </div>
 
+    <div id="results"></div>
+  </div>
 
-  <div id="results"></div>
-</div>
+  <script>
+    const questions = [
+      { question: "CSS stands for?", answers: { a: "Cascading Style Sheets", b: "Computer Style Sheets", c: "Creative Style Sheets", d: "Colorful Style Sheets" }, correct: ["a"], type: "single" },
+      { question: "Which are programming languages?", answers: { a: "HTML", b: "Python", c: "Java", d: "CSS" }, correct: ["b", "c"], type: "multi" },
+      { question: "JavaScript data types?", answers: { a: "String", b: "Number", c: "Boolean", d: "Character" }, correct: ["a", "b", "c"], type: "multi" },
+      { question: "Which one is a web browser?", answers: { a: "Chrome", b: "HTML", c: "Python", d: "CSS" }, correct: ["a"], type: "single" },
+      { question: "What does IT stand for in English?", correct: ["Information Technology"], type: "text" }
+    ];
 
-<script>
-/* ===== QUESTIONS ===== */
-const questions = [
-  { question:"CSS stands for?", answers:{a:"Cascading Style Sheets",b:"Computer Style Sheets",c:"Creative Style Sheets",d:"Colorful Style Sheets"}, correct:["a"], type:"single" },
-  { question:"Which are programming languages?", answers:{a:"HTML",b:"Python",c:"Java",d:"CSS"}, correct:["b","c"], type:"multi" },
-  { question:"JavaScript data types?", answers:{a:"String",b:"Number",c:"Boolean",d:"Character"}, correct:["a","b","c"], type:"multi" },
-  { question:"Which one is a web browser?", answers:{a:"Chrome",b:"HTML",c:"Python",d:"CSS"}, correct:["a"], type:"single" },
-  { question:"What does IT stand for in English?", correct:["Information Technology"], type:"text" }
-];
+    const pages = [[0, 1], [2, 3], [4]];
+    let currentPage = 0;
+    let userAnswers = {};
+    let isSubmitted = false;
+    let timerSeconds = 180;
+    let timerInterval;
 
-const pages = [[0,1],[2,3],[4]];
+    const quiz = document.getElementById("quiz");
+    const sidebar = document.getElementById("sidebar");
+    const results = document.getElementById("results");
 
-let currentPage = 0;
-let userAnswers = {};
-let isSubmitted = false;
-let timerSeconds = 180;
-let timerInterval;
-
-const quiz = document.getElementById("quiz");
-const sidebar = document.getElementById("sidebar");
-const results = document.getElementById("results");
-
-/* ===== CHECK ===== */
-function isCorrect(i){
-  const q = questions[i];
-  const u = userAnswers[i];
-  if(!u) return false;
-  if(q.type==="text") return q.correct.includes(u);
-  if(q.type==="multi") return u.length===q.correct.length && u.every(x=>q.correct.includes(x));
-  return u===q.correct[0];
-}
-
-/* ===== SIDEBAR ===== */
-function renderSidebar(){
-  sidebar.innerHTML="";
-  questions.forEach((_,i)=>{
-    const btn=document.createElement("button");
-    btn.textContent=i+1;
-    btn.dataset.index=i;
-    const pageIndex = pages.findIndex(p=>p.includes(i));
-    if(pages[currentPage].includes(i)) btn.classList.add("active");
-    if(!isSubmitted && userAnswers[i]) btn.classList.add("answered");
-    if(isSubmitted) btn.classList.add(isCorrect(i)?"correct":"incorrect");
-    btn.onclick=()=>{
-      currentPage=pageIndex;
+    /* ===== RADIO TOGGLE FIX ===== */
+    function handleSingleToggle(i, val) {
+      if (userAnswers[i] === val) {
+        delete userAnswers[i]; // bỏ chọn
+      } else {
+        userAnswers[i] = val;
+      }
       renderQuiz();
-    };
-    btn.onmouseenter=()=>{
-      pages[pageIndex].forEach(q=>{
-        const b=sidebar.querySelector(`button[data-index="${q}"]`);
-        if(b) b.classList.add("group-hover");
-      });
-    };
-    btn.onmouseleave=()=>{
-      pages[pageIndex].forEach(q=>{
-        const b=sidebar.querySelector(`button[data-index="${q}"]`);
-        if(b) b.classList.remove("group-hover");
-      });
-    };
-    sidebar.appendChild(btn);
-  });
-}
+    }
 
-/* ===== QUIZ ===== */
-function renderQuiz(){
-  quiz.innerHTML="";
-  pages[currentPage].forEach((i, idx, arr)=>{
-    const q=questions[i];
-    const div=document.createElement("div");
-    div.className="question";
-    if(isSubmitted) div.classList.add(isCorrect(i)?"correct-question":"incorrect-question");
-    const typeText =
-      q.type==="single"?"(Select one answer)":
-      q.type==="multi"?"(Select multiple answers)":
-      "(Fill in the blank)";
-    let html=`<strong>Q${i+1}.</strong> ${q.question}
-    <div class="question-type">${typeText}</div>`;
-    if(q.type==="text"){
-      html+=`<input type="text" value="${userAnswers[i]||""}"
-      ${isSubmitted?"disabled":""}
-      oninput="userAnswers[${i}]=this.value.trim()">`;
-      if(isSubmitted) html+=`<div class="correct-answer">Correct: ${q.correct[0]}</div>`;
-    } else {
-      Object.entries(q.answers).forEach(([k,v])=>{
-        const checked = q.type==="multi"
-          ? userAnswers[i]?.includes(k)
-          : userAnswers[i]===k;
-        let cls = "";
-        if (isSubmitted) {
-          if (q.correct.includes(k)) cls = "correct-answer";
-          else if (checked) cls = "wrong-answer";
-        }
-        html+=`
-        <label class="option ${cls}">
-          <input type="${q.type==="multi"?"checkbox":"radio"}"
-          name="q${i}" value="${k}"
-          ${checked?"checked":""}
-          ${isSubmitted?"disabled":""}
-          onchange="handleChoice(${i},'${k}',${q.type==='multi'})">
+    function handleChoice(i, val, isMulti) {
+      if (isMulti) {
+        userAnswers[i] = userAnswers[i] || [];
+        userAnswers[i].includes(val)
+          ? userAnswers[i] = userAnswers[i].filter(x => x !== val)
+          : userAnswers[i].push(val);
+        renderQuiz();
+      }
+    }
+
+    function isAnswered(i) {
+      const q = questions[i];
+      const u = userAnswers[i];
+      if (!u) return false;
+      if (q.type === "text") return u.trim() !== "";
+      if (q.type === "multi") return u.length > 0;
+      return true;
+    }
+
+    function isCorrect(i) {
+      const q = questions[i];
+      const u = userAnswers[i];
+      if (!u) return false;
+      if (q.type === "text") return q.correct.includes(u);
+      if (q.type === "multi") return u.length === q.correct.length && u.every(x => q.correct.includes(x));
+      return u === q.correct[0];
+    }
+
+    function renderSidebar() {
+      sidebar.innerHTML = "";
+      questions.forEach((_, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        const pageIndex = pages.findIndex(p => p.includes(i));
+        if (pages[currentPage].includes(i)) btn.classList.add("active");
+        if (!isSubmitted && isAnswered(i)) btn.classList.add("answered");
+        if (isSubmitted) btn.classList.add(isCorrect(i) ? "correct" : "incorrect");
+        // btn.onclick=()=>{ currentPage=pageIndex; renderQuiz(); };
+        btn.onclick = () => {
+          currentPage = pageIndex;
+          renderQuiz();
+        };
+
+        btn.onmouseenter = () => {
+          pages[pageIndex].forEach(qIndex => {
+            const b = sidebar.children[qIndex];
+            if (b) b.classList.add("group-hover");
+          });
+        };
+
+        btn.onmouseleave = () => {
+          pages[pageIndex].forEach(qIndex => {
+            const b = sidebar.children[qIndex];
+            if (b) b.classList.remove("group-hover");
+          });
+        };
+
+        sidebar.appendChild(btn);
+
+        sidebar.appendChild(btn);
+      });
+    }
+
+    function renderQuiz() {
+      quiz.innerHTML = "";
+      pages[currentPage].forEach(i => {
+        const q = questions[i];
+        let html = `<div class="question">
+      <strong>Q${i + 1}.</strong> ${q.question}
+      <div class="question-type">
+        ${q.type === "single" ? "(Select one answer)" : q.type === "multi" ? "(Select multiple answers)" : "(Fill in the blank)"}
+      </div>`;
+
+        if (q.type === "text") {
+          html += `<input type="text" value="${userAnswers[i] || ""}"
+        oninput="userAnswers[${i}]=this.value.trim(); renderSidebar()">`;
+        } else {
+          Object.entries(q.answers).forEach(([k, v]) => {
+            const checked = q.type === "multi"
+              ? userAnswers[i]?.includes(k)
+              : userAnswers[i] === k;
+
+            html += `
+        <label class="option">
+          <input type="${q.type === "multi" ? "checkbox" : "radio"}"
+            name="q${i}"
+            ${checked ? "checked" : ""}
+            ${q.type === "multi"
+                ? `onclick="handleChoice(${i},'${k}',true)"`
+                : `onclick="handleSingleToggle(${i},'${k}')"`
+              }>
           <span class="custom-check"></span>${k}. ${v}
         </label>`;
+          });
+        }
+        html += "</div><hr>";
+        quiz.innerHTML += html;
       });
+      renderSidebar();
     }
-    div.innerHTML=html;
-    quiz.appendChild(div);
-    if (idx !== arr.length - 1) {
-      const hr = document.createElement("hr");
-      quiz.appendChild(hr);
+
+    prevBtn.onclick = () => { if (currentPage > 0) { currentPage--; renderQuiz(); } };
+    nextBtn.onclick = () => { if (currentPage < pages.length - 1) { currentPage++; renderQuiz(); } };
+    submitBtn.onclick = () => {
+      isSubmitted = true;
+      clearInterval(timerInterval);
+      results.textContent = `Correct ${questions.filter((_, i) => isCorrect(i)).length}/${questions.length}`;
+      renderQuiz();
+    };
+    resetBtn.onclick = () => {
+      userAnswers = {}; isSubmitted = false; currentPage = 0;
+      results.textContent = ""; startTimer(); renderQuiz();
+    };
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerSeconds = 180;
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        const m = String(Math.floor(timerSeconds / 60)).padStart(2, "0");
+        const s = String(timerSeconds % 60).padStart(2, "0");
+        timer.textContent = `Time Left: 00:${m}:${s}`;
+        if (timerSeconds <= 0) submitBtn.click();
+      }, 1000);
     }
-  });
-  renderSidebar();
-}
 
-/* ===== HANDLE ===== */
-function handleChoice(i,val,isMulti){
-  if(isMulti){
-    userAnswers[i]=userAnswers[i]||[];
-    userAnswers[i].includes(val)
-      ? userAnswers[i]=userAnswers[i].filter(x=>x!==val)
-      : userAnswers[i].push(val);
-  } else userAnswers[i]=val;
-}
-
-/* ===== BUTTONS ===== */
-prevBtn.onclick=()=>{ if(currentPage>0){currentPage--;renderQuiz();}};
-nextBtn.onclick=()=>{ if(currentPage<pages.length-1){currentPage++;renderQuiz();}};
-
-// ===== SUBMIT BUTTON =====
-submitBtn.onclick=()=>{
-  isSubmitted=true;
-  clearInterval(timerInterval);
-  const correctCount = questions.filter((_,i)=>isCorrect(i)).length;
-  const resultText = `Correct ${correctCount}/${questions.length}`;
-  results.textContent = resultText; // hiển thị dưới cùng
-  renderQuiz();
-};
-
-resetBtn.onclick=()=>{
-  userAnswers={};
-  isSubmitted=false;
-  currentPage=0;
-  results.textContent="";
-  startTimer();
-  renderQuiz();
-};
-
-/* ===== TIMER ===== */
-function startTimer(){
-  clearInterval(timerInterval);
-  timerSeconds=180;
-  timerInterval=setInterval(()=>{
-    timerSeconds--;
-    const m=String(Math.floor(timerSeconds/60)).padStart(2,"0");
-    const s=String(timerSeconds%60).padStart(2,"0");
-    timer.textContent=`Time Left: 00:${m}:${s}`;
-    if(timerSeconds<=0) submitBtn.click();
-  },1000);
-}
-
-renderQuiz();
-startTimer();
-</script>
+    renderQuiz();
+    startTimer();
+  </script>
 </body>
+
 </html>
