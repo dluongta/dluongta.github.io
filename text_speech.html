@@ -22,6 +22,10 @@
       text-align: center;
     }
 
+    h1 {
+      margin-bottom: 20px;
+    }
+
     textarea {
       width: 100%;
       min-height: 140px;
@@ -29,13 +33,14 @@
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
     }
 
     .row {
       display: flex;
       gap: 10px;
-      margin: 15px 0;
       flex-wrap: wrap;
+      margin: 15px 0;
     }
 
     button {
@@ -46,12 +51,33 @@
       border: none;
       cursor: pointer;
       background: #6c63ff;
-      color: #fff;
     }
 
-    .primary { background: #4caf50; }
-    .blue { background: #2196f3; }
-    .red { background: #e53935; }
+    button.primary {
+      background: #4caf50;
+      color: white;
+      font-weight: bold;
+    }
+
+    button.blue {
+      background: #2196f3;
+      color: white;
+    }
+
+    button.purple {
+      background: #6c63ff;
+      color: white;
+    }
+
+    button.red {
+      background: #e53935;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
 
     .modes {
       display: grid;
@@ -62,6 +88,7 @@
 
     .active {
       background: #2196f3 !important;
+      color: white;
       font-weight: bold;
     }
   </style>
@@ -69,7 +96,7 @@
 
 <body>
 <div class="container">
-  <h2>🔊 Text → Speech (Mobile OK)</h2>
+  <h1>🔊 Read Text + Translate + Speech Recognition</h1>
 
   <textarea id="text" placeholder="Nhập hoặc ghi âm nội dung..."></textarea>
 
@@ -79,14 +106,14 @@
   </div>
 
   <div class="row">
-    <button onclick="translateText('en')">🌐 English</button>
-    <button onclick="translateText('vi')">🌐 Tiếng Việt</button>
+    <button class="purple" onclick="translateText('en')">🌐 Dịch sang English</button>
+    <button class="purple" onclick="translateText('vi')">🌐 Dịch sang Tiếng Việt</button>
   </div>
 
-  <h3>🎙️ Ngôn ngữ đọc</h3>
+  <h3>🎙️ Chọn ngôn ngữ đọc</h3>
   <div class="modes">
-    <button id="viBtn" class="active" onclick="setLang('vi')">🇻🇳 Việt</button>
-    <button id="enBtn" onclick="setLang('en')">🇺🇸 English</button>
+    <button id="viBtn" class="active" onclick="setLang('vi-VN')">🇻🇳 Tiếng Việt</button>
+    <button id="enBtn" onclick="setLang('en-US')">🇺🇸 English</button>
   </div>
 
   <div class="row">
@@ -99,116 +126,112 @@
 </div>
 
 <script>
-const textEl = document.getElementById("text");
-const viBtn = document.getElementById("viBtn");
-const enBtn = document.getElementById("enBtn");
-const recordBtn = document.getElementById("recordBtn");
+let voices = [];
 
-let currentLang = "vi";
-let recognition = null;
-let isRecording = false;
-let audio = new Audio();
+speechSynthesis.onvoiceschanged = () => {
+  voices = speechSynthesis.getVoices();
+};
+</script>
 
-function setLang(lang) {
-  currentLang = lang;
-  viBtn.classList.toggle("active", lang === "vi");
-  enBtn.classList.toggle("active", lang === "en");
-}
+<script>
+  const textEl = document.getElementById("text");
+  const recordBtn = document.getElementById("recordBtn");
+  const viBtn = document.getElementById("viBtn");
+  const enBtn = document.getElementById("enBtn");
 
-/* ===== TEXT TO SPEECH (GOOGLE TRANSLATE TTS) ===== */
+  let currentLang = "vi-VN";
+  let isRecording = false;
+  let recognition = null;
+
+  function setLang(lang) {
+    currentLang = lang;
+    viBtn.classList.toggle("active", lang === "vi-VN");
+    enBtn.classList.toggle("active", lang === "en-US");
+  }
+
 function speak() {
   if (!textEl.value.trim()) {
     alert("Vui lòng nhập văn bản");
     return;
   }
 
-  const chunks = textEl.value.match(/.{1,180}/g);
-  let index = 0;
-  const audio = new Audio();
+  speechSynthesis.cancel();
 
-  audio.onended = () => {
-    index++;
-    if (index < chunks.length) play();
-  };
+  const utterance = new SpeechSynthesisUtterance(textEl.value);
+  utterance.lang = currentLang;
 
-  audio.onerror = () => {
-    alert("Không thể phát âm thanh. Hãy mở bằng HTTPS.");
-  };
+  const voice = voices.find(v => v.lang === currentLang)
+             || voices.find(v => v.lang.startsWith(currentLang.split("-")[0]));
 
-  function play() {
-    const text = encodeURIComponent(chunks[index]);
-    const lang = currentLang === "vi" ? "vi" : "en";
-
-    audio.src =
-      `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=${lang}&q=${text}`;
-
-    audio.play().catch(err => {
-      console.error(err);
-    });
+  if (voice) {
+    utterance.voice = voice;
   }
 
-  play();
+  speechSynthesis.speak(utterance);
 }
 
-/* ===== TRANSLATE ===== */
-async function translateText(target) {
-  if (!textEl.value.trim()) return;
 
-  const source = target === "vi" ? "en" : "vi";
-  const url =
-    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(textEl.value)}`;
+  async function translateText(target) {
+    if (!textEl.value.trim()) return alert("Chưa có nội dung");
 
-  const res = await fetch(url);
-  const data = await res.json();
-  textEl.value = data[0][0][0];
-  setLang(target);
-}
+    const source = target === "vi" ? "en" : "vi";
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(textEl.value)}`;
 
-/* ===== RECORD ===== */
-function toggleRecord() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) return alert("Trình duyệt không hỗ trợ ghi âm");
+    const res = await fetch(url);
+    const data = await res.json();
+    textEl.value = data[0][0][0];
 
-  if (!recognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = currentLang === "vi" ? "vi-VN" : "en-US";
-    recognition.continuous = true;
+    setLang(target === "vi" ? "vi-VN" : "en-US");
+  }
 
-    recognition.onresult = e => {
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          textEl.value += e.results[i][0].transcript;
+  function copyText() {
+    navigator.clipboard.writeText(textEl.value);
+    alert("Đã sao chép");
+  }
+
+  function clearText() {
+    textEl.value = "";
+  }
+
+  function toggleRecord() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Trình duyệt không hỗ trợ ghi âm");
+      return;
+    }
+
+    if (!recognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.lang = currentLang;
+
+      recognition.onresult = e => {
+        let text = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            text += e.results[i][0].transcript;
+          }
         }
-      }
-    };
+        textEl.value += text;
+      };
 
-    recognition.onend = () => {
-      isRecording = false;
-      recordBtn.textContent = "🎤 Ghi âm";
-      recordBtn.classList.remove("red");
-    };
+      recognition.onend = () => {
+        isRecording = false;
+        recordBtn.textContent = "🎤 Ghi âm";
+        recordBtn.classList.remove("red");
+      };
+    }
+
+    if (isRecording) {
+      recognition.stop();
+    } else {
+      recognition.lang = currentLang;
+      recognition.start();
+      isRecording = true;
+      recordBtn.textContent = "⏹️ Dừng";
+      recordBtn.classList.add("red");
+    }
   }
-
-  if (isRecording) {
-    recognition.stop();
-  } else {
-    recognition.lang = currentLang === "vi" ? "vi-VN" : "en-US";
-    recognition.start();
-    isRecording = true;
-    recordBtn.textContent = "⏹️ Dừng";
-    recordBtn.classList.add("red");
-  }
-}
-
-/* ===== UTILS ===== */
-function copyText() {
-  navigator.clipboard.writeText(textEl.value);
-  alert("Đã sao chép");
-}
-
-function clearText() {
-  textEl.value = "";
-}
 </script>
 </body>
 </html>
