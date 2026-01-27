@@ -211,7 +211,35 @@
       padding: 20px;
       height: 100vh;
       overflow-y: auto;
+      min-width: 0;  
     }
+  @media (max-width: 768px) {
+  .sidebar {
+    width: 92px;         
+    padding: 6px;
+  }
+
+  .sidebar button {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  .main {
+    padding: 12px;
+  }
+
+  input[type="text"] {
+    width: 100%;         
+    max-width: 100%;
+  }
+
+  .option {
+    align-items: flex-start;
+  }
+}
+.question {
+  padding-right: 18px;
+}
 
   </style>
 </head>
