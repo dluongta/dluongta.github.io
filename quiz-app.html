@@ -24,6 +24,17 @@
       padding: 10px;
       border-right: 1px solid #ccc;
     }
+    .sidebar {
+      width: 120px;
+      background: #f4f4f4;
+      padding: 10px;
+      border-right: 1px solid #ccc;
+
+      height: 100vh;          
+      overflow-y: auto;       
+      overflow-x: hidden;    
+    }
+
 
     .sidebar button {
       width: 100%;
@@ -195,6 +206,13 @@
       color: white !important;
       border: none !important;
     }
+    .main {
+      flex: 1;
+      padding: 20px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
   </style>
 </head>
 
@@ -217,15 +235,86 @@
   </div>
 
   <script>
-    const questions = [
-      { question: "CSS stands for?", answers: { a: "Cascading Style Sheets", b: "Computer Style Sheets", c: "Creative Style Sheets", d: "Colorful Style Sheets" }, correct: ["a"], type: "single" },
-      { question: "Which are programming languages?", answers: { a: "HTML", b: "Python", c: "Java", d: "CSS" }, correct: ["b", "c"], type: "multi" },
-      { question: "JavaScript data types?", answers: { a: "String", b: "Number", c: "Boolean", d: "Character" }, correct: ["a", "b", "c"], type: "multi" },
-      { question: "Which one is a web browser?", answers: { a: "Chrome", b: "HTML", c: "Python", d: "CSS" }, correct: ["a"], type: "single" },
-      { question: "What does IT stand for in English?", correct: ["Information Technology"], type: "text" }
-    ];
+const questions = [
+  // ===== 1–10 =====
+  { question: "CSS stands for?", answers: { a: "Cascading Style Sheets", b: "Computer Style Sheets", c: "Creative Style Sheets", d: "Colorful Style Sheets" }, correct: ["a"], type: "single" },
 
-    const pages = [[0, 1], [2, 3], [4]];
+  { question: "Which are programming languages?", answers: { a: "HTML", b: "Python", c: "Java", d: "CSS" }, correct: ["b", "c"], type: "multi" },
+
+  { question: "JavaScript data types?", answers: { a: "String", b: "Number", c: "Boolean", d: "Character" }, correct: ["a", "b", "c"], type: "multi" },
+
+  { question: "Which one is a web browser?", answers: { a: "Chrome", b: "HTML", c: "Python", d: "CSS" }, correct: ["a"], type: "single" },
+
+  { question: "What does IT stand for in English?", correct: ["Information Technology"], type: "text" },
+
+  { question: "HTML stands for?", answers: { a: "Hyper Text Markup Language", b: "High Text Machine Language", c: "Hyperlinks Text Markup Language", d: "None" }, correct: ["a"], type: "single" },
+
+  { question: "Which is NOT a programming language?", answers: { a: "Python", b: "Java", c: "HTML", d: "C++" }, correct: ["c"], type: "single" },
+
+  { question: "Which are JavaScript frameworks?", answers: { a: "React", b: "Angular", c: "Laravel", d: "Vue" }, correct: ["a", "b", "d"], type: "multi" },
+
+  { question: "Which company created JavaScript?", answers: { a: "Microsoft", b: "Netscape", c: "Google", d: "Apple" }, correct: ["b"], type: "single" },
+
+  { question: "CSS property used to change text color?", correct: ["color"], type: "text" },
+
+  // ===== 11–20 =====
+  { question: "Which tag is used to create a hyperlink in HTML?", answers: { a: "&lt;a&gt;", b: "&lt;link&gt;", c: "&lt;href&gt;", d: "&lt;url&gt;" }, correct: ["a"], type: "single" },
+
+  { question: "CSS property used to change text color?", correct: ["color"], type: "text" },
+
+  { question: "JavaScript is a ____ language.", answers: { a: "compiled", b: "markup", c: "scripting", d: "database" }, correct: ["c"], type: "single" },
+
+  { question: "Which keyword declares a variable in JavaScript?", answers: { a: "var", b: "let", c: "const", d: "all of the above" }, correct: ["d"], type: "single" },
+
+  { question: "Command to output text in JavaScript console?", correct: ["console.log"], type: "text" },
+
+  { question: "Which HTML tag is used for images?", answers: { a: "&lt;img&gt;", b: "&lt;image&gt;", c: "&lt;pic&gt;", d: "&lt;src&gt;" }, correct: ["a"], type: "single" },
+
+  { question: "Which are frontend technologies?", answers: { a: "HTML", b: "CSS", c: "JavaScript", d: "MySQL" }, correct: ["a", "b", "c"], type: "multi" },
+
+  { question: "Which symbol is used for comments in JavaScript?", answers: { a: "//", b: "&lt;!-- --&gt;", c: "#", d: "**" }, correct: ["a"], type: "single" },
+
+  { question: "Which HTML tag creates a list?", answers: { a: "&lt;ul&gt;", b: "&lt;ol&gt;", c: "&lt;li&gt;", d: "All are correct" }, correct: ["d"], type: "single" },
+
+  { question: "CSS property to make text bold?", correct: ["font-weight"], type: "text" },
+    // ===== 21–30 =====
+  { question: "Which language runs in the browser?", answers: { a: "Java", b: "C++", c: "Python", d: "JavaScript" }, correct: ["d"], type: "single" },
+
+  { question: "Which are valid JavaScript loops?", answers: { a: "for", b: "while", c: "foreach", d: "do...while" }, correct: ["a", "b", "d"], type: "multi" },
+
+  { question: "HTML is mainly used for?", answers: { a: "Styling", b: "Structure", c: "Logic", d: "Database" }, correct: ["b"], type: "single" },
+
+  { question: "CSS is mainly used for?", answers: { a: "Structure", b: "Styling", c: "Logic", d: "Data storage" }, correct: ["b"], type: "single" },
+
+  { question: "JavaScript keyword to define a constant?", correct: ["const"], type: "text" },
+
+  { question: "Which is a backend language?", answers: { a: "PHP", b: "HTML", c: "CSS", d: "Bootstrap" }, correct: ["a"], type: "single" },
+
+  { question: "Which are popular databases?", answers: { a: "MySQL", b: "MongoDB", c: "Oracle", d: "HTML" }, correct: ["a", "b", "c"], type: "multi" },
+
+  { question: "Which HTML tag defines a table row?", answers: { a: "&lt;td&gt;", b: "&lt;tr&gt;", c: "&lt;th&gt;", d: "&lt;table&gt;" }, correct: ["b"], type: "single" },
+
+  { question: "Which HTTP method is used to get data?", answers: { a: "POST", b: "PUT", c: "GET", d: "DELETE" }, correct: ["c"], type: "single" },
+
+  { question: "HTTP stands for?", correct: ["HyperText Transfer Protocol"], type: "text" }
+
+];
+
+
+
+    // const pages = [[0, 1], [2, 3], [4]];
+    const QUESTIONS_PER_PAGE = 5;
+
+  const pages = [];
+  for (let i = 0; i < questions.length; i += QUESTIONS_PER_PAGE) {
+    pages.push(
+      Array.from(
+        { length: QUESTIONS_PER_PAGE },
+        (_, j) => i + j
+      ).filter(index => index < questions.length)
+    );
+  }
+
     let currentPage = 0;
     let userAnswers = {};
     let isSubmitted = false;
