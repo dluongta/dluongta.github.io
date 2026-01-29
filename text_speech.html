@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Text Speech</title>
 
   <style>
@@ -19,7 +20,7 @@
       background: #fff;
       padding: 20px;
       border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
       text-align: center;
     }
 
@@ -74,11 +75,27 @@
       transform: scale(0.98);
     }
 
-    button.primary { background: #4caf50; box-shadow: 0 4px 10px rgba(76,175,80,0.3); }
-    button.blue { background: #2196f3; }
-    button.purple { background: #6c63ff; }
-    button.red { background: #e53935; }
-    button.gray { background: #607d8b; color: white; }
+    button.primary {
+      background: #4caf50;
+      box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+    }
+
+    button.blue {
+      background: #2196f3;
+    }
+
+    button.purple {
+      background: #6c63ff;
+    }
+
+    button.red {
+      background: #e53935;
+    }
+
+    button.gray {
+      background: #607d8b;
+      color: white;
+    }
 
     .modes {
       display: flex;
@@ -86,7 +103,7 @@
       margin-top: 15px;
       justify-content: center;
     }
-    
+
     .modes button {
       background: #e0e0e0;
       color: #555;
@@ -96,275 +113,262 @@
     .modes button.active {
       background: #2196f3 !important;
       color: white;
-      box-shadow: 0 4px 10px rgba(33,150,243,0.3);
+      box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
     }
 
     /* Mobile fix styling */
     @media (max-width: 600px) {
-      .container { margin: 10px; padding: 15px; }
-      button { font-size: 14px; padding: 10px; }
+      .container {
+        margin: 10px;
+        padding: 15px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 10px;
+      }
     }
   </style>
 </head>
 
 <body>
-<div class="container">
-  <h1>🔊 Đọc & Dịch Văn Bản</h1>
+  <div class="container">
+    <h1>🔊 Đọc & Dịch Văn Bản</h1>
 
-  <textarea id="text" placeholder="Nhập nội dung vào đây..."></textarea>
+    <textarea id="text" placeholder="Nhập nội dung vào đây..."></textarea>
 
-  <div class="row">
-    <button class="purple" onclick="copyText()">📋 Sao chép</button>
-    <button class="purple" onclick="clearText()">❌ Xóa</button>
+    <div class="row">
+      <button class="purple" onclick="copyText()">📋 Sao chép</button>
+      <button class="purple" onclick="clearText()">❌ Xóa</button>
+    </div>
+
+    <div class="row">
+      <button class="purple" onclick="translateText('en')">🇬🇧 Dịch sang Anh</button>
+      <button class="purple" onclick="translateText('vi')">🇻🇳 Dịch sang Việt</button>
+    </div>
+
+    <h3 style="margin-top:20px; font-size: 1rem;">Cài đặt giọng đọc</h3>
+    <div class="modes">
+      <button id="viBtn" class="active" onclick="setLang('vi-VN')">🇻🇳 Tiếng Việt</button>
+      <button id="enBtn" onclick="setLang('en-US')">🇬🇧 English</button>
+    </div>
+
+    <div class="row" style="margin-top: 20px;">
+      <button id="recordBtn" class="blue" onclick="toggleRecord()">🎤 Ghi âm</button>
+    </div>
+
+    <div class="row">
+      <button class="primary" onclick="speak()">▶️ ĐỌC NGAY</button>
+      <button class="red" onclick="stopSpeak()">⏹️ Dừng đọc</button>
+    </div>
+
+    <p id="status" style="font-size: 12px; color: #888; margin-top: 10px;"></p>
   </div>
 
-  <div class="row">
-    <button class="purple" onclick="translateText('en')">🇬🇧 Dịch sang Anh</button>
-    <button class="purple" onclick="translateText('vi')">🇻🇳 Dịch sang Việt</button>
-  </div>
+  <script>
+    // --- CẤU HÌNH ---
+    const textEl = document.getElementById("text");
+    const recordBtn = document.getElementById("recordBtn");
+    const viBtn = document.getElementById("viBtn");
+    const enBtn = document.getElementById("enBtn");
+    const statusEl = document.getElementById("status");
+    let speakTimeout = null;
 
-  <h3 style="margin-top:20px; font-size: 1rem;">Cài đặt giọng đọc</h3>
-  <div class="modes">
-    <button id="viBtn" class="active" onclick="setLang('vi-VN')">🇻🇳 Tiếng Việt</button>
-    <button id="enBtn" onclick="setLang('en-US')">🇬🇧 English</button>
-  </div>
+    let currentLang = "vi-VN";
+    let isRecording = false;
+    let recognition = null;
+    let allVoices = [];
 
-  <div class="row" style="margin-top: 20px;">
-    <button id="recordBtn" class="blue" onclick="toggleRecord()">🎤 Ghi âm</button>
-  </div>
+    // Kiểm tra thiết bị
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    statusEl.innerText = isMobile ? "📱 Chế độ Mobile" : "💻 Chế độ PC";
 
-  <div class="row">
-    <button class="primary" onclick="speak()">▶️ ĐỌC NGAY</button>
-    <button class="red" onclick="stopSpeak()">⏹️ Dừng đọc</button>
-  </div>
-  
-  <p id="status" style="font-size: 12px; color: #888; margin-top: 10px;"></p>
-</div>
+    // --- XỬ LÝ GIỌNG ĐỌC ---
 
-<script>
-  // --- CẤU HÌNH ---
-  const textEl = document.getElementById("text");
-  const recordBtn = document.getElementById("recordBtn");
-  const viBtn = document.getElementById("viBtn");
-  const enBtn = document.getElementById("enBtn");
-  const statusEl = document.getElementById("status");
-
-  let currentLang = "vi-VN";
-  let isRecording = false;
-  let recognition = null;
-  let allVoices = [];
-
-  // Kiểm tra thiết bị
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  statusEl.innerText = isMobile ? "📱 Chế độ Mobile" : "💻 Chế độ PC";
-
-  // --- XỬ LÝ GIỌNG ĐỌC ---
-  
-  // Hàm lấy giọng (thử nhiều lần vì Mobile load chậm)
-  function loadVoices() {
-    allVoices = speechSynthesis.getVoices();
-    if (allVoices.length === 0) {
-      setTimeout(loadVoices, 100);
-    }
-  }
-
-  // Kích hoạt load giọng ngay lập tức
-  loadVoices();
-  if (speechSynthesis.onvoiceschanged !== undefined) {
-    speechSynthesis.onvoiceschanged = loadVoices;
-  }
-
-  function setLang(lang) {
-    currentLang = lang;
-    viBtn.classList.toggle("active", lang === "vi-VN");
-    enBtn.classList.toggle("active", lang === "en-US");
-  }
-
-  function stopSpeak() {
-    speechSynthesis.cancel();
-  }
-
-  function speak() {
-    if (!textEl.value.trim()) {
-      alert("Vui lòng nhập văn bản!");
-      return;
+    // Hàm lấy giọng (thử nhiều lần vì Mobile load chậm)
+    function loadVoices() {
+      allVoices = speechSynthesis.getVoices();
+      if (allVoices.length === 0) {
+        setTimeout(loadVoices, 100);
+      }
     }
 
-    // Dừng giọng cũ đang đọc
-    speechSynthesis.cancel();
+    // Kích hoạt load giọng ngay lập tức
+    loadVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
 
-    // Đảm bảo cập nhật lại danh sách giọng lần cuối
-    allVoices = speechSynthesis.getVoices();
+    function setLang(lang) {
+      currentLang = lang;
+      viBtn.classList.toggle("active", lang === "vi-VN");
+      enBtn.classList.toggle("active", lang === "en-US");
+    }
 
-    const utterance = new SpeechSynthesisUtterance(textEl.value);
-    
-    // -- LOGIC CHỌN GIỌNG THÔNG MINH --
-    let selectedVoice = null;
+    function stopSpeak() {
+      speechSynthesis.cancel();
+    }
 
-    if (currentLang === 'vi-VN') {
-        // 1. Tìm giọng Việt Nam chuẩn
-        selectedVoice = allVoices.find(v => v.lang === 'vi-VN');
-        
-        // 2. Nếu không thấy, tìm giọng Google Tiếng Việt (Android hay dùng tên này)
-        if (!selectedVoice) {
-            selectedVoice = allVoices.find(v => v.name.includes('Vietnamese') || v.name.includes('Tiếng Việt'));
-        }
+    function speak() {
+      if (!textEl.value.trim()) {
+        alert("Vui lòng nhập văn bản!");
+        return;
+      }
 
-        // 3. XỬ LÝ RIÊNG CHO MOBILE THEO YÊU CẦU:
-        // Nếu là Mobile mà vẫn KHÔNG tìm thấy giọng Việt, dùng giọng Anh để đọc (fallback)
-        if (isMobile && !selectedVoice) {
+      speechSynthesis.cancel();
+
+      if (speakTimeout) clearTimeout(speakTimeout);
+
+      speakTimeout = setTimeout(() => {
+        allVoices = speechSynthesis.getVoices();
+
+        const utterance = new SpeechSynthesisUtterance(textEl.value);
+        let selectedVoice = null;
+
+        if (currentLang === "vi-VN") {
+          selectedVoice = allVoices.find(v => v.lang === "vi-VN");
+
+          if (!selectedVoice) {
+            selectedVoice = allVoices.find(v =>
+              v.name.includes("Vietnamese") || v.name.includes("Tiếng Việt")
+            );
+          }
+
+          if (isMobile && !selectedVoice) {
             statusEl.innerText = "⚠️ Không có giọng Việt, dùng giọng Anh thay thế.";
-            selectedVoice = allVoices.find(v => v.lang === 'en-US'); // Fallback sang tiếng Anh
+            selectedVoice = allVoices.find(v => v.lang === "en-US");
+          }
+        } else {
+          selectedVoice = allVoices.find(v => v.lang === "en-US");
         }
-    } else {
-        // Nếu chọn tiếng Anh
-        selectedVoice = allVoices.find(v => v.lang === 'en-US');
+
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+          utterance.lang = selectedVoice.lang;
+        } else {
+          utterance.lang = currentLang;
+        }
+
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+
+        utterance.onerror = (e) => {
+          console.warn("Speech error", e);
+
+          if (isMobile) {
+            speechSynthesis.cancel();
+            const fb = new SpeechSynthesisUtterance(textEl.value);
+            const enVoice = allVoices.find(v => v.lang === "en-US");
+            if (enVoice) fb.voice = enVoice;
+            fb.lang = "en-US";
+            speechSynthesis.speak(fb);
+          }
+        };
+
+        speechSynthesis.speak(utterance);
+      }, 120); // 
     }
 
-    // Gán giọng nếu tìm thấy
-    if (selectedVoice) {
-        utterance.voice = selectedVoice;
-        utterance.lang = selectedVoice.lang;
-    } else {
-        // Trường hợp tệ nhất: để trình duyệt tự chọn
-        utterance.lang = currentLang;
-    }
 
-    // Tinh chỉnh tốc độ cho tự nhiên hơn
-    utterance.rate = 1.0; 
-    utterance.pitch = 1.0;
+    // --- CÁC CHỨC NĂNG KHÁC ---
 
-    // Xử lý sự kiện lỗi
-    /*utterance.onerror = (e) => {
-        console.error('Lỗi đọc:', e);
-        statusEl.innerText = "❌ Lỗi khi đọc. Hãy thử lại.";
-    };*/
-    utterance.onerror = (e) => {
-    console.warn("Lỗi giọng hiện tại, chuyển sang giọng Anh thay thế", e);
+    async function translateText(target) {
+      if (!textEl.value.trim()) return alert("Chưa có nội dung");
+      statusEl.innerText = "⏳ Đang dịch...";
 
-    speechSynthesis.cancel();
-
-    const fallback = new SpeechSynthesisUtterance(textEl.value);
-
-    const enVoice = allVoices.find(v => v.lang === 'en-US');
-
-    if (enVoice) {
-        fallback.voice = enVoice;
-        fallback.lang = 'en-US';
-    } else {
-        fallback.lang = 'en-US'; 
-    }
-
-    fallback.rate = 1.0;
-    fallback.pitch = 1.0;
-
-    statusEl.innerText = "⚠️ Không có giọng Việt, dùng giọng Anh thay thế.";
-
-    speechSynthesis.speak(fallback);
-};
-
-
-    speechSynthesis.speak(utterance);
-  }
-
-  // --- CÁC CHỨC NĂNG KHÁC ---
-
-  async function translateText(target) {
-    if (!textEl.value.trim()) return alert("Chưa có nội dung");
-    statusEl.innerText = "⏳ Đang dịch...";
-    
-    try {
+      try {
         const source = target === "vi" ? "en" : "vi";
         const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(textEl.value)}`;
 
         const res = await fetch(url);
         const data = await res.json();
-        
+
         // Ghép các đoạn dịch lại (đề phòng văn bản dài)
         let translatedText = "";
         data[0].forEach(item => {
-            if(item[0]) translatedText += item[0];
+          if (item[0]) translatedText += item[0];
         });
-        
+
         textEl.value = translatedText;
         setLang(target === "vi" ? "vi-VN" : "en-US");
         statusEl.innerText = "✅ Đã dịch xong";
-    } catch (e) {
+      } catch (e) {
         alert("Lỗi kết nối dịch thuật");
         statusEl.innerText = "";
-    }
-  }
-
-  function copyText() {
-    if (!textEl.value) return;
-    navigator.clipboard.writeText(textEl.value);
-    statusEl.innerText = "📋 Đã sao chép vào bộ nhớ tạm";
-    setTimeout(() => statusEl.innerText = "", 2000);
-  }
-
-  function clearText() {
-    textEl.value = "";
-    statusEl.innerText = "";
-  }
-
-  function toggleRecord() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Trình duyệt không hỗ trợ ghi âm");
-      return;
+      }
     }
 
-    if (!recognition) {
-      recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = false; // Chỉ lấy kết quả cuối cùng để đỡ lỗi
-      recognition.lang = currentLang;
+    function copyText() {
+      if (!textEl.value) return;
+      navigator.clipboard.writeText(textEl.value);
+      statusEl.innerText = "📋 Đã sao chép vào bộ nhớ tạm";
+      setTimeout(() => statusEl.innerText = "", 2000);
+    }
 
-      recognition.onstart = () => {
-        isRecording = true;
-        recordBtn.textContent = "⏹️ Dừng Ghi";
-        recordBtn.classList.add("red");
-        recordBtn.classList.remove("blue");
-        statusEl.innerText = "🎙️ Đang lắng nghe...";
-      };
+    function clearText() {
+      textEl.value = "";
+      statusEl.innerText = "";
+    }
 
-      recognition.onresult = e => {
-        let text = "";
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          if (e.results[i].isFinal) {
-            text += e.results[i][0].transcript;
+    function toggleRecord() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Trình duyệt không hỗ trợ ghi âm");
+        return;
+      }
+
+      if (!recognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false; // Chỉ lấy kết quả cuối cùng để đỡ lỗi
+        recognition.lang = currentLang;
+
+        recognition.onstart = () => {
+          isRecording = true;
+          recordBtn.textContent = "⏹️ Dừng Ghi";
+          recordBtn.classList.add("red");
+          recordBtn.classList.remove("blue");
+          statusEl.innerText = "🎙️ Đang lắng nghe...";
+        };
+
+        recognition.onresult = e => {
+          let text = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            if (e.results[i].isFinal) {
+              text += e.results[i][0].transcript;
+            }
           }
-        }
-        // Thêm khoảng trắng nếu có nội dung cũ
-        textEl.value += (textEl.value ? " " : "") + text;
-      };
+          // Thêm khoảng trắng nếu có nội dung cũ
+          textEl.value += (textEl.value ? " " : "") + text;
+        };
 
-      recognition.onerror = (e) => {
-        console.error(e);
-        stopRecordUI();
-        statusEl.innerText = "❌ Lỗi ghi âm (Micro hoặc mạng)";
-      };
+        recognition.onerror = (e) => {
+          console.error(e);
+          stopRecordUI();
+          statusEl.innerText = "❌ Lỗi ghi âm (Micro hoặc mạng)";
+        };
 
-      recognition.onend = () => {
-        stopRecordUI();
-      };
+        recognition.onend = () => {
+          stopRecordUI();
+        };
+      }
+
+      if (isRecording) {
+        recognition.stop();
+      } else {
+        recognition.lang = currentLang;
+        recognition.start();
+      }
     }
 
-    if (isRecording) {
-      recognition.stop();
-    } else {
-      recognition.lang = currentLang;
-      recognition.start();
+    function stopRecordUI() {
+      isRecording = false;
+      recordBtn.textContent = "🎤 Ghi âm";
+      recordBtn.classList.remove("red");
+      recordBtn.classList.add("blue");
+      statusEl.innerText = "";
     }
-  }
-
-  function stopRecordUI() {
-    isRecording = false;
-    recordBtn.textContent = "🎤 Ghi âm";
-    recordBtn.classList.remove("red");
-    recordBtn.classList.add("blue");
-    statusEl.innerText = "";
-  }
-</script>
+  </script>
 </body>
+
 </html>
