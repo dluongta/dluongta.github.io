@@ -166,7 +166,6 @@
   </div>
 
   <script>
-    // --- CẤU HÌNH ---
     const textEl = document.getElementById("text");
     const recordBtn = document.getElementById("recordBtn");
     const viBtn = document.getElementById("viBtn");
@@ -179,13 +178,10 @@
     let recognition = null;
     let allVoices = [];
 
-    // Kiểm tra thiết bị
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     statusEl.innerText = isMobile ? "📱 Chế độ Mobile" : "💻 Chế độ PC";
 
-    // --- XỬ LÝ GIỌNG ĐỌC ---
 
-    // Hàm lấy giọng (thử nhiều lần vì Mobile load chậm)
     function loadVoices() {
       allVoices = speechSynthesis.getVoices();
       if (allVoices.length === 0) {
@@ -283,7 +279,6 @@
         const res = await fetch(url);
         const data = await res.json();
 
-        // Ghép các đoạn dịch lại (đề phòng văn bản dài)
         let translatedText = "";
         data[0].forEach(item => {
           if (item[0]) translatedText += item[0];
@@ -338,7 +333,6 @@
               text += e.results[i][0].transcript;
             }
           }
-          // Thêm khoảng trắng nếu có nội dung cũ
           textEl.value += (textEl.value ? " " : "") + text;
         };
 
