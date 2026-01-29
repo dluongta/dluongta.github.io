@@ -235,10 +235,34 @@
     utterance.pitch = 1.0;
 
     // Xử lý sự kiện lỗi
-    utterance.onerror = (e) => {
+    /*utterance.onerror = (e) => {
         console.error('Lỗi đọc:', e);
         statusEl.innerText = "❌ Lỗi khi đọc. Hãy thử lại.";
-    };
+    };*/
+    utterance.onerror = (e) => {
+    console.warn("Lỗi giọng hiện tại, chuyển sang giọng Anh thay thế", e);
+
+    speechSynthesis.cancel();
+
+    const fallback = new SpeechSynthesisUtterance(textEl.value);
+
+    const enVoice = allVoices.find(v => v.lang === 'en-US');
+
+    if (enVoice) {
+        fallback.voice = enVoice;
+        fallback.lang = 'en-US';
+    } else {
+        fallback.lang = 'en-US'; 
+    }
+
+    fallback.rate = 1.0;
+    fallback.pitch = 1.0;
+
+    statusEl.innerText = "⚠️ Không có giọng Việt, dùng giọng Anh thay thế";
+
+    speechSynthesis.speak(fallback);
+};
+
 
     speechSynthesis.speak(utterance);
   }
