@@ -203,6 +203,7 @@
       currentLang = lang;
       viBtn.classList.toggle("active", lang === "vi-VN");
       enBtn.classList.toggle("active", lang === "en-US");
+      statusEl.innerText = "";
     }
 
     function stopSpeak() {
@@ -264,9 +265,9 @@
             speechSynthesis.speak(fb);
           }
         };
-
+        statusEl.innerText = "";
         speechSynthesis.speak(utterance);
-      }, 120); // 
+      }, 120);
     }
 
 
