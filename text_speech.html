@@ -213,7 +213,7 @@
         // 3. XỬ LÝ RIÊNG CHO MOBILE THEO YÊU CẦU:
         // Nếu là Mobile mà vẫn KHÔNG tìm thấy giọng Việt, dùng giọng Anh để đọc (fallback)
         if (isMobile && !selectedVoice) {
-            statusEl.innerText = "⚠️ Mobile: Không có giọng Việt, dùng giọng Anh thay thế.";
+            statusEl.innerText = "⚠️ Không có giọng Việt, dùng giọng Anh thay thế.";
             selectedVoice = allVoices.find(v => v.lang === 'en-US'); // Fallback sang tiếng Anh
         }
     } else {
@@ -258,7 +258,7 @@
     fallback.rate = 1.0;
     fallback.pitch = 1.0;
 
-    statusEl.innerText = "⚠️ Không có giọng Việt, dùng giọng Anh thay thế";
+    statusEl.innerText = "⚠️ Không có giọng Việt, dùng giọng Anh thay thế.";
 
     speechSynthesis.speak(fallback);
 };
