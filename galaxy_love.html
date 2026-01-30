@@ -72,20 +72,6 @@
     window.addEventListener("resize", resize);
     resize();
 
-    /* ===== 4. 3D LOGIC ===== */
-    function rotate3D(x, y, z) {
-        let y1 = y * Math.cos(rotX) - z * Math.sin(rotX);
-        let z1 = y * Math.sin(rotX) + z * Math.cos(rotX);
-        let x2 = x * Math.cos(rotY) + z1 * Math.sin(rotY);
-        let z2 = -x * Math.sin(rotY) + z1 * Math.cos(rotY);
-        return { x: x2, y: y1, z: z2 };
-    }
-
-    function project(p) {
-        const s = (PERSPECTIVE / (PERSPECTIVE + p.z)) * zoom;
-        return { x: cx + p.x * s, y: cy + p.y * s, s, z: p.z };
-    }
-
     /* ===== 5. KHỞI TẠO ĐỐI TƯỢNG ===== */
     const bgStars = Array.from({ length: 800 }, () => ({
         x: rand(-3000, 3000), 
@@ -124,17 +110,29 @@
         }
     }
 
+    /* ===== 4. 3D LOGIC ===== */
+    function rotate3D(x, y, z) {
+        let y1 = y * Math.cos(rotX) - z * Math.sin(rotX);
+        let z1 = y * Math.sin(rotX) + z * Math.cos(rotX);
+        let x2 = x * Math.cos(rotY) + z1 * Math.sin(rotY);
+        let z2 = -x * Math.sin(rotY) + z1 * Math.cos(rotY);
+        return { x: x2, y: y1, z: z2 };
+    }
+
+    function project(p) {
+        const s = (PERSPECTIVE / (PERSPECTIVE + p.z)) * zoom;
+        return { x: cx + p.x * s, y: cy + p.y * s, s, z: p.z };
+    }
+
     /* ===== 7. TƯƠNG TÁC (PC + MOBILE PINCH ZOOM) ===== */
     let dragging = false; 
     let lastX = 0, lastY = 0;
     let initialPinchDist = null;
 
-    // Tính khoảng cách giữa 2 điểm chạm
     function getDistance(t1, t2) {
         return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
     }
 
-    // --- PC Events ---
     canvas.addEventListener("wheel", (e) => {
         e.preventDefault();
         zoom += e.deltaY * -0.0008;
@@ -150,14 +148,13 @@
     });
     window.addEventListener("mouseup", () => { dragging = false; });
 
-    // --- Mobile Events (Xử lý zoom 2 ngón tay) ---
     canvas.addEventListener("touchstart", (e) => {
         if (e.touches.length === 1) {
             dragging = true;
             lastX = e.touches[0].clientX;
             lastY = e.touches[0].clientY;
         } else if (e.touches.length === 2) {
-            dragging = false; // Ngừng xoay khi đang zoom
+            dragging = false;
             initialPinchDist = getDistance(e.touches[0], e.touches[1]);
         }
     }, { passive: false });
@@ -173,36 +170,38 @@
             e.preventDefault();
             const currentDist = getDistance(e.touches[0], e.touches[1]);
             const diff = currentDist / initialPinchDist;
-            
-            // Điều chỉnh zoom dựa trên tỉ lệ thay đổi khoảng cách
             zoom *= diff;
             zoom = Math.max(0.05, Math.min(5, zoom));
-            
-            initialPinchDist = currentDist; // Cập nhật mốc mới
+            initialPinchDist = currentDist;
         }
     }, { passive: false });
 
-    window.addEventListener("touchend", () => { 
-        dragging = false; 
-        initialPinchDist = null; 
-    });
+    window.addEventListener("touchend", () => { dragging = false; initialPinchDist = null; });
 
-    /* ===== 8. RENDERING ===== */
+    /* ===== 8. RENDERING (Cải tiến vầng sáng) ===== */
     function drawDynamicAura(time) {
         ctx.save();
-        ctx.globalCompositeOperation = "screen";
+        // Chế độ 'screen' giúp các màu cộng hưởng rực rỡ nhưng không bị cháy trắng quá mức
+        ctx.globalCompositeOperation = "screen"; 
+        
         const lights = [
-            { color: "rgba(0, 150, 255, 0.3)", angle: time * 0.8 },
-            { color: "rgba(180, 0, 255, 0.3)", angle: time * 0.6 + 2 },
-            { color: "rgba(255, 100, 0, 0.3)", angle: time * 0.7 + 4 }
+            { color: "rgba(0, 100, 255, 0.6)", angle: time * 0.5 },    // Xanh dương đậm hơn
+            { color: "rgba(200, 0, 255, 0.6)", angle: time * 0.4 + 2 }, // Tím rực hơn
+            { color: "rgba(255, 80, 0, 0.6)", angle: time * 0.3 + 4 }   // Cam ấm hơn
         ];
+
         lights.forEach(light => {
-            const radius = w * 0.25;
-            const lx = cx + Math.cos(light.angle) * radius;
-            const ly = cy + Math.sin(light.angle) * radius;
-            const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, w * 0.5);
+            // Tăng bán kính quỹ đạo xoay của vầng sáng
+            const orbitRadius = w * 0.65; 
+            const lx = cx + Math.cos(light.angle) * orbitRadius;
+            const ly = cy + Math.sin(light.angle) * orbitRadius;
+
+            // Tăng kích thước khuếch tán của vầng sáng (từ 0.5 lên 0.8)
+            const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, w * 0.8);
             g.addColorStop(0, light.color);
+            g.addColorStop(0.3, light.color.replace("0.5", "0.2").replace("0.4", "0.15")); 
             g.addColorStop(1, "transparent");
+
             ctx.fillStyle = g;
             ctx.fillRect(0, 0, w, h);
         });
@@ -212,8 +211,12 @@
     function animate() {
         let time = performance.now() * 0.0004;
         updateShootingStar();
+        
+        // Nền đen sâu
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, w, h);
+        
+        // Vẽ Aura trước để làm nền sáng cho các hạt
         drawDynamicAura(time);
 
         const renderList = [];
@@ -250,10 +253,10 @@
                 ctx.globalAlpha = 1;
             } else if (item.type === 'planet') {
                 const pr = PLANET_RADIUS * p.s;
-                const g = ctx.createRadialGradient(p.x, p.y, pr*0.1, p.x, p.y, pr*1.8);
-                g.addColorStop(0, "#fffbe6"); g.addColorStop(0.5, "#ff6600"); g.addColorStop(1, "rgba(255, 50, 0, 0)"); 
+                const g = ctx.createRadialGradient(p.x, p.y, pr*0.1, p.x, p.y, pr*2.2); // Tăng quầng sáng hành tinh
+                g.addColorStop(0, "#fffbe6"); g.addColorStop(0.4, "#ff6600"); g.addColorStop(1, "rgba(255, 50, 0, 0)"); 
                 ctx.fillStyle = g;
-                ctx.beginPath(); ctx.arc(p.x, p.y, pr*1.8, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(p.x, p.y, pr*2.2, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = "#fff";
                 ctx.beginPath(); ctx.arc(p.x, p.y, pr*0.7, 0, Math.PI*2); ctx.fill();
             } else if (item.type === 'particle') {
@@ -273,14 +276,13 @@
             } else if (item.type === 'text') {
                 ctx.fillStyle = "#fff";
                 ctx.font = `bold ${24 * p.s}px Arial`; 
-                ctx.shadowColor = "#ffcc00"; ctx.shadowBlur = 10 * p.s;
+                ctx.shadowColor = "#ffcc00"; ctx.shadowBlur = 15 * p.s;
                 ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 ctx.fillText(item.char, p.x, p.y);
                 ctx.shadowBlur = 0; 
             }
         });
 
-        // Vẽ sao băng
         if(shootingStar.active) {
             const sx = cx + shootingStar.x; const sy = cy + shootingStar.y;
             const grad = ctx.createLinearGradient(sx - shootingStar.trailLen, sy, sx, sy);
