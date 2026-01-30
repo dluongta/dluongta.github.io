@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Animation - Dinh Luong Ta</title>
+    <title>Galaxy Animation 3D - Dinh Luong Ta</title>
     <style>
         body, html {
             margin: 0;
@@ -16,10 +16,11 @@
         #canvas-container {
             width: 100vw;
             height: 100vh;
+            position: relative;
         }
         canvas {
             display: block;
-            touch-action: none;
+            touch-action: none; /* Quan trọng để chặn cuộn trang khi chạm trên mobile */
         }
     </style>
 </head>
@@ -34,26 +35,25 @@
     const container = document.getElementById("canvas-container");
     const ctx = canvas.getContext("2d");
 
-    /* ===== CONFIG & ASSETS ===== */
+    /* ===== 1. CẤU HÌNH (CONFIG) ===== */
     const TEXT_STR = "DINH LUONG TA";
-    // Thay thế các đường dẫn ảnh của bạn vào đây
-    const imageSources = [ "luen_logo.png", "hexagon-main.png", "luen-1.jpg", ];
+    const imageSources = ["luen_logo.png", "hexagon-main.png", "luen-1.jpg"];
 
     let w, h, cx, cy;
-    let zoom = 0.45;
-    const PERSPECTIVE = 1500;
-    let rotX = 2.0;
-    let rotY = 0;
+    let zoom = 0.25; 
+    const PERSPECTIVE = 1000; 
+    let rotX = 1.8; 
+    let rotY = 0;   
 
-    const PLANET_RADIUS = 120;
-    const IMAGE_SHOW_SCALE = 0.85;
-    const ORBIT_RADIUS = 240; 
-    const ORBIT_TILT = -80;   
+    const PLANET_RADIUS = 100; 
+    const ORBIT_RADIUS = 280;  
+    const ORBIT_TILT = -80;    
+    const IMAGE_SHOW_SCALE = 0.8; // Ngưỡng để chuyển từ vuông sang ảnh
 
-    const PARTICLE_TILT_X = Math.PI / 2.5; 
+    const PARTICLE_TILT_X = Math.PI / 2.3; 
     const PARTICLE_TILT_Z = Math.PI / 6;
 
-    /* ===== LOAD IMAGES ===== */
+    /* ===== 2. TẢI ẢNH ===== */
     const images = imageSources.map(src => {
         const img = new Image();
         img.src = src;
@@ -62,15 +62,17 @@
 
     const rand = (a, b) => Math.random() * (b - a) + a;
 
-    /* ===== RESIZE ===== */
+    /* ===== 3. RESIZE ===== */
     function resize() {
         w = canvas.width = container.clientWidth;
         h = canvas.height = container.clientHeight;
         cx = w / 2;
         cy = h / 2;
     }
+    window.addEventListener("resize", resize);
+    resize();
 
-    /* ===== 3D HELPERS ===== */
+    /* ===== 4. 3D LOGIC ===== */
     function rotate3D(x, y, z) {
         let y1 = y * Math.cos(rotX) - z * Math.sin(rotX);
         let z1 = y * Math.sin(rotX) + z * Math.cos(rotX);
@@ -84,37 +86,59 @@
         return { x: cx + p.x * s, y: cy + p.y * s, s, z: p.z };
     }
 
-    /* ===== OBJECTS SETUP ===== */
-    const stars = Array.from({ length: 800 }, () => ({
-        x: rand(-w * 3, w * 3),
-        y: rand(-h * 3, h * 3),
-        z: rand(-3000, 3000),
-        r: Math.random() * 1.5,
-        a: Math.random() * Math.PI * 2
+    /* ===== 5. KHỞI TẠO ĐỐI TƯỢNG ===== */
+    
+    // 5.1 SAO NỀN (To hơn)
+    const bgStars = Array.from({ length: 800 }, () => ({
+        x: rand(-3000, 3000), 
+        y: rand(-3000, 3000),
+        z: rand(-3000, 3000), 
+        size: rand(3.0, 5.0), 
+        color: "#ffffff"
     }));
 
+    // 5.2 HẠT (PARTICLES) - MÀU XANH DƯƠNG
     const particles = [];
     const particleCount = 1500;
+    const BLUE_COLOR = "#00ccff"; 
+
     for (let i = 0; i < particleCount; i++) {
         particles.push({
-            radius: rand(220, 650),
+            radius: rand(300, 600), 
             angle: Math.random() * Math.PI * 2,
-            speed: rand(0.001, 0.003),
-            yOffset: rand(-15, 15),
-            size: rand(2, 5),
+            speed: rand(0.0005, 0.002),
+            yOffset: rand(-50, 50), 
+            size: rand(3, 6), // Tăng size lên xíu vì hình vuông
+            color: BLUE_COLOR,
             imgIndex: Math.floor(Math.random() * images.length)
         });
     }
 
-    /* ===== INTERACTION ===== */
-    let dragging = false;
-    let lastX = 0, lastY = 0;
-    let initialPinchDistance = null;
+    /* ===== 6. SHOOTING STAR (SAO BĂNG TRẮNG) ===== */
+    let shootingStar = { x: -1000, y: 0, speed: 0, active: false, trailLen: 200 };
 
+    function updateShootingStar() {
+        if (!shootingStar.active) {
+            if (Math.random() < 0.01) { 
+                shootingStar.active = true;
+                shootingStar.x = -w/2 - 200; 
+                shootingStar.y = rand(-h/3, h/3);
+                shootingStar.speed = rand(25, 45);
+            }
+        } else {
+            shootingStar.x += shootingStar.speed;
+            if (shootingStar.x > w/2 + 300) shootingStar.active = false;
+        }
+    }
+
+    /* ===== 7. TƯƠNG TÁC (PC + MOBILE) ===== */
+    let dragging = false; let lastX = 0, lastY = 0;
+
+    // --- PC Mouse Events ---
     canvas.addEventListener("wheel", (e) => {
         e.preventDefault();
         zoom += e.deltaY * -0.0005;
-        zoom = Math.max(0.2, Math.min(6, zoom));
+        zoom = Math.max(0.05, Math.min(5, zoom));
     }, { passive: false });
 
     canvas.addEventListener("mousedown", (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
@@ -126,139 +150,188 @@
     });
     window.addEventListener("mouseup", () => { dragging = false; });
 
-    // Touch support
+    // --- Mobile Touch Events (Mới thêm) ---
     canvas.addEventListener("touchstart", (e) => {
-        if(e.touches.length === 1) {
-            dragging = true;
-            lastX = e.touches[0].clientX;
-            lastY = e.touches[0].clientY;
-        } else if (e.touches.length === 2) {
-            const dx = e.touches[0].clientX - e.touches[1].clientX;
-            const dy = e.touches[0].clientY - e.touches[1].clientY;
-            initialPinchDistance = Math.sqrt(dx*dx + dy*dy);
-        }
+        dragging = true;
+        lastX = e.touches[0].clientX;
+        lastY = e.touches[0].clientY;
     }, { passive: false });
 
-    canvas.addEventListener("touchmove", (e) => {
-        e.preventDefault();
-        if(e.touches.length === 1 && dragging) {
-            rotY += (e.touches[0].clientX - lastX) * 0.003;
-            rotX += (e.touches[0].clientY - lastY) * 0.003;
-            lastX = e.touches[0].clientX;
-            lastY = e.touches[0].clientY;
-        } else if (e.touches.length === 2 && initialPinchDistance) {
-            const dx = e.touches[0].clientX - e.touches[1].clientX;
-            const dy = e.touches[0].clientY - e.touches[1].clientY;
-            const newDist = Math.sqrt(dx*dx + dy*dy);
-            zoom *= newDist / initialPinchDistance;
-            zoom = Math.max(0.2, Math.min(6, zoom));
-            initialPinchDistance = newDist;
-        }
+    window.addEventListener("touchmove", (e) => {
+        if (!dragging) return;
+        // e.preventDefault(); // Uncomment nếu muốn chặn cuộn trang web
+        const touch = e.touches[0];
+        rotY += (touch.clientX - lastX) * 0.005; // Tăng nhạy hơn chút cho mobile
+        rotX += (touch.clientY - lastY) * 0.005;
+        lastX = touch.clientX; 
+        lastY = touch.clientY;
     }, { passive: false });
 
-    window.addEventListener("resize", resize);
-    resize();
+    window.addEventListener("touchend", () => { dragging = false; });
 
-    /* ===== DRAW LOOP ===== */
+
+    /* ===== 8. HÀM VẼ PHỤ TRỢ ===== */
+    
+    // Hàm vẽ vầng sáng xoay (Dynamic Aura)
+    function drawDynamicAura(time) {
+        ctx.save();
+        ctx.globalCompositeOperation = "screen"; // Chế độ hòa trộn tạo ánh sáng
+
+        // Tạo 3 điểm sáng xoay quanh tâm: Xanh Dương, Tím, Cam
+        const lights = [
+            { color: "rgba(0, 150, 255, 0.3)", angle: time * 0.8 },       // Xanh dương
+            { color: "rgba(180, 0, 255, 0.3)", angle: time * 0.6 + 2 },   // Tím
+            { color: "rgba(255, 100, 0, 0.3)", angle: time * 0.7 + 4 }    // Cam
+        ];
+
+        lights.forEach(light => {
+            // Tính vị trí xoay quanh tâm (cx, cy)
+            const radius = w * 0.25;
+            const lx = cx + Math.cos(light.angle) * radius;
+            const ly = cy + Math.sin(light.angle) * radius;
+
+            // Gradient tỏa tròn
+            const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, w * 0.5);
+            g.addColorStop(0, light.color);
+            g.addColorStop(1, "transparent");
+
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, w, h);
+        });
+
+        ctx.restore();
+    }
+
+    function drawShootingStarLogic() {
+        if(!shootingStar.active) return;
+        const sx = cx + shootingStar.x; const sy = cy + shootingStar.y;
+        
+        const grad = ctx.createLinearGradient(sx - shootingStar.trailLen, sy, sx, sy);
+        grad.addColorStop(0, "rgba(255, 255, 255, 0)"); 
+        grad.addColorStop(1, "rgba(255, 255, 255, 1)"); 
+
+        ctx.beginPath(); ctx.moveTo(sx - shootingStar.trailLen, sy); ctx.lineTo(sx, sy);
+        ctx.strokeStyle = grad; ctx.lineWidth = 3;
+        ctx.stroke();
+    }
+
+    /* ===== 9. VÒNG LẶP CHÍNH ===== */
     let time = 0;
-    function draw() {
-        time += 0.003;
+    function animate() {
+        time += 0.004;
+        updateShootingStar();
         ctx.clearRect(0, 0, w, h);
 
-        // 1. Background
-        const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w,h));
-        bg.addColorStop(0, "#050010");
-        bg.addColorStop(1, "#000");
-        ctx.fillStyle = bg;
+        // NỀN ĐEN
+        ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, w, h);
 
-        // 2. Stars
-        ctx.fillStyle = "#fff";
-        stars.forEach(s => {
-            const p = project(rotate3D(s.x, s.y, s.z));
-            ctx.globalAlpha = 0.3 + Math.sin(s.a + time*5)*0.3;
-            ctx.fillRect(p.x, p.y, s.r*p.s, s.r*p.s);
-        });
-        ctx.globalAlpha = 1;
+        // VẼ VẦNG SÁNG XOAY (Xanh - Tím - Cam)
+        drawDynamicAura(time);
 
+        // --- XỬ LÝ RENDER LIST ---
         const renderList = [];
+        const pPos = rotate3D(0, 0, 0);
+        
+        // 1. Hành tinh
+        renderList.push({ type: 'planet', ...pPos });
 
-        // Planet
-        const planetPos = rotate3D(0, 0, 0);
-        renderList.push({ type: 'planet', z: planetPos.z, x: planetPos.x, y: planetPos.y });
+        // 2. Chữ chạy
+        for(let i = 0; i < TEXT_STR.length; i++){
+            const charAngle = time * 1.5 + (i * (Math.PI * 2 / TEXT_STR.length) * 0.5); 
+            const r = rotate3D(Math.cos(charAngle) * ORBIT_RADIUS, Math.sin(charAngle) * ORBIT_TILT * 0.2, Math.sin(charAngle) * ORBIT_RADIUS);
+            renderList.push({ type: 'text', char: TEXT_STR[i], ...r });
+        }
 
-        // Particles
+        // 3. Hạt Particles
         particles.forEach(p => {
-            const currentA = p.angle + time + (time * p.speed * 100); 
+            const currentA = p.angle + time + (time * p.speed * 80); 
             let px = p.radius * Math.cos(currentA);
             let pz = p.radius * Math.sin(currentA);
             let py = p.yOffset;
-
             let y1 = py * Math.cos(PARTICLE_TILT_X) - pz * Math.sin(PARTICLE_TILT_X);
             let z1 = py * Math.sin(PARTICLE_TILT_X) + pz * Math.cos(PARTICLE_TILT_X);
             let x2 = px * Math.cos(PARTICLE_TILT_Z) - y1 * Math.sin(PARTICLE_TILT_Z);
             let y2 = px * Math.sin(PARTICLE_TILT_Z) + y1 * Math.cos(PARTICLE_TILT_Z);
-            
-            const r = rotate3D(x2, y2, z1); // Using z1 from first rotation
-            renderList.push({ type: 'particle', z: r.z, x: r.x, y: r.y, original: p });
+            renderList.push({ type: 'particle', original: p, ...rotate3D(x2, y2, z1) });
         });
 
-        // Text
-        for(let i = 0; i < TEXT_STR.length; i++){
-            const a = time * 2 + i * 0.35;
-            const tx = Math.cos(a) * ORBIT_RADIUS;
-            const tz = Math.sin(a) * ORBIT_RADIUS;
-            const ty = Math.sin(a) * ORBIT_TILT;
-            const r = rotate3D(tx, ty, tz);
-            renderList.push({ type: 'text', z: r.z, x: r.x, y: r.y, char: TEXT_STR[i] });
-        }
+        // 4. Sao Nền
+        bgStars.forEach(s => {
+            const pos = rotate3D(s.x, s.y, s.z);
+            renderList.push({ type: 'star', size: s.size, color: s.color, ...pos });
+        });
 
+        // Sắp xếp Z
         renderList.sort((a, b) => b.z - a.z);
 
+        // --- VẼ ---
         renderList.forEach(item => {
             const p = project(item);
             if(p.s <= 0) return;
 
-            if (item.type === 'planet') {
-                const planetR = PLANET_RADIUS * p.s;
-                const g = ctx.createRadialGradient(p.x - 40 * p.s, p.y - 40 * p.s, 20 * p.s, p.x, p.y, planetR);
-                g.addColorStop(0, "#ffd1ff");
-                g.addColorStop(0.5, "#ff8ad4");
-                g.addColorStop(1, "#C77DFF");
-                ctx.fillStyle = g;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, planetR, 0, Math.PI * 2);
+            if (item.type === 'star') {
+                ctx.fillStyle = item.color;
+                ctx.globalAlpha = Math.min(1, Math.max(0.1, (item.z + 3000)/5000));
+                ctx.beginPath(); 
+                ctx.arc(p.x, p.y, item.size * p.s, 0, Math.PI*2); 
                 ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+            else if (item.type === 'planet') {
+                const planetR = PLANET_RADIUS * p.s;
+                const g = ctx.createRadialGradient(p.x, p.y, planetR*0.1, p.x, p.y, planetR*1.8);
+                g.addColorStop(0, "#fffbe6"); 
+                g.addColorStop(0.2, "#ffcc00"); 
+                g.addColorStop(0.5, "#ff6600"); 
+                g.addColorStop(1, "rgba(255, 50, 0, 0)"); 
+                ctx.fillStyle = g;
+                ctx.beginPath(); ctx.arc(p.x, p.y, planetR*1.8, 0, Math.PI*2); ctx.fill();
+                
+                ctx.fillStyle = "#fff";
+                ctx.beginPath(); ctx.arc(p.x, p.y, planetR*0.7, 0, Math.PI*2); ctx.fill();
             } 
             else if (item.type === 'particle') {
-                const displaySize = item.original.size * p.s;
-                const grad = ctx.createLinearGradient(p.x - displaySize/2, p.y - displaySize/2, p.x + displaySize/2, p.y + displaySize/2);
-                grad.addColorStop(0, "#00ffff");
-                grad.addColorStop(1, "#bd00ff");
-                ctx.fillStyle = grad;
-                ctx.fillRect(p.x - displaySize/2, p.y - displaySize/2, displaySize, displaySize);
+                // LOGIC MỚI: Không fade-in.
+                // Nếu scale > IMAGE_SHOW_SCALE -> Hiện ảnh RÕ (alpha=1).
+                // Nếu scale <= IMAGE_SHOW_SCALE -> Hiện HÌNH VUÔNG XANH.
 
                 if(p.s > IMAGE_SHOW_SCALE) {
                     const img = images[item.original.imgIndex];
                     if(img && img.complete) {
-                        const imgSize = displaySize * 3.2;
+                        const imgSize = item.original.size * p.s * 8;
+                        // Không dùng globalAlpha để làm mờ, vẽ trực tiếp
                         ctx.drawImage(img, p.x - imgSize/2, p.y - imgSize/2, imgSize, imgSize);
                     }
+                } else {
+                    // Vẽ HÌNH VUÔNG màu xanh dương
+                    const squareSize = item.original.size * p.s;
+                    ctx.fillStyle = item.original.color; // Màu xanh dương đã set ở trên
+                    
+                    // Vẫn giữ hiệu ứng xa gần cho hạt vuông để tạo chiều sâu (nhưng không phải fade ảnh)
+                    ctx.globalAlpha = Math.min(1, (item.z + 2000)/3000); 
+                    
+                    // fillRect vẽ hình vuông
+                    ctx.fillRect(p.x - squareSize/2, p.y - squareSize/2, squareSize, squareSize);
+                    
+                    ctx.globalAlpha = 1;
                 }
             } 
             else if (item.type === 'text') {
                 ctx.fillStyle = "#fff";
-                ctx.font = `bold ${30 * p.s}px Arial`; 
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
+                ctx.font = `bold ${24 * p.s}px Arial`; 
+                ctx.shadowColor = "#ffcc00"; 
+                ctx.shadowBlur = 10 * p.s;
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 ctx.fillText(item.char, p.x, p.y);
+                ctx.shadowBlur = 0; 
             }
         });
 
-        requestAnimationFrame(draw);
+        drawShootingStarLogic();
+        requestAnimationFrame(animate);
     }
-
-    draw();
+    animate();
 </script>
 
 </body>
