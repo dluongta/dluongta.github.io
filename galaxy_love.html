@@ -89,7 +89,7 @@
         /* ===== 2. KHỞI TẠO ĐỐI TƯỢNG ===== */
         const bgStars = Array.from({ length: 800 }, () => ({
             x: rand(-3000, 3000), y: rand(-3000, 3000), z: rand(-3000, 3000),
-            size: rand(2.0, 4.5), color: "#ffffff"
+            size: rand(0.5, 2.0), color: "#ffffff"
         }));
 
         const particles = Array.from({ length: 1500 }, () => ({
@@ -106,14 +106,14 @@
         function updateShootingStar() {
             if (!shootingStar.active) {
                 // Xác suất xuất hiện mỗi frame
-                if (Math.random() < 0.006) {
+                if (Math.random() < 0.02) {
                     shootingStar.active = true;
                     // Xuất phát từ bên trái màn hình (ngoài khung nhìn)
                     shootingStar.x = -400;
                     // Độ cao ngẫu nhiên (từ đỉnh đến giữa màn hình)
                     shootingStar.y = rand(50, h * 0.7);
                     shootingStar.len = rand(200, 400);
-                    shootingStar.speed = rand(20, 35);
+                    shootingStar.speed = rand(40, 60);
                     shootingStar.opacity = 1;
                 }
             } else {
