@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D PDF Flipbook</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <title>3D PDF Flipbook - Zoom Enabled</title>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script> -->
+    <script src="pdf.min.js"></script>
     <style>
         :root {
             --bg-color: #2c3e50;
-            /* Các biến này sẽ được JS cập nhật tự động theo màn hình */
             --page-width: 300px; 
             --page-height: 420px;
             --transition-speed: 0.6s;
@@ -19,7 +19,7 @@
         body {
             background-color: var(--bg-color);
             margin: 0;
-            overflow: hidden; /* Chặn thanh cuộn của trình duyệt */
+            overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
@@ -49,7 +49,6 @@
             border-radius: 25px;
         }
 
-        /* Ẩn bớt text thừa trên mobile */
         .desktop-only { display: inline; }
         @media (max-width: 600px) {
             .desktop-only { display: none; }
@@ -58,7 +57,7 @@
         }
 
         input#pageInput {
-            width: 40px;
+            width: 45px;
             padding: 4px;
             background: transparent;
             border: 1px solid #555;
@@ -66,6 +65,13 @@
             text-align: center;
             border-radius: 4px;
             font-weight: bold;
+            -moz-appearance: textfield;
+        }
+
+        input#pageInput::-webkit-outer-spin-button,
+        input#pageInput::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
         
         button {
@@ -91,10 +97,9 @@
             justify-content: center;
             overflow: hidden;
             position: relative;
-            touch-action: none; /* Quan trọng cho thao tác vuốt */
+            touch-action: none; 
         }
 
-        /* Nút điều hướng 2 bên */
         .side-nav {
             position: absolute;
             top: 50%;
@@ -118,12 +123,12 @@
         .side-nav.right { right: 15px; }
 
         @media (max-width: 768px) {
-            .side-nav { display: none; } /* Ẩn nút mũi tên trên mobile để dùng vuốt */
+            .side-nav { display: none; }
         }
 
         /* --- BOOK 3D STRUCTURE --- */
         #zoom-container {
-            transition: transform 0.1s ease-out; /* Mượt mà khi zoom/pan */
+            transition: transform 0.1s ease-out;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -138,13 +143,12 @@
             transition: transform var(--transition-speed) cubic-bezier(0.2, 1, 0.3, 1);
         }
 
-        /* Logic căn chỉnh vị trí sách */
-        .align-cover { transform: translateX(0); } /* Đóng bìa: Căn giữa */
-        .align-open { transform: translateX(calc(var(--page-width) / 2)); } /* Mở sách: Dời sang phải */
-        .align-end { transform: translateX(var(--page-width)); } /* Trang cuối */
+        .align-cover { transform: translateX(0); }
+        .align-open { transform: translateX(calc(var(--page-width) / 2)); }
+        .align-end { transform: translateX(var(--page-width)); }
 
         @media (max-width: 768px) {
-            .align-open { transform: translateX(0); } /* Mobile luôn căn giữa */
+            .align-open { transform: translateX(0); }
             .align-end { transform: translateX(0); }
         }
 
@@ -162,7 +166,7 @@
             height: 100%;
             top: 0;
             left: 0;
-            transform-origin: left; /* Quay quanh gáy sách trái */
+            transform-origin: left;
             transform-style: preserve-3d;
             transition: transform var(--transition-speed) cubic-bezier(0.645, 0.045, 0.355, 1);
         }
@@ -173,15 +177,13 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            backface-visibility: hidden; /* Ẩn mặt sau */
+            backface-visibility: hidden;
             background: white;
             overflow: hidden;
-            /* Tạo bóng đổ nhẹ giúp tách biệt các trang */
             border-radius: 2px 4px 4px 2px;
         }
 
         .front {
-             /* Bóng đổ phía trong gáy */
             box-shadow: inset 20px 0 50px rgba(0,0,0,0.05), 5px 0 15px rgba(0,0,0,0.1);
         }
 
@@ -210,7 +212,6 @@
             z-index: 3000;
         }
 
-        /* Hiệu ứng gradient ở gáy sách cho chân thực */
         .front::after {
             content: "";
             position: absolute; top: 0; bottom: 0; left: 0; width: 40px;
@@ -223,26 +224,41 @@
             background: linear-gradient(to left, rgba(0,0,0,0.15), transparent);
             pointer-events: none;
         }
-        input#pageInput {
-            width: 45px;
-            padding: 4px;
-            background: transparent;
-            border: 1px solid #555;
-            color: white;
-            text-align: center;
-            border-radius: 4px;
-            font-weight: bold;
-            /* Tắt mũi tên tăng giảm trên Firefox */
-            -moz-appearance: textfield;
+        .click-area {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 25%; 
+            z-index: 1000;
+            cursor: pointer;
         }
+/* Đảm bảo lớp page không chặn click của lớp dưới nó */
+.page {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    transform-origin: left;
+    transform-style: preserve-3d;
+    transition: transform var(--transition-speed) cubic-bezier(0.645, 0.045, 0.355, 1);
+    pointer-events: none; /* Quan trọng: Click xuyên qua các lớp rỗng */
+}
 
-        /* Tắt mũi tên tăng giảm trên Chrome, Safari, Edge, Opera */
-        input#pageInput::-webkit-outer-spin-button,
-        input#pageInput::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        
+/* Chỉ những gì hiển thị mới nhận click */
+.front, .back {
+    pointer-events: auto; 
+    z-index: 10;
+}
+
+.click-area {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 5000; /* Luôn nằm trên cùng của mặt trang */
+    cursor: pointer;
+    background: rgba(0,0,0,0); /* Trong suốt */
+}
     </style>
 </head>
 <body>
@@ -256,7 +272,8 @@
 
     <div class="btn-group">
         <span class="desktop-only">Trang:</span>
-        <input type="number" id="pageInput" min="1" value="1" onchange="goToPage()">    </div>
+        <input type="number" id="pageInput" min="1" value="1" onchange="goToPage()">
+    </div>
 
     <div class="btn-group">
         <button onclick="zoomOut()">−</button>
@@ -281,46 +298,41 @@
 
 <script>
     // --- CẤU HÌNH ---
-    const pdfUrl = 'book.pdf'; // Thay đổi đường dẫn file PDF của bạn tại đây
-    
-    // Sử dụng CDN Worker (Không cần tải file worker về)
+    const pdfUrl = 'book.pdf'; 
     const pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    // pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
 
     let pdfDoc = null;
     let totalPages = 0;
-    let currentSheet = 0; // Index của tờ giấy hiện tại (0 là bìa)
+    let currentSheet = 0; 
     const sheetsArray = [];
     
-    // Các biến Zoom / Pan
     let zoom = 1;
     let translateX = 0; 
     let translateY = 0;
     let isDragging = false;
     let startX, startY;
 
-    // --- RESPONSIVE LOGIC: Tự động tính kích thước sách ---
+    // Các biến cho Pinch Zoom
+    let initialPinchDistance = 0;
+    let initialZoom = 1;
+
     function updateBookDimensions() {
         const viewport = document.getElementById('viewport');
         const vWidth = viewport.clientWidth;
         const vHeight = viewport.clientHeight;
         let pWidth, pHeight;
-
-        // Tỷ lệ khung hình mong muốn của trang A4 (xấp xỉ 0.707)
         const aspectRatio = 0.707; 
 
         if (vWidth < 768) {
-            // Mobile: Ưu tiên chiều rộng
             pWidth = vWidth * 0.92; 
             pHeight = pWidth / aspectRatio;
-            
-            // Nếu quá cao so với màn hình
             if (pHeight > vHeight * 0.85) {
                 pHeight = vHeight * 0.85;
                 pWidth = pHeight * aspectRatio;
             }
         } else {
-            // Desktop: Ưu tiên chiều cao
             pHeight = vHeight * 0.85; 
             pWidth = pHeight * aspectRatio;
         }
@@ -329,19 +341,15 @@
         document.documentElement.style.setProperty('--page-height', `${Math.round(pHeight)}px`);
     }
 
-    // --- KHỞI TẠO ---
     async function init() {
         updateBookDimensions();
-        window.addEventListener('resize', () => {
-            updateBookDimensions();
-        });
+        window.addEventListener('resize', updateBookDimensions);
 
         try {
             pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
             totalPages = pdfDoc.numPages;
             document.getElementById('pageInput').max = totalPages;
             document.getElementById('loading').style.display = 'none';
-
             await renderBook();
             updateUI();
         } catch (err) {
@@ -351,61 +359,65 @@
         }
     }
 
-    async function renderBook() {
-        const book = document.getElementById('book');
-        book.innerHTML = ''; 
+async function renderBook() {
+    const book = document.getElementById('book');
+    book.innerHTML = ''; 
+    const totalSheets = Math.ceil(totalPages / 2);
 
-        // Tính tổng số tờ giấy cần thiết (Mỗi tờ có 2 mặt)
-        const totalSheets = Math.ceil(totalPages / 2);
+    for (let i = 0; i < totalSheets; i++) {
+        const pageNumFront = i * 2 + 1;
+        const pageNumBack = i * 2 + 2;
+        const sheetEl = document.createElement('div');
+        sheetEl.className = 'page';
+        sheetEl.style.zIndex = totalSheets - i; 
+        
+        // --- Mặt trước (Nằm bên phải) ---
+        const front = document.createElement('div');
+        front.className = 'front';
+        
+        const nextTrigger = document.createElement('div');
+        nextTrigger.className = 'click-area';
+        nextTrigger.style.right = '0';
+        nextTrigger.style.width = '40%'; // Vùng nhấn lật tới
+        nextTrigger.onclick = (e) => {
+            e.stopPropagation();
+            nextPage();
+        };
+        front.appendChild(nextTrigger);
+        await renderPageToCanvas(pageNumFront, front);
+        sheetEl.appendChild(front);
 
-        for (let i = 0; i < totalSheets; i++) {
-            const pageNumFront = i * 2 + 1;
-            const pageNumBack = i * 2 + 2;
+        // --- Mặt sau (Sẽ nằm bên trái sau khi lật) ---
+        const back = document.createElement('div');
+        back.className = 'back';
+        
+        const prevTrigger = document.createElement('div');
+        prevTrigger.className = 'click-area';
+        prevTrigger.style.left = '0';
+        prevTrigger.style.width = '40%'; // Vùng nhấn lật lui
+        prevTrigger.onclick = (e) => {
+            e.stopPropagation();
+            prevPage();
+        };
+        back.appendChild(prevTrigger);
 
-            const sheetEl = document.createElement('div');
-            sheetEl.className = 'page';
-            sheetEl.style.zIndex = totalSheets - i; 
-            
-            // Mặt trước
-            const front = document.createElement('div');
-            front.className = 'front';
-            await renderPageToCanvas(pageNumFront, front);
-            sheetEl.appendChild(front);
-
-            // Mặt sau
-            const back = document.createElement('div');
-            back.className = 'back';
-            if (pageNumBack <= totalPages) {
-                await renderPageToCanvas(pageNumBack, back);
-            } else {
-                back.style.backgroundColor = "#ddd"; // Bìa sau cùng trắng/xám
-            }
-            sheetEl.appendChild(back);
-
-            // Sự kiện Click để lật
-            sheetEl.onclick = (e) => {
-                if (Math.abs(translateX) > 5 || Math.abs(translateY) > 5) return; // Đang kéo thì không lật
-                
-                if (sheetEl.classList.contains('flipped')) {
-                    if (currentSheet === i + 1) prevPage();
-                } else {
-                    if (currentSheet === i) nextPage();
-                }
-            };
-
-            book.appendChild(sheetEl);
-            sheetsArray.push(sheetEl);
+        if (pageNumBack <= totalPages) {
+            await renderPageToCanvas(pageNumBack, back);
+        } else {
+            back.style.backgroundColor = "#ddd"; 
         }
+        sheetEl.appendChild(back);
+
+        book.appendChild(sheetEl);
+        sheetsArray.push(sheetEl);
     }
+}
 
     async function renderPageToCanvas(num, container) {
         try {
             const page = await pdfDoc.getPage(num);
-            
-            // Render độ phân giải cao hơn kích thước thực để khi zoom không bị vỡ
             const cssWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--page-width'));
-            const desiredWidth = cssWidth * 2; // Render gấp đôi kích thước hiển thị
-            
+            const desiredWidth = cssWidth * 2; 
             const viewport = page.getViewport({ scale: 1 });
             const scale = desiredWidth / viewport.width;
             const scaledViewport = page.getViewport({ scale: scale });
@@ -417,12 +429,9 @@
 
             await page.render({ canvasContext: context, viewport: scaledViewport }).promise;
             container.appendChild(canvas);
-        } catch (e) {
-            console.error("Lỗi render trang " + num, e);
-        }
+        } catch (e) { console.error("Error rendering page " + num, e); }
     }
 
-    // --- LOGIC ĐIỀU KHIỂN ---
     function nextPage() {
         if (currentSheet < sheetsArray.length) {
             sheetsArray[currentSheet].classList.add('flipped');
@@ -444,52 +453,29 @@
         let p = parseInt(input.value);
         if (isNaN(p) || p < 1) p = 1;
         if (p > totalPages) p = totalPages;
-        
-        // Tính toán tờ (Sheet) tương ứng
         const targetSheet = Math.floor((p - 1) / 2); 
 
-        // Cập nhật trạng thái lật cho tất cả các trang
-        for (let i = 0; i < sheetsArray.length; i++) {
-            if (i < Math.ceil(p/2) && (i <= targetSheet || p > i*2+1)) { 
-                // Logic: Lật các trang trước trang đích
-                if (i <= targetSheet) {
-                    // Nếu đích là mặt sau (trang chẵn), tờ hiện tại phải được tính là đã qua
-                     if ((p-1) >= (i*2+1)) sheetsArray[i].classList.add('flipped');
-                     else sheetsArray[i].classList.remove('flipped'); // Trường hợp trang lẻ đang xem
-                     
-                     // Fix đơn giản: cứ lật hết các trang trước targetSheet
-                     if (i < targetSheet) sheetsArray[i].classList.add('flipped');
-                }
-            } 
-        }
-        
-        // Reset đơn giản hơn:
         sheetsArray.forEach((sheet, idx) => {
              if (idx < targetSheet) sheet.classList.add('flipped');
              else sheet.classList.remove('flipped');
         });
         
-        // Nếu trang muốn đến là trang Chẵn (mặt sau), thì tờ đó cũng phải lật
         if (p % 2 === 0) {
              sheetsArray[targetSheet].classList.add('flipped');
              currentSheet = targetSheet + 1;
         } else {
              currentSheet = targetSheet;
         }
-
         updateUI();
         input.blur();
     }
 
     function updateUI() {
         const aligner = document.getElementById('book-aligner');
-        
-        // Xử lý vị trí sách
         if (currentSheet === 0) aligner.className = 'book-aligner align-cover';
         else if (currentSheet === sheetsArray.length) aligner.className = 'book-aligner align-end';
         else aligner.className = 'book-aligner align-open';
 
-        // Text hiển thị
         const display = document.getElementById('pageDisplay');
         const pLeft = currentSheet * 2;
         const pRight = pLeft + 1;
@@ -505,19 +491,13 @@
             document.getElementById('pageInput').value = pLeft;
         }
 
-        // Cập nhật Z-Index động để tránh lỗi hiển thị khi lật
         sheetsArray.forEach((sheet, index) => {
-            if (index < currentSheet) {
-                // Các trang bên trái: Trang càng xa (index thấp) thì z-index thấp
-                sheet.style.zIndex = index;
-            } else {
-                // Các trang bên phải: Trang càng gần (index thấp) thì z-index cao
-                sheet.style.zIndex = sheetsArray.length - index + currentSheet; 
-            }
+            if (index < currentSheet) sheet.style.zIndex = index;
+            else sheet.style.zIndex = sheetsArray.length - index + currentSheet; 
         });
     }
 
-    // --- ZOOM & PAN & TOUCH SWIPE ---
+    // --- ZOOM & PAN LOGIC ---
     const zoomContainer = document.getElementById('zoom-container');
     const viewportEl = document.getElementById('viewport');
 
@@ -533,7 +513,15 @@
         applyTransform(); 
     }
 
-    // Panning (Kéo thả) Mouse
+    // Wheel Zoom (Desktop)
+    viewportEl.addEventListener('wheel', e => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        zoom = Math.min(Math.max(0.5, zoom + delta), 3);
+        updateZoomText();
+    }, { passive: false });
+
+    // Mouse Pan
     viewportEl.addEventListener('mousedown', e => {
         if(e.target.closest('button') || e.target.closest('input')) return;
         isDragging = true;
@@ -544,21 +532,28 @@
 
     window.addEventListener('mousemove', e => {
         if (!isDragging) return;
-        e.preventDefault();
         translateX = e.clientX - startX;
         translateY = e.clientY - startY;
         applyTransform();
     });
 
-    window.addEventListener('mouseup', () => { isDragging = false; viewportEl.style.cursor = 'default'; });
+    window.addEventListener('mouseup', () => { 
+        setTimeout(() => isDragging = false, 50); 
+        viewportEl.style.cursor = 'default'; 
+    });
 
-    // Touch Handling (Swipe + Pan)
+    // Touch Support (Swipe, Pan, Pinch Zoom)
     let touchStartX = 0;
+    function getDistance(touches) {
+        return Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY);
+    }
 
     viewportEl.addEventListener('touchstart', e => {
-        if (e.touches.length === 1) {
+        if (e.touches.length === 2) {
+            initialPinchDistance = getDistance(e.touches);
+            initialZoom = zoom;
+        } else if (e.touches.length === 1) {
             touchStartX = e.touches[0].clientX;
-            // Nếu đang zoom, cho phép Pan
             if (zoom > 1.05) {
                 startX = e.touches[0].clientX - translateX;
                 startY = e.touches[0].clientY - translateY;
@@ -568,7 +563,13 @@
     }, { passive: false });
 
     viewportEl.addEventListener('touchmove', e => {
-        if (zoom > 1.05 && isDragging) {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const currentDistance = getDistance(e.touches);
+            const pinchScale = currentDistance / initialPinchDistance;
+            zoom = Math.min(Math.max(0.5, initialZoom * pinchScale), 3);
+            updateZoomText();
+        } else if (zoom > 1.05 && isDragging && e.touches.length === 1) {
             e.preventDefault(); 
             translateX = e.touches[0].clientX - startX;
             translateY = e.touches[0].clientY - startY;
@@ -577,19 +578,15 @@
     }, { passive: false });
 
     viewportEl.addEventListener('touchend', e => {
-        isDragging = false;
-        // Nếu không zoom, tính toán swipe
-        if (zoom <= 1.05) {
+        if (e.touches.length < 2 && zoom <= 1.05) {
             const touchEndX = e.changedTouches[0].clientX;
             const diffX = touchEndX - touchStartX;
-            
-            // Vuốt > 50px mới tính là lật trang
-            if (diffX > 50) prevPage(); // Vuốt sang phải -> Trang trước
-            else if (diffX < -50) nextPage(); // Vuốt sang trái -> Trang sau
+            if (diffX > 60) prevPage();
+            else if (diffX < -60) nextPage();
         }
+        isDragging = false;
     });
 
-    // Keyboard support
     window.addEventListener('keydown', (e) => {
         if (document.activeElement.id === 'pageInput') {
              if (e.key === 'Enter') goToPage();
