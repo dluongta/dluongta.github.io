@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convert Image To Text</title>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script> -->
+    <script src="tesseract.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; text-align: center; background-color: #f0f2f5; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .drop-zone { border: 2px dashed #007bff; padding: 20px; border-radius: 10px; margin-bottom: 20px; color: #666; transition: 0.3s; }
+        .drop-zone.active { background: #e7f3ff; border-color: #0056b3; }
+        #output { width: 100%; height: 250px; margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; line-height: 1.5; box-sizing: border-box; }
+        .btn { background: #28a745; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 15px; transition: 0.2s; }
+        .btn:hover { background: #218838; }
+        #preview { max-width: 100%; max-height: 300px; margin-top: 15px; display: none; border-radius: 8px; border: 1px solid #eee; }
+        .loading { font-weight: bold; color: #007bff; margin: 15px 0; display: none; }
+        kbd { background: #eee; border-radius: 3px; border: 1px solid #b4b4b4; box-shadow: 0 1px 1px rgba(0,0,0,.2); color: #333; display: inline-block; font-size: .85em; font-weight: 700; line-height: 1; padding: 2px 4px; white-space: nowrap; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔍 Trích xuất văn bản thông minh</h2>
+    <div class="drop-zone" id="dropZone">
+        Nhấn vào đây để chọn ảnh hoặc <br> 
+        Nhấn <kbd>Ctrl</kbd> + <kbd>V</kbd> để dán ảnh từ bộ nhớ tạm
+    </div>
+    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+    
+    <img id="preview" alt="Preview">
+    
+    <div id="status" class="loading">Sẵn sàng...</div>
+    
+    <textarea id="output" placeholder="Văn bản sẽ hiển thị ở đây..."></textarea>
+    
+    <button class="btn" id="copyBtn">📋 Sao chép kết quả</button>
+</div>
+
+<script>
+    const imageInput = document.getElementById('imageInput');
+    const dropZone = document.getElementById('dropZone');
+    const preview = document.getElementById('preview');
+    const output = document.getElementById('output');
+    const status = document.getElementById('status');
+    const copyBtn = document.getElementById('copyBtn');
+
+    // Hàm xử lý nhận diện chữ
+    async function processImage(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        output.value = "";
+        status.style.display = 'block';
+
+        try {
+            const result = await Tesseract.recognize(
+                file,
+                'vie+eng',
+                { logger: m => {
+                    if (m.status === 'recognizing text') {
+                        status.innerText = `Đang đọc: ${Math.round(m.progress * 100)}%`;
+                    }
+                }}
+            );
+            output.value = result.data.text;
+            status.innerText = "✅ Hoàn thành!";
+        } catch (error) {
+            status.innerText = "❌ Lỗi: Không thể đọc được ảnh.";
+            console.error(error);
+        }
+    }
+
+    // 1. Xử lý khi dán (Ctrl + V)
+    window.addEventListener('paste', (e) => {
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                processImage(blob);
+            }
+        }
+    });
+
+    // 2. Xử lý khi chọn file truyền thống
+    dropZone.addEventListener('click', () => imageInput.click());
+    imageInput.addEventListener('change', (e) => processImage(e.target.files[0]));
+
+    // 3. Xử lý nút Copy
+    copyBtn.addEventListener('click', () => {
+        if (!output.value) return;
+        output.select();
+        document.execCommand('copy');
+        const originalText = copyBtn.innerText;
+        copyBtn.innerText = "✔️ Đã sao chép!";
+        setTimeout(() => copyBtn.innerText = originalText, 2000);
+    });
+
+    // Hiệu ứng kéo thả (Bonus)
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('active');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('active'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('active');
+        processImage(e.dataTransfer.files[0]);
+    });
+</script>
+
+</body>
+</html>
