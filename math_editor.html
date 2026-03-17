@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Editor</title>
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                enableMenu: false
+            }
+        };
+    </script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> -->
+    <script src="tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-color);
+            color: #1e293b;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            max-width: 1000px;
+            margin: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2, h3 { color: #0f172a; margin-top: 0; }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            font-size: 16px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            resize: vertical;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .action-bar { margin: 15px 0; }
+
+        button {
+            padding: 8px 16px;
+            margin: 4px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        button:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        
+        button.primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        
+        button.primary:hover { background: #1d4ed8; }
+
+        .preview {
+            margin-top: 20px;
+            padding: 20px;
+            background: #ffffff;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            min-height: 80px;
+            overflow-x: auto;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            background: white;
+            width: 90%;
+            max-width: 950px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
+
+        .tabs button {
+            border: none;
+            background: transparent;
+            padding: 10px 15px;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .tabs button.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .symbols {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 8px;
+            padding: 10px 0;
+        }
+
+        .symbols button {
+            padding: 10px 5px;
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        #latexInput { height: 80px; margin-top: 15px; }
+
+        .footer-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Trình soạn thảo bài viết Toán học</h2>
+    <p style="color: #64748b; font-size: 0.9em;">Viết văn bản bình thường, dùng nút bên dưới để chèn công thức Toán học.</p>
+    
+    <textarea id="postText" placeholder="Nhập nội dung bài viết tại đây..."></textarea>
+
+    <div class="action-bar">
+        <button class="primary" onclick="openEditor()">Chèn công thức Toán học</button>
+        <button onclick="renderMain()">Xem trước bài viết</button>
+    </div>
+
+    <div id="mainPreview" class="preview"><em>Bản xem trước sẽ hiển thị tại đây...</em></div>
+</div>
+
+<div class="modal" id="editor">
+    <div class="modal-box">
+        <h3>Bộ sưu tập công thức Toán học</h3>
+
+        <div class="tabs">
+            <button class="tab-link active" onclick="showTab(event, 'basic')">Cơ bản</button>
+            <button class="tab-link" onclick="showTab(event, 'calculus')">Giải tích</button>
+            <button class="tab-link" onclick="showTab(event, 'geometry')">Hình học</button>
+            <button class="tab-link" onclick="showTab(event, 'relations')">Quan hệ</button>
+            <button class="tab-link" onclick="showTab(event, 'sets')">Tập hợp</button>
+            <button class="tab-link" onclick="showTab(event, 'logic')">Logic</button>
+            <button class="tab-link" onclick="showTab(event, 'matrix')">Ma trận</button>
+            <button class="tab-link" onclick="showTab(event, 'greek')">Ký tự Hy Lạp</button>
+        </div>
+
+        <div id="basic" class="tab-content active">
+            <div class="symbols">
+                <button onclick="insert('\\frac{a}{b}')">$\frac{a}{b}$</button>
+                <button onclick="insert('^{2}')">$x^2$</button>
+                <button onclick="insert('_{n}')">$x_n$</button>
+                <button onclick="insert('\\sqrt{x}')">$\sqrt{x}$</button>
+                <button onclick="insert('\\sqrt[n]{x}')">$\sqrt[n]{x}$</button>
+                <button onclick="insert('\\pm')">$\pm$</button>
+                <button onclick="insert('\\mp')">$\mp$</button>
+                <button onclick="insert('\\times')">$\times$</button>
+                <button onclick="insert('\\div')">$\div$</button>
+                <button onclick="insert('\\log_{a}b')">$\log$</button>
+                <button onclick="insert('\\ln(x)')">$\ln$</button>
+                <button onclick="insert('|x|')">$|x|$</button>
+            </div>
+        </div>
+
+        <div id="calculus" class="tab-content">
+            <div class="symbols">
+                <button onclick="insert('\\int_{a}^{b}')">$\int$</button>
+                <button onclick="insert('\\oint')">$\oint$</button>
+                <button onclick="insert('\\sum_{i=1}^{n}')">$\sum$</button>
+                <button onclick="insert('\\prod')">$\prod$</button>
+                <button onclick="insert('\\lim_{x \\to \\infty}')">$\lim$</button>
+                <button onclick="insert('\\frac{dy}{dx}')">$\frac{dy}{dx}$</button>
+                <button onclick="insert('\\partial')">$\partial$</button>
+                <button onclick="insert('\\infty')">$\infty$</button>
+                <button onclick="insert('\\nabla')">$\nabla$</button>
+            </div>
+        </div>
+
+        <div id="geometry" class="tab-content">
+            <div class="symbols">
+                <button onclick="insert('\\vec{AB}')">$\vec{v}$</button>
+                <button onclick="insert('\\angle ABC')">$\angle$</button>
+                <button onclick="insert('\\triangle')">$\triangle$</button>
+                <button onclick="insert('\\perp')">$\perp$</button>
+                <button onclick="insert('\\parallel')">$\parallel$</button>
+                <button onclick="insert('\\sin')">sin</button>
+                <button onclick="insert('\\cos')">cos</button>
+                <button onclick="insert('\\tan')">tan</button>
+                <button onclick="insert('\\cot')">cot</button>
+            </div>
+        </div>
+
+        <div id="relations" class="tab-content">
+            <div class="symbols">
+                <button onclick="insert('\\le')">$\le$</button>
+                <button onclick="insert('\\ge')">$\ge$</button>
+                <button onclick="insert('\\neq')">$\neq$</button>
+                <button onclick="insert('\\approx')">$\approx$</button>
+                <button onclick="insert('\\equiv')">$\equiv$</button>
+                <button onclick="insert('\\sim')">$\sim$</button>
+                <button onclick="insert('\\propto')">$\propto$</button>
+            </div>
+        </div>
+
+        <div id="sets" class="tab-content">
+            <div class="symbols">
+                <button onclick="insert('\\in')">$\in$</button>
+                <button onclick="insert('\\notin')">$\notin$</button>
+                <button onclick="insert('\\subset')">$\subset$</button>
+                <button onclick="insert('\\subseteq')">$\subseteq$</button>
+                <button onclick="insert('\\cup')">$\cup$</button>
+                <button onclick="insert('\\cap')">$\cap$</button>
+                <button onclick="insert('\\emptyset')">$\emptyset$</button>
+                <button onclick="insert('\\mathbb{R}')">$\mathbb{R}$</button>
+                <button onclick="insert('\\mathbb{Z}')">$\mathbb{Z}$</button>
+                <button onclick="insert('\\mathbb{N}')">$\mathbb{N}$</button>
+            </div>
+        </div>
+
+        <div id="logic" class="tab-content">
+            <div class="symbols">
+                <button onclick="insert('\\forall')">$\forall$</button>
+                <button onclick="insert('\\exists')">$\exists$</button>
+                <button onclick="insert('\\neg')">$\neg$</button>
+                <button onclick="insert('\\land')">$\land$</button>
+                <button onclick="insert('\\lor')">$\lor$</button>
+                <button onclick="insert('\\Rightarrow')">$\Rightarrow$</button>
+                <button onclick="insert('\\Leftrightarrow')">$\Leftrightarrow$</button>
+                <button onclick="insert('\\therefore')">$\therefore$</button>
+                <button onclick="insert('\\because')">$\because$</button>
+            </div>
+        </div>
+
+        <div id="matrix" class="tab-content">
+            <div class="symbols" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));">
+                <button onclick="insert('\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}')">Ma trận ( )</button>
+                <button onclick="insert('\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}')">Ma trận [ ]</button>
+                <button onclick="insert('\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}')">Định thức | |</button>
+                <button onclick="insert('\\begin{cases} x+y=1 \\\\ x-y=0 \\end{cases}')">Hệ PT { }</button>
+            </div>
+        </div>
+
+        <div id="greek" class="tab-content">
+            <div class="symbols">
+                <button onclick="insert('\\alpha')">$\alpha$</button>
+                <button onclick="insert('\\beta')">$\beta$</button>
+                <button onclick="insert('\\gamma')">$\gamma$</button>
+                <button onclick="insert('\\delta')">$\delta$</button>
+                <button onclick="insert('\\epsilon')">$\epsilon$</button>
+                <button onclick="insert('\\zeta')">$\zeta$</button>
+                <button onclick="insert('\\eta')">$\eta$</button>
+                <button onclick="insert('\\theta')">$\theta$</button>
+                <button onclick="insert('\\lambda')">$\lambda$</button>
+                <button onclick="insert('\\mu')">$\mu$</button>
+                <button onclick="insert('\\pi')">$\pi$</button>
+                <button onclick="insert('\\rho')">$\rho$</button>
+                <button onclick="insert('\\sigma')">$\sigma$</button>
+                <button onclick="insert('\\tau')">$\tau$</button>
+                <button onclick="insert('\\phi')">$\phi$</button>
+                <button onclick="insert('\\omega')">$\omega$</button>
+                <button onclick="insert('\\Delta')">$\Delta$</button>
+                <button onclick="insert('\\Omega')">$\Omega$</button>
+                <button onclick="insert('\\Phi')">$\Phi$</button>
+            </div>
+        </div>
+
+        <textarea id="latexInput" placeholder="Chỉnh sửa mã Toán học tại đây..."></textarea>
+
+        <div id="preview" class="preview"><em>Xem trước công thức...</em></div>
+
+        <div class="footer-buttons">
+            <button onclick="closeEditor()">Hủy</button>
+            <button onclick="copyLatex()">Sao chép mã</button>
+            <button class="primary" onclick="insertPost()">Chèn vào bài viết</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEditor() {
+        document.getElementById("editor").style.display = "flex";
+        preview();
+    }
+
+    function closeEditor() {
+        document.getElementById("editor").style.display = "none";
+    }
+
+    function showTab(evt, tabName) {
+        let contents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < contents.length; i++) {
+            contents[i].classList.remove("active");
+        }
+        
+        let links = document.getElementsByClassName("tab-link");
+        for (let i = 0; i < links.length; i++) {
+            links[i].classList.remove("active");
+        }
+
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    function insert(text) {
+        const area = document.getElementById("latexInput");
+        const start = area.selectionStart;
+        const end = area.selectionEnd;
+        const currentVal = area.value;
+        
+        area.value = currentVal.substring(0, start) + text + currentVal.substring(end);
+        area.focus();
+        area.selectionStart = area.selectionEnd = start + text.length;
+        
+        preview();
+    }
+
+    function preview() {
+        let latex = document.getElementById("latexInput").value;
+        const previewDiv = document.getElementById("preview");
+        
+        if (latex.trim() === "") {
+            previewDiv.innerHTML = "<em>Xem trước công thức...</em>";
+            return;
+        }
+        
+        previewDiv.innerHTML = "\\[ " + latex + " \\]";
+        MathJax.typesetPromise([previewDiv]);
+    }
+
+    document.getElementById("latexInput").addEventListener("input", preview);
+
+    function copyLatex() {
+        let latex = document.getElementById("latexInput").value;
+        navigator.clipboard.writeText(latex).then(() => {
+            alert("Đã sao chép mã LaTeX!");
+        });
+    }
+
+    function insertPost() {
+        let latex = document.getElementById("latexInput").value;
+        if (latex.trim() === "") return;
+        
+        let post = document.getElementById("postText");
+        const start = post.selectionStart;
+        const end = post.selectionEnd;
+        const content = post.value;
+        const formula = " $$" + latex + "$$ ";
+        
+        post.value = content.substring(0, start) + formula + content.substring(end);
+        
+        closeEditor();
+        renderMain();
+    }
+
+    function renderMain() {
+        let text = document.getElementById("postText").value;
+        let mainPreview = document.getElementById("mainPreview");
+        
+        if (text.trim() === "") {
+            mainPreview.innerHTML = "<em>Bản xem trước sẽ hiển thị tại đây...</em>";
+            return;
+        }
+
+        let formattedText = text.replace(/\n/g, '<br>');
+        mainPreview.innerHTML = formattedText;
+        
+        MathJax.typesetPromise([mainPreview]);
+    }
+</script>
+
+</body>
+</html>
