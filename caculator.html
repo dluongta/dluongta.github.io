@@ -217,11 +217,19 @@ const resultEl = document.getElementById('result');
 const miniHistEl = document.getElementById('history-mini');
 const histListEl = document.getElementById('history-list');
 
+// function press(val) {
+//     if (isDone) {
+//         if (!['+', '-', '*', '/'].includes(val)) currentInput = "";
+//         isDone = false;
+//     }
+//     currentInput += val;
+//     render();
+// }
 function press(val) {
     if (isDone) {
-        if (!['+', '-', '*', '/'].includes(val)) currentInput = "";
         isDone = false;
     }
+
     currentInput += val;
     render();
 }
@@ -238,6 +246,7 @@ function clean() {
 
 function undo() {
     currentInput = currentInput.slice(0, -1);
+    isDone = false;
     render();
 }
 
