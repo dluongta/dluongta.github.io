@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Magnifer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f5f5f5;
+      margin: 0;
+    }
+
+    .image-container {
+      position: relative;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .image-container img {
+      width: 100%;
+      display: block;
+      border-radius: 10px;
+    }
+
+    /* Kính lúp */
+    #magnifier {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      border: 3px solid #000;
+      border-radius: 10px;
+      display: none;
+      pointer-events: none;
+
+      background-repeat: no-repeat;
+      background-size: 1200px 800px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="image-container">
+    <img id="mainImage" src="wallpapera.png">
+    <div id="magnifier"></div>
+  </div>
+
+  <script>
+    const img = document.getElementById("mainImage");
+    const magnifier = document.getElementById("magnifier");
+
+    const zoom = 2;
+
+    img.onload = () => {
+      magnifier.style.backgroundImage = `url(${img.src})`;
+      magnifier.style.backgroundSize =
+        img.width * zoom + "px " + img.height * zoom + "px";
+    };
+
+    function moveMagnifier(e) {
+      e.preventDefault();
+
+      const rect = img.getBoundingClientRect();
+
+      let clientX = e.clientX;
+      let clientY = e.clientY;
+
+      if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      }
+
+      let x = clientX - rect.left;
+      let y = clientY - rect.top;
+
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+        magnifier.style.display = "none";
+        return;
+      }
+
+      magnifier.style.display = "block";
+
+      const size = magnifier.offsetWidth / 2;
+
+      magnifier.style.left = (x - size) + "px";
+      magnifier.style.top = (y - size) + "px";
+
+      magnifier.style.backgroundPosition =
+        `-${x * zoom - size}px -${y * zoom - size}px`;
+    }
+
+    img.addEventListener("mousemove", moveMagnifier);
+    img.addEventListener("touchmove", moveMagnifier);
+
+    img.addEventListener("mouseleave", () => {
+      magnifier.style.display = "none";
+    });
+
+    img.addEventListener("touchend", () => {
+      magnifier.style.display = "none";
+    });
+  </script>
+
+</body>
+</html>
+
