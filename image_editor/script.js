@@ -8,11 +8,24 @@ const filterValue = document.querySelector(".filter-info .value");
 const rotateOptions = document.querySelectorAll(".rotate button");
 const resetFilterBtn = document.querySelector(".reset-filter");
 const saveImgBtn = document.querySelector(".save-img");
+const placeholderText = document.querySelector(".placeholder-text");
+
 
 let brightness = 100, saturation = 100, inversion = 0, grayscale = 0; 
 let rotate = 0, flipHorizontal = 1, flipVertical = 1;
 let fileName;
 let fileExtension;
+
+fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if(!file) return;
+
+    previewImg.src = URL.createObjectURL(file);
+    previewImg.hidden = false;
+    placeholderText.style.display = "none";
+
+    document.querySelector(".container").classList.remove("disable");
+});
 
 const applyFilters = () => {
     previewImg.style.transform = `rotate(${rotate}deg) scale(${flipHorizontal}, ${flipVertical})`
