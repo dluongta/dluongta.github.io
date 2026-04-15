@@ -124,7 +124,7 @@
                 <div class="guide-item"><span>☝️ 1 Ngón: Khối Lập Phương</span></div>
                 <div class="guide-item"><span>✌️ 2 Ngón: Trái Tim</span></div>
                 <div class="guide-item"><span>3️⃣ 3 Ngón: Ngôi Sao</span></div>
-                <div class="guide-item"><span>👌 OK: Khối Lăng Trụ</span></div>
+                <!-- <div class="guide-item"><span>👌 OK: Khối Lăng Trụ</span></div> -->
             </div>
         </div>
     </div>
@@ -155,7 +155,7 @@
             heart: [],
             cube: [],
             star: [],
-            prism: [] 
+            // prism: [] 
         };
 
         const rand = (min, max) => Math.random() * (max - min) + min;
@@ -224,41 +224,41 @@
         }
 
         // Triangular Prism
-        for (let i = 0; i < particleCount; i++) {
-            const radius = 20;
-            const height = 30; 
-            const side = Math.floor(rand(0, 5)); 
+        // for (let i = 0; i < particleCount; i++) {
+        //     const radius = 20;
+        //     const height = 30; 
+        //     const side = Math.floor(rand(0, 5)); 
             
-            let x, y, z;
-            const a1 = 0, a2 = 2 * Math.PI / 3, a3 = 4 * Math.PI / 3;
+        //     let x, y, z;
+        //     const a1 = 0, a2 = 2 * Math.PI / 3, a3 = 4 * Math.PI / 3;
             
-            if (side < 3) {
-                const h = rand(-height/2, height/2);
-                const t = Math.random();
-                let ang1, ang2;
-                if(side === 0) { ang1 = a1; ang2 = a2; }
-                else if(side === 1) { ang1 = a2; ang2 = a3; }
-                else { ang1 = a3; ang2 = a1; }
+        //     if (side < 3) {
+        //         const h = rand(-height/2, height/2);
+        //         const t = Math.random();
+        //         let ang1, ang2;
+        //         if(side === 0) { ang1 = a1; ang2 = a2; }
+        //         else if(side === 1) { ang1 = a2; ang2 = a3; }
+        //         else { ang1 = a3; ang2 = a1; }
 
-                const x1 = radius * Math.cos(ang1), z1 = radius * Math.sin(ang1);
-                const x2 = radius * Math.cos(ang2), z2 = radius * Math.sin(ang2);
+        //         const x1 = radius * Math.cos(ang1), z1 = radius * Math.sin(ang1);
+        //         const x2 = radius * Math.cos(ang2), z2 = radius * Math.sin(ang2);
                 
-                x = x1 + (x2 - x1) * t;
-                z = z1 + (z2 - z1) * t;
-                y = h;
-            } else {
-                let r1 = Math.random(), r2 = Math.random();
-                if (r1 + r2 > 1) { r1 = 1 - r1; r2 = 1 - r2; }
-                const x1 = radius * Math.cos(a1), z1 = radius * Math.sin(a1);
-                const x2 = radius * Math.cos(a2), z2 = radius * Math.sin(a2);
-                const x3 = radius * Math.cos(a3), z3 = radius * Math.sin(a3);
+        //         x = x1 + (x2 - x1) * t;
+        //         z = z1 + (z2 - z1) * t;
+        //         y = h;
+        //     } else {
+        //         let r1 = Math.random(), r2 = Math.random();
+        //         if (r1 + r2 > 1) { r1 = 1 - r1; r2 = 1 - r2; }
+        //         const x1 = radius * Math.cos(a1), z1 = radius * Math.sin(a1);
+        //         const x2 = radius * Math.cos(a2), z2 = radius * Math.sin(a2);
+        //         const x3 = radius * Math.cos(a3), z3 = radius * Math.sin(a3);
 
-                x = x1 + (x2 - x1) * r1 + (x3 - x1) * r2;
-                z = z1 + (z2 - z1) * r1 + (z3 - z1) * r2;
-                y = (side === 3) ? height/2 : -height/2;
-            }
-            shapes.prism.push(x, y, z);
-        }
+        //         x = x1 + (x2 - x1) * r1 + (x3 - x1) * r2;
+        //         z = z1 + (z2 - z1) * r1 + (z3 - z1) * r2;
+        //         y = (side === 3) ? height/2 : -height/2;
+        //     }
+        //     shapes.prism.push(x, y, z);
+        // }
 
         geometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
 
@@ -305,8 +305,8 @@
                 let newMode = "expand", newTargetShape = null, detectedIcon = "", detectedName = "", detectedColor = 0x00d2ff;
 
                 // Tính khoảng cách giữa đầu ngón cái (4) và đầu ngón trỏ (8) cho cử chỉ OK
-                const pinchDistance = Math.hypot(lm[8].x - lm[4].x, lm[8].y - lm[4].y);
-                const isOkGesture = pinchDistance < 0.05 && middleUp && ringUp && pinkyUp;
+                // const pinchDistance = Math.hypot(lm[8].x - lm[4].x, lm[8].y - lm[4].y);
+                // const isOkGesture = pinchDistance < 0.05 && middleUp && ringUp && pinkyUp;
 
                 // --- LOGIC NHẬN DIỆN CỬ CHỈ ---
 
@@ -321,10 +321,10 @@
                     detectedIcon = "3️⃣⭐"; detectedName = "Ngôi Sao"; detectedColor = 0xffff00;
                 }
                 // OK Gesture -> LĂNG TRỤ CAM
-                else if (isOkGesture) {
-                    newMode = "morph"; newTargetShape = shapes.prism;
-                    detectedIcon = "👌🔶"; detectedName = "OK! Lăng Trụ"; detectedColor = 0xff6600; 
-                }
+                // else if (isOkGesture) {
+                //     newMode = "morph"; newTargetShape = shapes.prism;
+                //     detectedIcon = "👌🔶"; detectedName = "OK! Lăng Trụ"; detectedColor = 0xff6600; 
+                // }
                 // 1 Ngón trỏ -> Khối lập phương
                 else if (indexUp && !middleUp && !ringUp && !pinkyUp) {
                     newMode = "morph"; newTargetShape = shapes.cube;
