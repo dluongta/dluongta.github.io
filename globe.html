@@ -539,9 +539,11 @@
         const fillLight = new THREE.DirectionalLight(0xffffff, 0.25);
         fillLight.position.set(0, 15, 15);
         scene.add(fillLight);
-
+        // const isMobile = window.innerWidth <= 768;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         // Position camera with a higher angle view
-        camera.position.z = 25;
+        if (isMobile) camera.position.z = 35;
+        else camera.position.z = 25;
         camera.position.y = 10; // Add elevation for top-down angle
         camera.lookAt(0, 0, 0); // Ensure camera is looking at the center of the globe
 

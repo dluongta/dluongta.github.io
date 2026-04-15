@@ -8,37 +8,41 @@
       body {
         margin: 0;
         overflow: hidden;
+        background-color: #000;
       }
       canvas {
         display: block;
       }
     </style>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script> -->
     <script src="three@0.145.0.min.js"></script>
     <script src="GLTFLoader.js"></script>
   </head>
   <body>
     <script>
       var scene = new THREE.Scene();
-      var camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
-      var renderer = new THREE.WebGLRenderer();
+      var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      var renderer = new THREE.WebGLRenderer({ antialias: true });
+      
       renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
       document.body.appendChild(renderer.domElement);
+
+      var ambientLight = new THREE.AmbientLight(0xffffff, 1);
+      scene.add(ambientLight);
+      var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(5, 5, 5);
+      scene.add(directionalLight);
 
       var loader = new THREE.GLTFLoader();
       var neon_sign_board_food;
+
       loader.load(
         "neon_sign_board_food.glb",
         function (gltf) {
           neon_sign_board_food = gltf.scene;
-
-          // Thay đổi kích thước của mô hình
-          neon_sign_board_food.scale.set(0.1, 0.1, 0.1);
-
+          updateScale();
           scene.add(neon_sign_board_food);
         },
         undefined,
@@ -47,51 +51,54 @@
         }
       );
 
-      // Đặt camera
       camera.position.z = 5;
 
-      // Điều khiển chuột để xoay mô hình
-      var mouseX = 0,
-        mouseY = 0;
+      var mouseX = 0, mouseY = 0;
+      var touchX = 0, touchY = 0;
+
       document.addEventListener("mousemove", function (event) {
         mouseX = (event.clientX / window.innerWidth) * 2 - 1;
         mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
       });
 
-      // Chức năng xoay mô hình cho thiết bị di động
-      var touchX = 0,
-        touchY = 0;
-      window.addEventListener("touchmove", function (event) {
-        touchX = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
-        touchY = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
-      });
+      document.addEventListener("touchmove", function (event) {
+        if (event.touches.length > 0) {
+          touchX = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+          touchY = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+        }
+      }, { passive: false });
 
-      // Hàm cập nhật và render cảnh
-      function animate() {
-        requestAnimationFrame(animate);
-
+      function updateScale() {
         if (neon_sign_board_food) {
-          // Điều chỉnh góc xoay của mô hình dựa trên chuột hoặc cảm biến cảm ứng
-          neon_sign_board_food.rotation.x = mouseY * Math.PI;
-          neon_sign_board_food.rotation.y = mouseX * Math.PI;
-
-          // Nếu trên thiết bị di động, sử dụng cảm biến cảm ứng
           if (window.innerWidth <= 768) {
-            neon_sign_board_food.rotation.x = touchY * Math.PI;
-            neon_sign_board_food.rotation.y = touchX * Math.PI;
+            neon_sign_board_food.scale.set(0.08, 0.08, 0.08);
+          } else {
+            neon_sign_board_food.scale.set(0.1, 0.1, 0.1);
           }
         }
+      }
 
+      function animate() {
+        requestAnimationFrame(animate);
+        if (neon_sign_board_food) {
+          if (window.innerWidth <= 768) {
+            neon_sign_board_food.rotation.y += (touchX * Math.PI - neon_sign_board_food.rotation.y) * 0.1;
+            neon_sign_board_food.rotation.x += (touchY * Math.PI - neon_sign_board_food.rotation.x) * 0.1;
+          } else {
+            neon_sign_board_food.rotation.y += (mouseX * Math.PI - neon_sign_board_food.rotation.y) * 0.1;
+            neon_sign_board_food.rotation.x += (mouseY * Math.PI - neon_sign_board_food.rotation.x) * 0.1;
+          }
+        }
         renderer.render(scene, camera);
       }
 
       animate();
 
-      // Điều chỉnh kích thước canvas khi thay đổi kích thước cửa sổ
       window.addEventListener("resize", function () {
-        renderer.setSize(window.innerWidth, window.innerHeight);
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        updateScale();
       });
     </script>
   </body>
