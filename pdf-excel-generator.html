@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF And Excel Generator</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 40px 0;
+    }
+    .form-container {
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 650px;
+      margin: auto;
+      height: auto;
+    }
+    h2 { color: #333; margin-bottom: 20px; text-align: center; }
+    label { display: block; font-size: 14px; margin-bottom: 5px; color: #555; font-weight: 500; }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    button {
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: 0.3s;
+      color: white;
+    }
+    .btn-pdf, .btn-excel { background-color: #27ae60; }
+    .btn-pdf:hover, .btn-excel:hover { background-color: #219150; }
+    .btn-preview { background-color: #34495e; }
+    .btn-preview:hover { background-color: #2c3e50; }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .input-group input { margin-bottom: 0; }
+    .add-btn { background-color: #2ecc71; width: 45px; height: 40px; flex-shrink: 0; }
+    .remove-btn { background-color: #e74c3c; width: 60px; height: 40px; flex-shrink: 0; }
+    #previewSection {
+      margin-top: 30px;
+      border-top: 2px dashed #ddd;
+      padding-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table th, table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    table th { background-color: #f8f9fa; }
+  </style>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.69/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.69/vfs_fonts.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script> -->
+    <script src="pdfmake.min.js"></script>
+  <script src="vfs_fonts.js"></script>
+  <script src="xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Thông Tin Cá Nhân & Đào Tạo</h2>
+    <form id="infoForm">
+      <label>Họ Tên:</label>
+      <input type="text" id="name" placeholder="Nhập họ tên" required />
+
+      <label>Tên Trường:</label>
+      <input type="text" id="school" placeholder="Nhập tên trường" required />
+
+      <label>Tuổi:</label>
+      <input type="number" id="age" placeholder="Nhập số tuổi" required />
+
+      <label>Giới Tính:</label>
+      <select id="gender" required>
+        <option value="" disabled selected>Chọn giới tính</option>
+        <option value="Nam">Nam</option>
+        <option value="Nữ">Nữ</option>
+      </select>
+
+      <label>Chương trình học:</label>
+      <div id="subjectContainer">
+        <div class="input-group">
+          <input type="text" class="time" placeholder="Thời gian" required />
+          <input type="text" class="subject" placeholder="Tên môn học" required />
+          <button type="button" class="add-btn" onclick="addSubject()">+</button>
+        </div>
+      </div>
+
+      <div class="action-grid">
+        <button type="button" class="btn-preview" onclick="handlePDF('preview')">Xem trước PDF</button>
+        <button type="submit" class="btn-pdf">Tải PDF (.pdf)</button>
+        <button type="button" class="btn-preview" onclick="handleExcel('preview')">Xem trước Excel</button>
+        <button type="button" class="btn-excel" onclick="handleExcel('download')">Tải Excel (.xlsx)</button>
+      </div>
+    </form>
+
+    <div id="previewSection" style="display:none;">
+      <h3 style="text-align:center;">Bản xem trước dữ liệu Excel</h3>
+      <div id="excelPreview"></div>
+    </div>
+  </div>
+
+  <script>
+    function addSubject() {
+      const container = document.getElementById("subjectContainer");
+      const div = document.createElement("div");
+      div.classList.add("input-group");
+      div.innerHTML = `
+        <input type="text" class="time" placeholder="Thời gian" required />
+        <input type="text" class="subject" placeholder="Tên môn học" required />
+        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">Xóa</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function handlePDF(mode) {
+      const name = document.getElementById("name").value;
+      const school = document.getElementById("school").value;
+      const age = document.getElementById("age").value;
+      const gender = document.getElementById("gender").value;
+      const subjects = [];
+      const subInputs = document.querySelectorAll(".subject");
+      const timeInputs = document.querySelectorAll(".time");
+      for (let i = 0; i < subInputs.length; i++) {
+        if(subInputs[i].value) {
+          subjects.push({ time: timeInputs[i].value, name: subInputs[i].value });
+        }
+      }
+      const docDefinition = {
+        content: [
+          { text: "THÔNG TIN ĐÀO TẠO", style: 'header' },
+          {
+            table: {
+              widths: ['*', '*'],
+              body: [
+                [{text: "Họ tên: " + name}, {text: "Trường: " + school}],
+                [{text: "Tuổi: " + age}, {text: "Giới tính: " + gender}]
+              ]
+            },
+            layout: 'noBorders', margin: [0, 0, 0, 20]
+          },
+          { text: "DANH SÁCH MÔN HỌC", style: 'subheader' },
+          {
+            table: {
+              widths: ['30%', '70%'],
+              body: [
+                [{text: 'Thời gian', bold: true}, {text: 'Môn học', bold: true}],
+                ...subjects.map(s => [s.time, s.name])
+              ]
+            }
+          }
+        ],
+        styles: {
+          header: { fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 20] },
+          subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 10] }
+        },
+        defaultStyle: { font: "Roboto" }
+      };
+      if (mode === 'preview') {
+        pdfMake.createPdf(docDefinition).open();
+      } else {
+        pdfMake.createPdf(docDefinition).download("ThongTinDaoTao.pdf");
+      }
+    }
+
+    function handleExcel(mode) {
+      const subInputs = document.querySelectorAll(".subject");
+      const timeInputs = document.querySelectorAll(".time");
+      const data = [["Thời gian", "Tên môn học"]];
+      let html = "<table><tr><th>Thời gian</th><th>Tên môn học</th></tr>";
+      for (let i = 0; i < subInputs.length; i++) {
+        const t = timeInputs[i].value;
+        const s = subInputs[i].value;
+        data.push([t, s]);
+        html += `<tr><td>${t}</td><td>${s}</td></tr>`;
+      }
+      html += "</table>";
+      if (mode === 'preview') {
+        document.getElementById("previewSection").style.display = "block";
+        document.getElementById("excelPreview").innerHTML = html;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      } else {
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "DaoTao");
+        XLSX.writeFile(wb, "DanhSachMonHoc.xlsx");
+      }
+    }
+
+    document.getElementById("infoForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      handlePDF('download');
+    });
+  </script>
+</body>
+</html>
