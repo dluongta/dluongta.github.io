@@ -281,7 +281,6 @@
         const particles = new THREE.Points(geometry, material);
         scene.add(particles);
 
-        // --- 3. LOGIC ---
         let currentMode = "expand", targetShapeArray = null;
         let targetExpansion = 1.0, currentExpansion = 1.0, morphSpeed = 0.2;
 
@@ -304,11 +303,9 @@
 
                 let newMode = "expand", newTargetShape = null, detectedIcon = "", detectedName = "", detectedColor = 0x00d2ff;
 
-                // Tính khoảng cách giữa đầu ngón cái (4) và đầu ngón trỏ (8) cho cử chỉ OK
                 // const pinchDistance = Math.hypot(lm[8].x - lm[4].x, lm[8].y - lm[4].y);
                 // const isOkGesture = pinchDistance < 0.05 && middleUp && ringUp && pinkyUp;
 
-                // --- LOGIC NHẬN DIỆN CỬ CHỈ ---
 
                 // 2 Ngón -> Trái tim
                 if (indexUp && middleUp && !ringUp && !pinkyUp) {
@@ -331,7 +328,6 @@
                     detectedIcon = "☝️🟪"; detectedName = "Khối Lập Phương"; detectedColor = 0xbf00ff;
                 }
 
-                // Xử lý chế độ
                 if (newMode === "expand") {
                     currentMode = "expand"; targetShapeArray = null;
                     if (fingersUpCount === 5) {
