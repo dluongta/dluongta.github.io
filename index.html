@@ -19,8 +19,8 @@
 
   <div class="topnav">
     <a href="index.html">Home</a>
-    <a href="#">About</a>
-    <a href="#">Contact</a>
+    <!-- <a href="#">About</a>
+    <a href="#">Contact</a> -->
     <a href="caculator.html">Caculator</a>
     <a href="digital-calendar.html">Digital Calendar</a>
     <a href="3d-model.html">3D Model</a>
@@ -63,7 +63,7 @@
     <a href="https://github.com/luen2003/NoteApp/releases/download/v1.0.0/app-release.apk">Note App</a>
   </p>
 
-  <footer class="footer">
+  <!-- <footer class="footer">
     <div class="container">
       <div class="row">
         <div class="col-md-12">
@@ -94,5 +94,31 @@
         </div>
       </div>
     </div>
-  </footer>
+  </footer> -->
+  <footer class="footer py-4 bg-light text-dark mt-5">
+  <div class="container text-center">
+    
+    <!-- Brand -->
+    <h5>
+      <a href="https://github.com/dluongta" class="footer-brand text-dark text-decoration-none">
+        <i class="fa fa-user"></i> DLUONGTA
+      </a>
+    </h5>
+
+    <!-- Info -->
+    <p class="mb-1">
+      Web Developer | Email: dluongta@gmail.com
+    </p>
+
+    <!-- Copyright -->
+    <p class="mb-0">
+      &copy; <span id="year"></span> DLUONGTA. All rights reserved.
+    </p>
+
+  </div>
+</footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
 </body>
