@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Video Player</title>
+  <style>
+    :root {
+      --primary-color: #ff0000;
+      --bg-color: #000;
+      --text-color: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #121212;
+      font-family: Arial, sans-serif;
+    }
+
+    .video-player-container {
+      width: 100%;
+      max-width: 800px;
+      position: relative;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      background-color: var(--bg-color);
+      overflow: hidden;
+      border-radius: 8px;
+      display: flex;
+      cursor: pointer;
+    }
+
+    .video {
+      width: 100%;
+      display: block;
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      pointer-events: none;
+      display: none;
+    }
+    .loading-spinner.active {
+      display: block;
+    }
+
+    @keyframes spin {
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Controls Overlay */
+    .controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+      padding: 10px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+    }
+
+    .controls.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Progress Bar */
+    .progress-wrapper {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .progress-slider, .volume-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
+      outline: none;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .progress-slider::-webkit-slider-thumb, .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .progress-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.3);
+    }
+
+    /* Buttons & Layout */
+    .buttons-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .left-controls, .right-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-btn {
+      background: none;
+      border: none;
+      color: var(--text-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      transition: color 0.2s;
+    }
+
+    .control-btn:hover {
+      color: var(--primary-color);
+    }
+
+    .control-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    .control-btn.active {
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+
+    /* Volume */
+    .volume-container {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .volume-slider {
+      width: 0;
+      opacity: 0;
+      transition: width 0.3s, opacity 0.3s;
+    }
+    .volume-container:hover .volume-slider {
+      width: 80px;
+      opacity: 1;
+    }
+
+    /* Time Display */
+    .time-display {
+      color: var(--text-color);
+      font-size: 13px;
+      user-select: none;
+    }
+
+    /* Settings Menu */
+    .settings-menu {
+      position: relative;
+    }
+
+    .settings-content {
+      position: absolute;
+      bottom: 40px;
+      right: 0;
+      background: rgba(28, 28, 28, 0.9);
+      border-radius: 4px;
+      padding: 5px 0;
+      min-width: 100px;
+      display: none;
+      flex-direction: column;
+    }
+
+    .settings-content.show {
+      display: flex;
+    }
+
+    .settings-item {
+      padding: 8px 15px;
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .settings-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .settings-item.active {
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="video-player-container">
+    <div class="video-container" id="videoContainer">
+      <video 
+        id="video" 
+        class="video" 
+        playsinline 
+        autoplay 
+        muted 
+        loop 
+        preload="auto" 
+        src="ulmind_logo.mp4">
+        <track kind="captions" srclang="en" label="English" src="caption_logo.vtt">
+      </video>
+      
+      <div class="loading-spinner" id="loadingSpinner"></div>
+      
+      <div class="controls visible" id="controls">
+        <div class="progress-wrapper">
+          <input 
+            type="range" 
+            id="progressSlider" 
+            class="progress-slider" 
+            min="0" 
+            max="100" 
+            step="0.01" 
+            value="0"
+          />
+        </div>
+
+        <div class="buttons-container">
+          <div class="left-controls">
+            <button class="control-btn" id="playPauseBtn">
+              <svg id="playIcon" style="display: none;" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="pauseIcon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            
+            <div class="volume-container">
+              <button class="control-btn" id="muteBtn">
+                <svg id="volUpIcon" style="display: none;" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                <svg id="volOffIcon" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+              </button>
+              <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0"/>
+            </div>
+            
+            <span class="time-display" id="timeDisplay">00:00:00 / 00:00:00</span>
+          </div>
+
+          <div class="right-controls">
+            <button class="control-btn" id="ccBtn" style="font-size: 14px; font-weight: bold;">CC</button>
+            
+            <div class="settings-menu">
+              <button class="control-btn" id="settingsBtn">
+                <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+              </button>
+              <div class="settings-content" id="settingsContent">
+                </div>
+            </div>
+            
+            <button class="control-btn" id="fullscreenBtn">
+              <svg id="fsEnterIcon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+              <svg id="fsExitIcon" style="display: none;" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // DOM Elements
+      const videoContainer = document.getElementById('videoContainer');
+      const video = document.getElementById('video');
+      const controls = document.getElementById('controls');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      const playIcon = document.getElementById('playIcon');
+      const pauseIcon = document.getElementById('pauseIcon');
+      
+      const muteBtn = document.getElementById('muteBtn');
+      const volUpIcon = document.getElementById('volUpIcon');
+      const volOffIcon = document.getElementById('volOffIcon');
+      const volumeSlider = document.getElementById('volumeSlider');
+      
+      const progressSlider = document.getElementById('progressSlider');
+      const timeDisplay = document.getElementById('timeDisplay');
+      
+      const ccBtn = document.getElementById('ccBtn');
+      const settingsBtn = document.getElementById('settingsBtn');
+      const settingsContent = document.getElementById('settingsContent');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+      const fsEnterIcon = document.getElementById('fsEnterIcon');
+      const fsExitIcon = document.getElementById('fsExitIcon');
+
+      // States
+      let controlsTimeout;
+      let hasStarted = false;
+      let duration = 0;
+
+      // --- Helper Functions ---
+      const formatTime = (seconds) => {
+        if (isNaN(seconds)) return '00:00:00';
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      };
+
+      const updateSliderBackground = (slider, percent) => {
+        slider.style.background = `linear-gradient(to right, var(--primary-color) ${percent}%, rgba(255, 255, 255, 0.3) ${percent}%)`;
+      };
+
+      const handleInteraction = () => {
+        controls.classList.add('visible');
+        if (controlsTimeout) clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => {
+          if (!video.paused) {
+            controls.classList.remove('visible');
+            settingsContent.classList.remove('show');
+          }
+        }, 5000);
+      };
+
+      // --- Video Events ---
+      video.addEventListener('loadedmetadata', () => {
+        duration = video.duration;
+        progressSlider.max = duration;
+        timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(duration)}`;
+        video.volume = 1; 
+        video.muted = true; // Theo logic React cũ
+        volumeSlider.value = 0;
+        updateSliderBackground(volumeSlider, 0);
+      });
+
+      video.addEventListener('timeupdate', () => {
+        const currentTime = video.currentTime;
+        const displayTime = duration - currentTime < 0.1 ? duration : currentTime;
+        
+        progressSlider.value = displayTime;
+        let progressPercent = (displayTime / duration) * 100 || 0;
+        if (progressPercent > 99.6) progressPercent = 100;
+        updateSliderBackground(progressSlider, progressPercent);
+        
+        timeDisplay.textContent = `${formatTime(displayTime)} / ${formatTime(duration)}`;
+      });
+
+      video.addEventListener('playing', () => {
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+        loadingSpinner.classList.remove('active');
+        hasStarted = true;
+      });
+
+      video.addEventListener('pause', () => {
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+        controls.classList.add('visible');
+      });
+
+      video.addEventListener('ended', () => {
+        controls.classList.add('visible');
+      });
+
+      // Loading states
+      const onWaiting = () => { if (hasStarted && video.readyState < 3) loadingSpinner.classList.add('active'); };
+      const onCanPlay = () => { if (hasStarted) loadingSpinner.classList.remove('active'); };
+      const onSeeking = () => { if (hasStarted) loadingSpinner.classList.add('active'); };
+      const onSeeked = () => { if (hasStarted) loadingSpinner.classList.remove('active'); };
+
+      video.addEventListener('waiting', onWaiting);
+      video.addEventListener('canplay', onCanPlay);
+      video.addEventListener('seeking', onSeeking);
+      video.addEventListener('seeked', onSeeked);
+
+      // --- Interaction Events ---
+      videoContainer.addEventListener('mousemove', handleInteraction);
+      controls.addEventListener('click', (e) => e.stopPropagation());
+
+      const togglePlay = () => {
+        if (video.paused) video.play();
+        else video.pause();
+        handleInteraction();
+      };
+      
+      video.addEventListener('click', togglePlay);
+      playPauseBtn.addEventListener('click', togglePlay);
+
+      // Volume & Mute
+      muteBtn.addEventListener('click', () => {
+        video.muted = !video.muted;
+        if (video.muted) {
+          volumeSlider.value = 0;
+          volOffIcon.style.display = 'block';
+          volUpIcon.style.display = 'none';
+        } else {
+          // Khôi phục volume nếu bấm unmute
+          if (video.volume === 0) video.volume = 1;
+          volumeSlider.value = video.volume;
+          volOffIcon.style.display = 'none';
+          volUpIcon.style.display = 'block';
+        }
+        updateSliderBackground(volumeSlider, volumeSlider.value * 100);
+        handleInteraction();
+      });
+
+      volumeSlider.addEventListener('input', (e) => {
+        const vol = parseFloat(e.target.value);
+        video.volume = vol;
+        video.muted = vol === 0;
+        
+        volOffIcon.style.display = vol === 0 ? 'block' : 'none';
+        volUpIcon.style.display = vol === 0 ? 'none' : 'block';
+        
+        updateSliderBackground(volumeSlider, vol * 100);
+        handleInteraction();
+      });
+
+      // Progress Slider
+      progressSlider.addEventListener('input', (e) => {
+        video.currentTime = parseFloat(e.target.value);
+        handleInteraction();
+      });
+
+      // Fullscreen
+      fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          videoContainer.requestFullscreen();
+          fsEnterIcon.style.display = 'none';
+          fsExitIcon.style.display = 'block';
+        } else {
+          document.exitFullscreen();
+          fsEnterIcon.style.display = 'block';
+          fsExitIcon.style.display = 'none';
+        }
+        handleInteraction();
+      });
+
+      // Captions (CC)
+      ccBtn.addEventListener('click', () => {
+        const track = video.textTracks[0];
+        if (track) {
+          track.mode = track.mode === 'showing' ? 'hidden' : 'showing';
+          if (track.mode === 'showing') {
+            ccBtn.classList.add('active');
+          } else {
+            ccBtn.classList.remove('active');
+          }
+        }
+        handleInteraction();
+      });
+
+      // Settings (Playback Rate)
+      const speeds = [0.0625, 0.125, 0.25, 0.5, 1, 1.5, 2, 4, 8, 16];
+      let currentSpeed = 1;
+
+      speeds.forEach(speed => {
+        const div = document.createElement('div');
+        div.className = `settings-item ${speed === currentSpeed ? 'active' : ''}`;
+        div.textContent = speed === 1 ? 'Normal' : `${speed}x`;
+        div.addEventListener('click', () => {
+          video.playbackRate = speed;
+          currentSpeed = speed;
+          
+          document.querySelectorAll('.settings-item').forEach(el => el.classList.remove('active'));
+          div.classList.add('active');
+          settingsContent.classList.remove('show');
+          handleInteraction();
+        });
+        settingsContent.appendChild(div);
+      });
+
+      settingsBtn.addEventListener('click', () => {
+        settingsContent.classList.toggle('show');
+        handleInteraction();
+      });
+
+      // Close settings when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!settingsBtn.contains(e.target) && !settingsContent.contains(e.target)) {
+          settingsContent.classList.remove('show');
+        }
+      });
+
+      // Trigger initial hidden interaction
+      handleInteraction();
+    });
+  </script>
+</body>
+</html>
