@@ -54,7 +54,7 @@
         const armAngle = (Math.PI * 2 / numArms) * armIndex;
         const angle = armAngle + normalizedR * armSpin;
         
-        const scatterDist = (Math.random() - 0.5) * (10 + normalizedR * 50); 
+        const scatterDist = (Math.random() - 0.5) * (10 + normalizedR * 130); 
         const randomAngle = Math.random() * Math.PI * 2;
 
         let x = Math.cos(angle) * r + Math.cos(randomAngle) * scatterDist;
