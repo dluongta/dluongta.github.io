@@ -216,22 +216,50 @@
         window.addEventListener("touchend", () => { dragging = false; initialPinchDist = null; });
 
         /* ===== 6. RENDERING ===== */
+        // function drawDynamicAura(time) {
+        //     ctx.save();
+        //     ctx.globalCompositeOperation = "screen";
+        //     const lights = [
+        //         { color: "rgba(0, 150, 255, 0.35)", angle: time * 0.5 },
+        //         { color: "rgba(180, 0, 255, 0.35)", angle: time * 0.4 + 2 },
+        //         { color: "rgba(255, 100, 0, 0.25)", angle: time * 0.3 + 4 }
+        //     ];
+        //     lights.forEach(light => {
+        //         const orbit = w * 0.15;
+        //         const lx = cx + Math.cos(light.angle) * orbit;
+        //         const ly = cy + Math.sin(light.angle) * orbit;
+        //         const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, w * 0.7);
+        //         g.addColorStop(0, light.color); g.addColorStop(1, "transparent");
+        //         ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+        //     });
+        //     ctx.restore();
+        // }
         function drawDynamicAura(time) {
+
+            // Vị trí 3D của ánh sáng
+            const light3D = rotate3D(0, 0, 0);
+
+            // Project ra màn hình
+            const p = project(light3D);
+
+            // Kích thước glow
+            const radius = 500 * p.s;
+
+            // Gradient glow
+            const g = ctx.createRadialGradient(
+                p.x, p.y, 0,
+                p.x, p.y, radius
+            );
+
+            g.addColorStop(0, "rgba(255,255,255,0.35)");
+            g.addColorStop(0.2, "rgba(0,200,255,0.18)");
+            g.addColorStop(0.5, "rgba(255,120,0,0.08)");
+            g.addColorStop(1, "rgba(0,0,0,0)");
+
             ctx.save();
             ctx.globalCompositeOperation = "screen";
-            const lights = [
-                { color: "rgba(0, 150, 255, 0.35)", angle: time * 0.5 },
-                { color: "rgba(180, 0, 255, 0.35)", angle: time * 0.4 + 2 },
-                { color: "rgba(255, 100, 0, 0.25)", angle: time * 0.3 + 4 }
-            ];
-            lights.forEach(light => {
-                const orbit = w * 0.15;
-                const lx = cx + Math.cos(light.angle) * orbit;
-                const ly = cy + Math.sin(light.angle) * orbit;
-                const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, w * 0.7);
-                g.addColorStop(0, light.color); g.addColorStop(1, "transparent");
-                ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-            });
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, w, h);
             ctx.restore();
         }
 
