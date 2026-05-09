@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Spiral Galaxy</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+            touch-action: none;
+            cursor: grab;
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="galaxyCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('galaxyCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let width, height, centerX, centerY;
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        centerX = width / 2;
+        centerY = height / 2;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const numStars = 12000;
+    const stars = [];
+    const focalLength = 500;
+    const galaxyRadius = 800;
+    const numArms = 3;
+    const armSpin = 4.5;
+
+    // Khởi tạo các ngôi sao
+    for (let i = 0; i < numStars; i++) {
+        const normalizedR = Math.pow(Math.random(), 1.5);
+        const r = normalizedR * galaxyRadius;
+        const armIndex = Math.floor(Math.random() * numArms);
+        const armAngle = (Math.PI * 2 / numArms) * armIndex;
+        const angle = armAngle + normalizedR * armSpin;
+        
+        const scatterDist = (Math.random() - 0.5) * (40 + normalizedR * 250);
+        const randomAngle = Math.random() * Math.PI * 2;
+
+        let x = Math.cos(angle) * r + Math.cos(randomAngle) * scatterDist;
+        let y = Math.sin(angle) * r + Math.sin(randomAngle) * scatterDist;
+        
+        const bulge = Math.max(0, 120 - r);
+        let z = (Math.random() - 0.5) * (30 + bulge);
+
+        let color;
+        if (r < galaxyRadius * 0.15) {
+            color = `hsl(${30 + Math.random() * 30}, 100%, ${70 + Math.random() * 30}%)`;
+        } else {
+            color = `hsl(${200 + Math.random() * 90}, 80%, ${50 + Math.random() * 40}%)`;
+        }
+
+        const size = Math.random() * 1.5 + 0.2;
+
+        stars.push({
+            originalX: x, originalY: y, originalZ: z,
+            color: color, size: size
+        });
+    }
+
+    
+    let rotationX = -1.22; 
+    let rotationY = 0;             
+    let rotationZ = 0;             
+
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    const sensitivity = 0.005;
+
+    canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+    
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - previousMousePosition.x;
+        const deltaY = e.clientY - previousMousePosition.y;
+        
+        rotationY += deltaX * sensitivity;
+        rotationX += deltaY * sensitivity;
+        
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mouseup', () => isDragging = false);
+
+    // --- SỰ KIỆN CẢM ỨNG (MOBILE) ---
+    canvas.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const deltaX = e.touches[0].clientX - previousMousePosition.x;
+        const deltaY = e.touches[0].clientY - previousMousePosition.y;
+        
+        rotationY += deltaX * sensitivity;
+        rotationX += deltaY * sensitivity;
+        
+        previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => isDragging = false);
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, width, height);
+
+        rotationZ += 0.0015; 
+
+        const cosZ = Math.cos(rotationZ);
+        const sinZ = Math.sin(rotationZ);
+        const cosX = Math.cos(rotationX);
+        const sinX = Math.sin(rotationX);
+        const cosY = Math.cos(rotationY);
+        const sinY = Math.sin(rotationY);
+
+        stars.forEach(star => {
+            let x1 = star.originalX * cosZ - star.originalY * sinZ;
+            let y1 = star.originalX * sinZ + star.originalY * cosZ;
+            let z1 = star.originalZ;
+
+            let x2 = x1;
+            let y2 = y1 * cosX - z1 * sinX;
+            let z2 = y1 * sinX + z1 * cosX;
+
+            let x3 = x2 * cosY + z2 * sinY;
+            let y3 = y2;
+            let z3 = -x2 * sinY + z2 * cosY;
+
+            z3 += 800; 
+
+            if (z3 > 0) {
+                const scale = focalLength / z3;
+                const screenX = centerX + x3 * scale;
+                const screenY = centerY + y3 * scale;
+
+                const drawSize = star.size * scale;
+
+                ctx.fillStyle = star.color;
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, Math.max(0, drawSize), 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 150);
+        coreGradient.addColorStop(0, 'rgba(255, 230, 200, 0.08)');
+        coreGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = coreGradient;
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>
