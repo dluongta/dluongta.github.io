@@ -234,102 +234,124 @@
         //     });
         //     ctx.restore();
         // }
-        function drawDynamicAura(time) {
+        // function drawDynamicAura(time) {
 
-            // Vị trí 3D của ánh sáng
-            const light3D = rotate3D(0, 0, 0);
+        //     // Vị trí 3D của ánh sáng
+        //     const light3D = rotate3D(0, 0, 0);
 
-            // Project ra màn hình
-            const p = project(light3D);
+        //     // Project ra màn hình
+        //     const p = project(light3D);
 
-            // Kích thước glow
-            const radius = 500 * p.s;
+        //     // Kích thước glow
+        //     const radius = 500 * p.s;
 
-            // Gradient glow
-            const g = ctx.createRadialGradient(
-                p.x, p.y, 0,
-                p.x, p.y, radius
-            );
+        //     // Gradient glow
+        //     const g = ctx.createRadialGradient(
+        //         p.x, p.y, 0,
+        //         p.x, p.y, radius
+        //     );
 
-            g.addColorStop(0, "rgba(255,255,255,0.35)");
-            g.addColorStop(0.2, "rgba(0,200,255,0.18)");
-            g.addColorStop(0.5, "rgba(255,120,0,0.08)");
-            g.addColorStop(1, "rgba(0,0,0,0)");
+        //     g.addColorStop(0, "rgba(255,255,255,0.35)");
+        //     g.addColorStop(0.2, "rgba(0,200,255,0.18)");
+        //     g.addColorStop(0.5, "rgba(255,120,0,0.08)");
+        //     g.addColorStop(1, "rgba(0,0,0,0)");
 
-            ctx.save();
-            ctx.globalCompositeOperation = "screen";
-            ctx.fillStyle = g;
-            ctx.fillRect(0, 0, w, h);
-            ctx.restore();
+        //     ctx.save();
+        //     ctx.globalCompositeOperation = "screen";
+        //     ctx.fillStyle = g;
+        //     ctx.fillRect(0, 0, w, h);
+        //     ctx.restore();
+        // }
+        // function drawDynamicAura(time, renderList) {
+        //     const auraConfigs = [
+        //         // 1. Màu CAM: Nằm ngay giữa mặt trời (x=0, y=0)
+        //         { color: "255, 102, 0", x: 0, y: 0, z: 0, speed: 0.3, radius: 1800 },
+
+        //         // 2. Màu XANH: Nằm bên TRÁI (x âm) và ở DƯỚI (y dương)
+        //         { color: "0, 150, 255", x: -800, y: 600, z: -200, speed: 0.5, radius: 2200 },
+
+        //         // 3. Màu TÍM: Nằm bên PHẢI (x dương) và ở DƯỚI (y dương)
+        //         { color: "180, 0, 255", x: 800, y: 600, z: -200, speed: 0.4, radius: 2200 }
+        //     ];
+
+        //     auraConfigs.forEach(cfg => {
+        //         // Tạo chuyển động lượn lờ nhẹ nhàng để vầng sáng trông sinh động hơn
+        //         // Math.sin và Math.cos giúp các vầng sáng "thở" (phình ra thu vào hoặc di chuyển nhẹ)
+        //         let tx = cfg.x + Math.sin(time * cfg.speed) * 100;
+        //         let ty = cfg.y + Math.cos(time * cfg.speed * 0.8) * 100;
+        //         let tz = cfg.z + Math.sin(time * cfg.speed * 1.2) * 50;
+
+        //         // Xoay tọa độ theo góc quay của Camera (rotX, rotY)
+        //         let pos = rotate3D(tx, ty, tz);
+
+        //         renderList.push({
+        //             type: 'aura',
+        //             color: cfg.color,
+        //             x: pos.x,
+        //             y: pos.y,
+        //             z: pos.z,
+        //             radius: cfg.radius 
+        //         });
+        //     });
+        // }
+        function drawDynamicAura(time, renderList) {
+            const auraConfigs = [
+                // 1. Màu CAM: Ôm sát và nằm GIỮA mặt trời
+                { color: "255, 102, 0", x: 0, y: 0, z: 0, speed: 0.3, radius: 2500 },
+
+                // 2. Màu XANH DƯƠNG: Nằm bên TRÁI (x: -900) và DƯỚI (y: 800)
+                { color: "0, 150, 255", x: -900, y: 800, z: -300, speed: 0.5, radius: 2500 },
+
+                // 3. Màu TÍM: Nằm bên PHẢI (x: 900) và DƯỚI (y: 800)
+                { color: "180, 0, 255", x: 900, y: 800, z: -300, speed: 0.4, radius: 2500 }
+            ];
+
+            auraConfigs.forEach(cfg => {
+                // Tạo hiệu ứng lượn lờ (float) để vầng sáng không bị đơ
+                let tx = cfg.x + Math.sin(time * cfg.speed) * 150;
+                let ty = cfg.y + Math.cos(time * cfg.speed * 0.7) * 150;
+                let tz = cfg.z + Math.sin(time * cfg.speed * 1.1) * 100;
+
+                // Xoay theo góc nhìn của người dùng (Camera Rotation)
+                let pos = rotate3D(tx, ty, tz);
+
+                renderList.push({
+                    type: 'aura',
+                    color: cfg.color,
+                    x: pos.x,
+                    y: pos.y,
+                    z: pos.z,
+                    radius: cfg.radius
+                });
+            });
         }
-
         function animate() {
             let time = performance.now() * 0.0004;
             ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
 
-            drawDynamicAura(time);
-
-            // Vẽ sao băng ở lớp nền
             updateShootingStar();
             drawShootingStar();
 
             const renderList = [];
+
+            drawDynamicAura(time, renderList);
+
             renderList.push({ type: 'planet', ...rotate3D(0, 0, 0) });
 
-            // for (let i = 0; i < TEXT_STR.length; i++) {
-            //     const charAngle = time * 1.5 + (i * (Math.PI * 2 / TEXT_STR.length) * 0.5);
-            //     renderList.push({ type: 'text', char: TEXT_STR[i], ...rotate3D(Math.cos(charAngle) * ORBIT_RADIUS, Math.sin(charAngle) * ORBIT_TILT * 0.2, Math.sin(charAngle) * ORBIT_RADIUS) });
-            // }
-            // --- THAY THẾ ĐOẠN VẼ TEXT CŨ BẰNG ĐOẠN NÀY ---
-            // RINGS.forEach((ring, index) => {
-            //     // Tính số lượng chữ lặp lại để kín vòng tròn dựa trên bán kính
-            //     const repeatCount = Math.floor(ring.radius / 15); 
-            //     const fullText = ring.text.repeat(repeatCount);
-
-            //     for (let i = 0; i < fullText.length; i++) {
-            //         // Góc của từng ký tự trong vòng tròn
-            //         const charAngle = (time * ring.speed) + (i * (Math.PI * 2 / fullText.length));
-
-            //         // Tính toán vị trí 3D
-            //         let x = Math.cos(charAngle) * ring.radius;
-            //         let z = Math.sin(charAngle) * ring.radius;
-            //         let y = Math.sin(charAngle) * ring.radius * ring.tilt; // Tạo độ chéo
-
-            //         // Đưa vào danh sách render với thuộc tính màu riêng
-            //         renderList.push({ 
-            //             type: 'text', 
-            //             char: fullText[i], 
-            //             color: ring.color,
-            //             ...rotate3D(x, y, z) 
-            //         });
-            //     }
-            // });
             RINGS.forEach((ring) => {
                 const repeatCount = Math.floor(ring.radius / 15);
                 const fullText = ring.text.repeat(repeatCount);
-
                 for (let i = 0; i < fullText.length; i++) {
                     const charAngle = (time * ring.speed) + (i * (Math.PI * 2 / fullText.length));
-
                     let x, y, z;
-
                     if (ring.tilt === "vertical") {
-                        // Vòng thẳng đứng (Xoay quanh trục X)
-                        x = 0;
-                        y = Math.cos(charAngle) * ring.radius;
-                        z = Math.sin(charAngle) * ring.radius;
+                        x = 0; y = Math.cos(charAngle) * ring.radius; z = Math.sin(charAngle) * ring.radius;
                     } else {
-                        // Các vòng chéo đối xứng
-                        x = Math.cos(charAngle) * ring.radius;
-                        z = Math.sin(charAngle) * ring.radius;
+                        x = Math.cos(charAngle) * ring.radius; z = Math.sin(charAngle) * ring.radius;
                         y = Math.cos(charAngle) * ring.radius * ring.tilt;
                     }
-
                     renderList.push({
-                        type: 'text',
-                        char: fullText[i],
-                        color: ring.color,
-                        ...rotate3D(x, y, z)
+                        type: 'text', char: fullText[i], color: ring.color, ...rotate3D(x, y, z)
                     });
                 }
             });
@@ -346,6 +368,7 @@
 
             bgStars.forEach(s => renderList.push({ type: 'star', ...rotate3D(s.x, s.y, s.z), size: s.size, color: s.color }));
 
+            // 5. SẮP XẾP VÀ VẼ
             renderList.sort((a, b) => b.z - a.z);
 
             renderList.forEach(item => {
@@ -353,20 +376,10 @@
                 if (p.s <= 0) return;
 
                 if (item.type === 'star') {
-                    // ctx.fillStyle = item.color;
-                    // ctx.globalAlpha = Math.min(1, Math.max(0.1, (item.z + 3000) / 5000));
-                    // ctx.beginPath(); ctx.arc(p.x, p.y, item.size * p.s, 0, Math.PI * 2); ctx.fill();
-                    // ctx.globalAlpha = 1;
                     ctx.fillStyle = item.color;
-                    // Giữ hiệu ứng mờ dần theo độ sâu z
                     ctx.globalAlpha = Math.min(1, Math.max(0.1, (item.z + 3000) / 5000));
-
-                    // --- CHỈNH SỬA TẠI ĐÂY ---
-                    const s = item.size * p.s; // Kích thước sau khi tính toán phối cảnh
-                    // Vẽ hình vuông: x, y, width, height
-                    // Trừ đi s/2 để tâm hình vuông nằm đúng vị trí tọa độ
+                    const s = item.size * p.s;
                     ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
-
                     ctx.globalAlpha = 1;
                 } else if (item.type === 'planet') {
                     const pr = PLANET_RADIUS * p.s;
@@ -388,24 +401,32 @@
                         ctx.fillRect(p.x - sq / 2, p.y - sq / 2, sq, sq);
                         ctx.globalAlpha = 1;
                     }
-                    // } 
                 } else if (item.type === 'text') {
-                    ctx.font = `bold ${30 * p.s}px Impact, Arial, sans-serif`; // Chỉnh size nhỏ lại chút cho đẹp
+                    ctx.font = `bold ${30 * p.s}px Impact, Arial, sans-serif`;
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
-
-                    // Sử dụng màu từ item (đã truyền vào ở bước 2)
                     ctx.shadowColor = item.color;
                     ctx.shadowBlur = 10 * p.s;
-
                     ctx.strokeStyle = item.color;
-                    ctx.lineWidth = 4 * p.s; // Giảm độ dày stroke để chữ thanh mảnh hơn
+                    ctx.lineWidth = 4 * p.s;
                     ctx.lineJoin = "round";
                     ctx.strokeText(item.char, p.x, p.y);
-
                     ctx.shadowBlur = 0;
                     ctx.fillStyle = "#ffffff";
                     ctx.fillText(item.char, p.x, p.y);
+                } else if (item.type === 'aura') {
+                    const gradRadius = item.radius * p.s;
+                    if (gradRadius > 10) {
+                        ctx.save();
+                        ctx.globalCompositeOperation = "screen";
+                        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, gradRadius);
+                        g.addColorStop(0, `rgba(${item.color}, 0.3)`);
+                        g.addColorStop(0.5, `rgba(${item.color}, 0.1)`);
+                        g.addColorStop(1, "rgba(0,0,0,0)");
+                        ctx.fillStyle = g;
+                        ctx.fillRect(p.x - gradRadius, p.y - gradRadius, gradRadius * 2, gradRadius * 2);
+                        ctx.restore();
+                    }
                 }
             });
 
