@@ -43,25 +43,25 @@
     const numStars = 12000;
     const stars = [];
     const focalLength = 500;
-    const galaxyRadius = 800;
+    const galaxyRadius = 500; 
     const numArms = 3;
     const armSpin = 4.5;
 
     for (let i = 0; i < numStars; i++) {
-        const normalizedR = Math.pow(Math.random(), 1.5);
+        const normalizedR = Math.pow(Math.random(), 1.8); 
         const r = normalizedR * galaxyRadius;
         const armIndex = Math.floor(Math.random() * numArms);
         const armAngle = (Math.PI * 2 / numArms) * armIndex;
         const angle = armAngle + normalizedR * armSpin;
         
-        const scatterDist = (Math.random() - 0.5) * (40 + normalizedR * 250);
+        const scatterDist = (Math.random() - 0.5) * (10 + normalizedR * 50); 
         const randomAngle = Math.random() * Math.PI * 2;
 
         let x = Math.cos(angle) * r + Math.cos(randomAngle) * scatterDist;
         let y = Math.sin(angle) * r + Math.sin(randomAngle) * scatterDist;
         
-        const bulge = Math.max(0, 120 - r);
-        let z = (Math.random() - 0.5) * (30 + bulge);
+        const bulge = Math.max(0, 80 - r);
+        let z = (Math.random() - 0.5) * (15 + bulge);
 
         let color;
         if (r < galaxyRadius * 0.15) {
