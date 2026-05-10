@@ -117,12 +117,9 @@
         /* ===== 3. LOGIC SAO BĂNG NGANG (HORIZONTAL SHOOTING STAR) ===== */
         function updateShootingStar() {
             if (!shootingStar.active) {
-                // Xác suất xuất hiện mỗi frame
                 if (Math.random() < 0.02) {
                     shootingStar.active = true;
-                    // Xuất phát từ bên trái màn hình (ngoài khung nhìn)
                     shootingStar.x = -400;
-                    // Độ cao ngẫu nhiên (từ đỉnh đến giữa màn hình)
                     shootingStar.y = rand(50, h * 0.7);
                     shootingStar.len = rand(200, 400);
                     shootingStar.speed = rand(40, 60);
@@ -305,12 +302,10 @@
             ];
 
             auraConfigs.forEach(cfg => {
-                // Tạo hiệu ứng lượn lờ (float) để vầng sáng không bị đơ
                 let tx = cfg.x + Math.sin(time * cfg.speed) * 150;
                 let ty = cfg.y + Math.cos(time * cfg.speed * 0.7) * 150;
                 let tz = cfg.z + Math.sin(time * cfg.speed * 1.1) * 100;
 
-                // Xoay theo góc nhìn của người dùng (Camera Rotation)
                 let pos = rotate3D(tx, ty, tz);
 
                 renderList.push({
@@ -366,7 +361,6 @@
 
             bgStars.forEach(s => renderList.push({ type: 'star', ...rotate3D(s.x, s.y, s.z), size: s.size, color: s.color }));
 
-            // 5. SẮP XẾP VÀ VẼ
             renderList.sort((a, b) => b.z - a.z);
 
             renderList.forEach(item => {
@@ -384,7 +378,6 @@
 
                     const pr = PLANET_RADIUS * p.s;
 
-                    // ===== HÀO QUANG PHÁT SÁNG =====
                     ctx.save();
                     ctx.globalCompositeOperation = "lighter";
 
@@ -405,7 +398,6 @@
 
                     ctx.restore();
 
-                    // ===== QUẢ CẦU MẶT TRỜI =====
                     const sun = ctx.createRadialGradient(
                         p.x - pr * 0.3,
                         p.y - pr * 0.3,
