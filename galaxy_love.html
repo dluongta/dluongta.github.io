@@ -143,7 +143,6 @@
             ctx.save();
             ctx.globalCompositeOperation = "lighter";
 
-            // Tạo dải màu gradient cho đuôi sao băng chạy ngang
             const grad = ctx.createLinearGradient(
                 shootingStar.x, shootingStar.y,
                 shootingStar.x - shootingStar.len, shootingStar.y
@@ -299,11 +298,11 @@
             //             ];
             const auraConfigs = [
 
-                { color: "255, 140, 0", x: 0, y: -900, z: 0, speed: 0.3, radius: 3200 },
+                // { color: "255, 140, 0", x: 0, y: -900, z: 0, speed: 0.3, radius: 3200 },
 
-                { color: "255, 80, 140", x: -1200, y: 300, z: -300, speed: 0.5, radius: 2800 },
+                { color: "255, 140, 0", x: -1200, y: 300, z: -300, speed: 0.5, radius: 3200 },
 
-                { color: "180, 0, 255", x: 1200, y: 300, z: -300, speed: 0.4, radius: 2000 }
+                { color: "180, 0, 255", x: 1200, y: 300, z: -300, speed: 0.4, radius: 3200 }
 
             ];
             auraConfigs.forEach(cfg => {
@@ -456,9 +455,13 @@
                         // ctx.globalCompositeOperation = "screen";
                         ctx.globalCompositeOperation = "lighter";
                         const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, gradRadius);
-                        g.addColorStop(0, `rgba(${item.color}, 0.3)`);
-                        g.addColorStop(0.5, `rgba(${item.color}, 0.1)`);
-                        g.addColorStop(1, "rgba(0,0,0,0)");
+                        // g.addColorStop(0, `rgba(${item.color}, 0.3)`);
+                        // g.addColorStop(0.5, `rgba(${item.color}, 0.1)`);
+                        // g.addColorStop(1, "rgba(0,0,0,0)");
+                        g.addColorStop(0, `rgba(${item.color}, 0.75)`);
+g.addColorStop(0.25, `rgba(${item.color}, 0.45)`);
+g.addColorStop(0.6, `rgba(${item.color}, 0.18)`);
+g.addColorStop(1, "rgba(0,0,0,0)");
                         ctx.fillStyle = g;
                         ctx.fillRect(p.x - gradRadius, p.y - gradRadius, gradRadius * 2, gradRadius * 2);
                         ctx.restore();
