@@ -292,15 +292,20 @@
         //     });
         // }
         function drawDynamicAura(time, renderList) {
+            //             const auraConfigs = [
+            // { color: "255, 140, 0", x: 0, y: 0, z: 0, speed: 0.3, radius: 3200 },                // 2. Màu ĐỎ HỒNG: Nằm bên TRÁI (x: -500) và DƯỚI (y: 500)
+            // { color: "255, 80, 140", x: -500, y: 500, z: -300, speed: 0.5, radius: 2800 },
+            //                 { color: "180, 0, 255", x: 900, y: 900, z: -300, speed: 0.4, radius: 2000 }
+            //             ];
             const auraConfigs = [
-                // 1. Màu CAM: Ôm sát và nằm GIỮA mặt trời
-                { color: "90, 84, 53", x: 0, y: 0, z: 0, speed: 0.3, radius: 2500 },
-                // 2. Màu ĐỎ HỒNG: Nằm bên TRÁI (x: -500) và DƯỚI (y: 500)
-                { color: "248, 64, 99", x: -500, y: 500, z: -300, speed: 0.5, radius: 2800 },
-                // 3. Màu TÍM: Nằm bên PHẢI (x: 900) và DƯỚI (y: 900)
-                { color: "180, 0, 255", x: 900, y: 900, z: -300, speed: 0.4, radius: 2000 }
-            ];
 
+                { color: "255, 140, 0", x: 0, y: -900, z: 0, speed: 0.3, radius: 3200 },
+
+                { color: "255, 80, 140", x: -1200, y: 300, z: -300, speed: 0.5, radius: 2800 },
+
+                { color: "180, 0, 255", x: 1200, y: 300, z: -300, speed: 0.4, radius: 2000 }
+
+            ];
             auraConfigs.forEach(cfg => {
                 let tx = cfg.x + Math.sin(time * cfg.speed) * 150;
                 let ty = cfg.y + Math.cos(time * cfg.speed * 0.7) * 150;
@@ -448,7 +453,8 @@
                     const gradRadius = item.radius * p.s;
                     if (gradRadius > 10) {
                         ctx.save();
-                        ctx.globalCompositeOperation = "screen";
+                        // ctx.globalCompositeOperation = "screen";
+                        ctx.globalCompositeOperation = "lighter";
                         const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, gradRadius);
                         g.addColorStop(0, `rgba(${item.color}, 0.3)`);
                         g.addColorStop(0.5, `rgba(${item.color}, 0.1)`);
