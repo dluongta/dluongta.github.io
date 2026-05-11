@@ -227,7 +227,7 @@ canvas{
 <button onclick="downloadQR()">Download PNG</button>
 
 <div class="canvas-box">
-    <canvas id="canvas" width="500" height="500"></canvas>
+    <canvas id="canvas" width="250" height="250"></canvas>
 </div>
 
 </div>
@@ -288,7 +288,7 @@ async function generateQR(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
     await QRCode.toCanvas(canvas,text,{
-        width:500,
+        width:250,
         margin:2,
         color:{
             dark:qrColor,
