@@ -88,7 +88,10 @@ input[type=file]{
     color:#007bff;
     font-weight:bold;
 }
-
+textarea[readonly]{
+    background:#f5f5f5;
+    cursor:not-allowed;
+}
 @media (max-width:768px){
 
     h1{
@@ -138,7 +141,7 @@ input[type=file]{
     <button onclick="copyText()">Copy Text</button>
 </div>
 
-<textarea id="result" placeholder="Kết quả QR sẽ hiện ở đây..."></textarea>
+<textarea id="result" placeholder="Kết quả QR sẽ hiện ở đây..." readonly></textarea>
 
 <div class="status" id="status"></div>
 
