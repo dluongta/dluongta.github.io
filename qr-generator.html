@@ -271,25 +271,22 @@ document.getElementById("logoInput").addEventListener("change",function(e){
 });
 
 async function generateQR(){
-
     const text=document.getElementById("qrText").value.trim();
-
     const qrColor=document.getElementById("qrColor").value;
-
     const bgColor=document.getElementById("bgColor").value;
 
     if(!text){
-
         alert("Vui lòng nhập nội dung");
-
         return;
     }
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
+    // 1. Thêm errorCorrectionLevel: 'H' để tăng khả năng chống lỗi lên 30%
     await QRCode.toCanvas(canvas,text,{
         width:250,
         margin:2,
+        errorCorrectionLevel: 'H', 
         color:{
             dark:qrColor,
             light:bgColor
@@ -297,27 +294,23 @@ async function generateQR(){
     });
 
     if(logoImage){
-
-        const size=100;
-
+        const size=60; 
         const x=(canvas.width-size)/2;
-
         const y=(canvas.height-size)/2;
+        const padding = 5; 
 
         ctx.fillStyle=bgColor;
 
         ctx.beginPath();
-        ctx.roundRect(x-10,y-10,size+20,size+20,20);
+        ctx.roundRect(x - padding, y - padding, size + (padding*2), size + (padding*2), 10);
         ctx.fill();
 
+        // Vẽ logo
         ctx.save();
-
         ctx.beginPath();
-        ctx.roundRect(x,y,size,size,18);
+        ctx.roundRect(x, y, size, size, 8);
         ctx.clip();
-
-        ctx.drawImage(logoImage,x,y,size,size);
-
+        ctx.drawImage(logoImage, x, y, size, size);
         ctx.restore();
     }
 }
