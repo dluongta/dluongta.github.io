@@ -59,7 +59,8 @@
 
         const PARTICLE_TILT_X = Math.PI / 2.3;
         const PARTICLE_TILT_Z = Math.PI / 6;
-        const BLUE_COLOR = "#00ccff";
+        // const BLUE_COLOR = "#00ccff";
+        const PARTICLE_COLOR = "#fff";
         /* ===== 1. CẤU HÌNH (CONFIG) ===== */
         // ... các dòng cũ giữ nguyên ...
         // const RINGS = [
@@ -69,7 +70,7 @@
         // ];
         const RINGS = [
             { text: "DINH ", radius: 220, tilt: -0.8, speed: 1.2, color: "#ff6200" },  // Chéo xuống Phải
-            { text: "LUONG ", radius: 320, tilt: 0.8, speed: 0.8, color: "#00ccff" },   // Chéo xuống Trái
+            { text: "LUONG ", radius: 320, tilt: 0.8, speed: 0.8, color: "#6a00ff" },   // Chéo xuống Trái
             { text: "TA ", radius: 420, tilt: "vertical", speed: 0.5, color: "#ff0066" } // Thẳng đứng
         ];
         // --- QUẢN LÝ SAO BĂNG ---
@@ -110,7 +111,7 @@
             speed: rand(0.0005, 0.002),
             yOffset: rand(-50, 50),
             size: rand(4, 7),
-            color: BLUE_COLOR,
+            color: PARTICLE_COLOR,
             imgIndex: Math.floor(Math.random() * images.length)
         }));
 
@@ -458,10 +459,10 @@
                         // g.addColorStop(0, `rgba(${item.color}, 0.3)`);
                         // g.addColorStop(0.5, `rgba(${item.color}, 0.1)`);
                         // g.addColorStop(1, "rgba(0,0,0,0)");
-                        g.addColorStop(0, `rgba(${item.color}, 0.75)`);
-g.addColorStop(0.25, `rgba(${item.color}, 0.45)`);
-g.addColorStop(0.6, `rgba(${item.color}, 0.18)`);
-g.addColorStop(1, "rgba(0,0,0,0)");
+                        g.addColorStop(0, `rgba(${item.color}, 0.6)`);
+                        g.addColorStop(0.25, `rgba(${item.color}, 0.4)`);
+                        g.addColorStop(0.6, `rgba(${item.color}, 0.2)`);
+                        g.addColorStop(1, "rgba(0,0,0,0)");
                         ctx.fillStyle = g;
                         ctx.fillRect(p.x - gradRadius, p.y - gradRadius, gradRadius * 2, gradRadius * 2);
                         ctx.restore();
