@@ -9,6 +9,7 @@
             --primary-color: #4f46e5;
             --danger-color: #ef4444;
             --secondary-color: #6b7280;
+            --switch-color: #10b981;
             --bg-color: #f3f4f6;
             --card-bg: #ffffff;
             --text-main: #1f2937;
@@ -28,7 +29,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
 
         .container {
@@ -37,7 +38,7 @@
             max-width: 600px;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            padding: 30px;
+            padding: 25px;
             text-align: center;
             transition: all 0.3s ease;
         }
@@ -53,10 +54,11 @@
             width: 100%;
             border-radius: 12px;
             overflow: hidden;
-            background-color: #2d2d2d;
+            background-color: #000000;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            aspect-ratio: 16 / 9; /* Giữ khung hình luôn đẹp ngay cả khi tắt camera */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            /* Tỷ lệ khung hình mặc định trên Máy tính */
+            aspect-ratio: 16 / 9; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -67,13 +69,14 @@
             color: #9ca3af;
             font-size: 16px;
             display: none;
+            z-index: 1;
         }
 
         video {
             width: 100%;
             height: 100%;
             display: block;
-            object-fit: cover;
+            object-fit: cover; /* Đảm bảo video luôn lấp đầy khung hình mà không bị méo */
             position: relative;
             z-index: 2;
         }
@@ -82,13 +85,13 @@
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 20px;
         }
 
         button {
-            padding: 12px 24px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 15px;
             font-weight: 600;
             border: none;
             border-radius: 50px;
@@ -98,6 +101,8 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            flex: 1;
+            min-width: 140px; /* Đảm bảo nút không bị quá nhỏ trên mobile */
         }
 
         #toggleCameraBtn {
@@ -106,9 +111,10 @@
             box-shadow: 0 4px 10px rgba(107, 114, 128, 0.3);
         }
 
-        #toggleCameraBtn:hover:not(:disabled) {
-            background-color: #4b5563;
-            transform: translateY(-2px);
+        #switchCameraBtn {
+            background-color: var(--switch-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
         }
 
         #startBtn {
@@ -117,25 +123,20 @@
             box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
         }
 
-        #startBtn:hover:not(:disabled) {
-            background-color: #4338ca;
-            transform: translateY(-2px);
-        }
-
         #stopBtn {
             background-color: var(--danger-color);
             color: white;
             box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
         }
 
-        #stopBtn:hover:not(:disabled) {
-            background-color: #dc2626;
+        button:hover:not(:disabled) {
+            filter: brightness(0.9);
             transform: translateY(-2px);
         }
 
         button:disabled {
             opacity: 0.5;
-            user-select: none;
+            cursor: not-allowed;
             transform: none !important;
             box-shadow: none;
         }
@@ -178,17 +179,36 @@
         #downloadBtn {
             display: inline-block;
             margin-top: 15px;
-            padding: 10px 20px;
+            padding: 12px 24px;
             background-color: #10b981;
             color: white;
             text-decoration: none;
             border-radius: 50px;
             font-weight: 600;
             transition: all 0.2s ease;
+            width: 100%;
         }
 
         #downloadBtn:hover {
             background-color: #059669;
+        }
+
+        /* CSS ĐẶC BIỆT CHO ĐIỆN THOẠI (MOBILE) */
+        @media (max-width: 600px) {
+            .video-wrapper {
+                /* Giả lập khung hình dọc giống camera Tiktok/Reels (9:16) hoặc chuẩn camera (3:4) */
+                aspect-ratio: 3 / 4; 
+                max-height: 65vh; /* Khống chế chiều cao không tràn màn hình */
+            }
+            
+            .controls {
+                gap: 8px;
+            }
+            
+            button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -204,10 +224,15 @@
         </div>
 
         <div class="controls">
-            <!-- Nút Tắt/Bật Camera mới được thêm -->
+            <!-- Cụm chức năng Camera -->
+            <button id="switchCameraBtn">
+                <span>🔄</span> Lật Camera
+            </button>
             <button id="toggleCameraBtn">
                 <span>📷</span> Tắt Camera
             </button>
+            
+            <!-- Cụm chức năng Quay video -->
             <button id="startBtn">
                 <span class="icon">▶️</span> Bắt đầu quay
             </button>
@@ -232,6 +257,7 @@
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const toggleCameraBtn = document.getElementById('toggleCameraBtn');
+        const switchCameraBtn = document.getElementById('switchCameraBtn');
         const resultSection = document.getElementById('resultSection');
         const downloadBtn = document.getElementById('downloadBtn');
         const cameraOffText = document.getElementById('cameraOffText');
@@ -240,11 +266,28 @@
         let recordedChunks = [];
         let stream = null;
         let isCameraOn = false;
+        
+        // Mặc định sử dụng camera trước (user). Nếu là sau thì là (environment)
+        let currentFacingMode = 'user'; 
 
-        // Bật Camera
+        // Hàm tắt toàn bộ các luồng video/audio hiện tại
+        function stopCurrentStreamTracks() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        // Bật Camera với cấu hình (trước hoặc sau)
         async function startCamera() {
+            stopCurrentStreamTracks(); // Dọn dẹp stream cũ trước khi xin quyền stream mới
+            
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                // Yêu cầu camera theo facingMode hiện tại
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: currentFacingMode }, 
+                    audio: true 
+                });
+                
                 livePreview.srcObject = stream;
                 isCameraOn = true;
                 
@@ -253,6 +296,7 @@
                 livePreview.style.display = 'block';
                 toggleCameraBtn.innerHTML = '<span>📷</span> Tắt Camera';
                 startBtn.disabled = false;
+                switchCameraBtn.disabled = false;
             } catch (err) {
                 console.error("Lỗi truy cập thiết bị: ", err);
                 alert("Vui lòng cấp quyền truy cập Camera và Micro để sử dụng tính năng này!");
@@ -261,21 +305,20 @@
 
         // Tắt Camera
         function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop()); // Dừng tất cả các luồng (audio/video)
-                stream = null;
-                livePreview.srcObject = null;
-                isCameraOn = false;
-                
-                // Cập nhật giao diện
-                cameraOffText.style.display = 'block';
-                livePreview.style.display = 'none';
-                toggleCameraBtn.innerHTML = '<span>📹</span> Bật Camera';
-                startBtn.disabled = true; // Không cho phép quay khi tắt camera
-            }
+            stopCurrentStreamTracks();
+            stream = null;
+            livePreview.srcObject = null;
+            isCameraOn = false;
+            
+            // Cập nhật giao diện
+            cameraOffText.style.display = 'block';
+            livePreview.style.display = 'none';
+            toggleCameraBtn.innerHTML = '<span>📹</span> Bật Camera';
+            startBtn.disabled = true; // Không cho quay nếu tắt camera
+            switchCameraBtn.disabled = true; // Không cho lật camera nếu đang tắt
         }
 
-        // Xử lý sự kiện nút Bật/Tắt Camera
+        // Sự kiện: Bật/Tắt Camera
         toggleCameraBtn.addEventListener('click', () => {
             if (isCameraOn) {
                 stopCamera();
@@ -284,7 +327,18 @@
             }
         });
 
-        // Bắt đầu quay
+        // Sự kiện: Đảo chiều Camera (Trước <-> Sau)
+        switchCameraBtn.addEventListener('click', () => {
+            // Đổi trạng thái facingMode
+            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+            
+            // Khởi động lại camera ngay lập tức nếu nó đang mở
+            if (isCameraOn) {
+                startCamera();
+            }
+        });
+
+        // Sự kiện: Bắt đầu quay
         startBtn.addEventListener('click', () => {
             if (!stream) {
                 alert("Camera chưa sẵn sàng!");
@@ -292,55 +346,47 @@
             }
 
             recordedChunks = [];
-            // Khởi tạo MediaRecorder
             mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
-            // Lưu dữ liệu vào mảng khi có luồng video
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
                     recordedChunks.push(event.data);
                 }
             };
 
-            // Xử lý khi dừng quay
             mediaRecorder.onstop = () => {
-                // Gộp các mảnh video lại thành 1 file hoàn chỉnh (Blob)
                 const blob = new Blob(recordedChunks, { type: 'video/webm' });
                 const videoURL = URL.createObjectURL(blob);
                 
-                // Gán URL vào thẻ video xem lại và nút tải xuống
                 playbackVideo.src = videoURL;
                 downloadBtn.href = videoURL;
                 
-                // Hiển thị khu vực kết quả
                 resultSection.style.display = 'block';
-                
-                // Tự động cuộn xuống xem video mượt mà
                 resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             };
 
-            // Bắt đầu ghi
             mediaRecorder.start();
             
-            // Cập nhật giao diện nút bấm
+            // Khóa các nút điều hướng camera để tránh làm hỏng file đang quay
             startBtn.disabled = true;
             stopBtn.disabled = false;
-            toggleCameraBtn.disabled = true; // Khóa nút tắt camera khi đang quay
+            toggleCameraBtn.disabled = true; 
+            switchCameraBtn.disabled = true; 
             startBtn.innerHTML = '<span class="recording-pulse"></span> Đang quay...';
         });
 
-        // Dừng quay
+        // Sự kiện: Dừng quay
         stopBtn.addEventListener('click', () => {
             mediaRecorder.stop();
             
-            // Cập nhật lại giao diện nút bấm
             startBtn.disabled = false;
             stopBtn.disabled = true;
-            toggleCameraBtn.disabled = false; // Mở khóa nút tắt camera
+            toggleCameraBtn.disabled = false; 
+            switchCameraBtn.disabled = false;
             startBtn.innerHTML = '<span class="icon">▶️</span> Quay lại video khác';
         });
 
-        // Khởi động camera ngay khi mở trang web
+        // Khởi động camera tự động khi vào web
         window.addEventListener('load', startCamera);
     </script>
 </body>

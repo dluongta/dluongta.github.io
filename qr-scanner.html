@@ -89,6 +89,14 @@
             background: #0062cc;
         }
 
+        #btn-flip {
+            background: #007bff;
+        }
+
+        #btn-flip:hover {
+            background: #0062cc;
+        }
+
         input[type=file] {
             display: none;
         }
@@ -116,9 +124,18 @@
                 border-color: #ff8800;
             }
 
-            button,
+            button:not(#btn-flip),
             label {
                 background: #ff8800;
+            }
+
+            button:not(#btn-flip):hover,
+            label:hover {
+                background: #e67600;
+            }
+
+            .status {
+                color: #ff8800;
             }
 
             button:hover,
@@ -126,8 +143,8 @@
                 background: #e67600;
             }
 
-            .status {
-                color: #ff8800;
+            #btn-flip {
+                background: #ff8800;
             }
         }
 
@@ -149,13 +166,14 @@
 
     <div class="buttons">
         <button id="btn-camera" onclick="toggleCamera()">Mở Camera</button>
+        <!-- Thêm nút Lật Camera -->
+        <button id="btn-flip" onclick="flipCamera()">Lật Camera</button>
         <label for="fileInput">Upload Ảnh QR</label>
         <input type="file" id="fileInput" accept="image/*">
         <button onclick="copyText()">Copy Text</button>
     </div>
 
     <textarea id="result" placeholder="Kết quả QR sẽ hiện ở đây..." readonly></textarea>
-    <!-- <div class="status" id="status">Sẵn sàng</div> -->
     <div class="status" id="status"></div>
 
     <script>
@@ -166,37 +184,69 @@
         let html5QrCode;
         let isCameraOpen = false;
 
+        // Mặc định là camera sau (environment), camera trước là (user)
+        let currentFacingMode = "environment";
+
         document.addEventListener("DOMContentLoaded", () => {
             html5QrCode = new Html5Qrcode("reader");
         });
 
+        // Tách hàm bật camera để tái sử dụng khi lật
+        function startCamera() {
+            statusText.innerText = "Đang mở camera...";
+            html5QrCode.start(
+                { facingMode: currentFacingMode },
+                { fps: 30 },
+                (decodedText, decodedResult) => {
+                    resultBox.value = decodedText;
+                    statusText.innerText = "Đã quét thành công!";
+                },
+                (errorMessage) => {
+                    // Ẩn lỗi quét (vì nó báo liên tục khi không thấy QR)
+                }
+            ).then(() => {
+                isCameraOpen = true;
+                btnCamera.innerText = "Tắt Camera";
+                statusText.innerText = "Đang quét QR bằng camera...";
+            }).catch((err) => {
+                alert("Không mở được camera: " + err);
+                statusText.innerText = "Lỗi camera";
+            });
+        }
+
+        // Tách hàm tắt camera
+        function stopCamera() {
+            return html5QrCode.stop().then(() => {
+                isCameraOpen = false;
+                btnCamera.innerText = "Mở Camera";
+                statusText.innerText = "Đã tắt camera.";
+                html5QrCode.clear();
+            }).catch(err => console.error(err));
+        }
+
+        // Bật/Tắt Camera
         function toggleCamera() {
             if (isCameraOpen) {
-                html5QrCode.stop().then(() => {
-                    isCameraOpen = false;
-                    btnCamera.innerText = "Mở Camera";
-                    statusText.innerText = "Đã tắt camera.";
-                    html5QrCode.clear();
-                }).catch(err => console.error(err));
+                stopCamera();
             } else {
-                statusText.innerText = "Đang mở camera...";
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    { fps: 30 },
-                    (decodedText, decodedResult) => {
-                        resultBox.value = decodedText;
-                        statusText.innerText = "Đã quét thành công!";
-                    },
-                    (errorMessage) => {
-                    }
-                ).then(() => {
-                    isCameraOpen = true;
-                    btnCamera.innerText = "Tắt Camera";
-                    statusText.innerText = "Đang quét QR bằng camera...";
-                }).catch((err) => {
-                    alert("Không mở được camera: " + err);
-                    statusText.innerText = "Lỗi camera";
+                startCamera();
+            }
+        }
+
+        // Chức năng lật Camera
+        function flipCamera() {
+            // Đổi trạng thái từ sau ra trước hoặc ngược lại
+            currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+
+            // Nếu camera đang mở thì khởi động lại luôn
+            if (isCameraOpen) {
+                statusText.innerText = "Đang lật camera...";
+                stopCamera().then(() => {
+                    startCamera();
                 });
+            } else {
+                // Nếu camera đang tắt thì báo cho người dùng biết chế độ đã được đổi
+                statusText.innerText = currentFacingMode === "user" ? "Đã chuyển sang Camera trước." : "Đã chuyển sang Camera sau.";
             }
         }
 
@@ -233,7 +283,7 @@
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            
+
             let code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "attemptBoth" });
             if (code) return code.data;
 
@@ -242,7 +292,7 @@
             canvas.height = img.height * scale;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            
+
             code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "attemptBoth" });
             if (code) return code.data;
 
@@ -258,14 +308,11 @@
 
             try {
                 if (isCameraOpen) {
-                    await html5QrCode.stop();
-                    html5QrCode.clear();
-                    isCameraOpen = false;
-                    btnCamera.innerText = "Mở Camera";
+                    await stopCamera(); // Gọi hàm stopCamera đã tách ra
                 }
 
                 const decodedText = await robustScanImage(file);
-                
+
                 resultBox.value = decodedText;
                 statusText.innerText = "Đã đọc QR từ ảnh thành công!";
 
