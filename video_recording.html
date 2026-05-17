@@ -8,6 +8,7 @@
         :root {
             --primary-color: #4f46e5;
             --danger-color: #ef4444;
+            --secondary-color: #6b7280;
             --bg-color: #f3f4f6;
             --card-bg: #ffffff;
             --text-main: #1f2937;
@@ -52,20 +53,35 @@
             width: 100%;
             border-radius: 12px;
             overflow: hidden;
-            background-color: #656565;
+            background-color: #2d2d2d;
             margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            aspect-ratio: 16 / 9; /* Giữ khung hình luôn đẹp ngay cả khi tắt camera */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .camera-off-text {
+            position: absolute;
+            color: #9ca3af;
+            font-size: 16px;
+            display: none;
         }
 
         video {
             width: 100%;
+            height: 100%;
             display: block;
             object-fit: cover;
+            position: relative;
+            z-index: 2;
         }
 
         .controls {
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -82,6 +98,17 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+        }
+
+        #toggleCameraBtn {
+            background-color: var(--secondary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(107, 114, 128, 0.3);
+        }
+
+        #toggleCameraBtn:hover:not(:disabled) {
+            background-color: #4b5563;
+            transform: translateY(-2px);
         }
 
         #startBtn {
@@ -108,7 +135,7 @@
 
         button:disabled {
             opacity: 0.5;
-            cursor: not-allowed;
+            user-select: none;
             transform: none !important;
             box-shadow: none;
         }
@@ -133,7 +160,7 @@
             margin-top: 30px;
             padding-top: 20px;
             border-top: 2px dashed #e5e7eb;
-            display: none; /* Ẩn đi cho đến khi có video */
+            display: none; 
             animation: fadeIn 0.5s ease;
         }
 
@@ -172,10 +199,15 @@
         
         <!-- Khung xem trực tiếp từ Camera -->
         <div class="video-wrapper">
+            <div class="camera-off-text" id="cameraOffText">📷 Camera đang tắt</div>
             <video id="livePreview" autoplay muted playsinline></video>
         </div>
 
         <div class="controls">
+            <!-- Nút Tắt/Bật Camera mới được thêm -->
+            <button id="toggleCameraBtn">
+                <span>📷</span> Tắt Camera
+            </button>
             <button id="startBtn">
                 <span class="icon">▶️</span> Bắt đầu quay
             </button>
@@ -199,23 +231,58 @@
         const playbackVideo = document.getElementById('playbackVideo');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
+        const toggleCameraBtn = document.getElementById('toggleCameraBtn');
         const resultSection = document.getElementById('resultSection');
         const downloadBtn = document.getElementById('downloadBtn');
+        const cameraOffText = document.getElementById('cameraOffText');
 
         let mediaRecorder;
         let recordedChunks = [];
-        let stream;
+        let stream = null;
+        let isCameraOn = false;
 
-        // Yêu cầu quyền truy cập Camera và Micro khi tải trang
-        async function initCamera() {
+        // Bật Camera
+        async function startCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 livePreview.srcObject = stream;
+                isCameraOn = true;
+                
+                // Cập nhật giao diện
+                cameraOffText.style.display = 'none';
+                livePreview.style.display = 'block';
+                toggleCameraBtn.innerHTML = '<span>📷</span> Tắt Camera';
+                startBtn.disabled = false;
             } catch (err) {
                 console.error("Lỗi truy cập thiết bị: ", err);
                 alert("Vui lòng cấp quyền truy cập Camera và Micro để sử dụng tính năng này!");
             }
         }
+
+        // Tắt Camera
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop()); // Dừng tất cả các luồng (audio/video)
+                stream = null;
+                livePreview.srcObject = null;
+                isCameraOn = false;
+                
+                // Cập nhật giao diện
+                cameraOffText.style.display = 'block';
+                livePreview.style.display = 'none';
+                toggleCameraBtn.innerHTML = '<span>📹</span> Bật Camera';
+                startBtn.disabled = true; // Không cho phép quay khi tắt camera
+            }
+        }
+
+        // Xử lý sự kiện nút Bật/Tắt Camera
+        toggleCameraBtn.addEventListener('click', () => {
+            if (isCameraOn) {
+                stopCamera();
+            } else {
+                startCamera();
+            }
+        });
 
         // Bắt đầu quay
         startBtn.addEventListener('click', () => {
@@ -258,6 +325,7 @@
             // Cập nhật giao diện nút bấm
             startBtn.disabled = true;
             stopBtn.disabled = false;
+            toggleCameraBtn.disabled = true; // Khóa nút tắt camera khi đang quay
             startBtn.innerHTML = '<span class="recording-pulse"></span> Đang quay...';
         });
 
@@ -268,11 +336,12 @@
             // Cập nhật lại giao diện nút bấm
             startBtn.disabled = false;
             stopBtn.disabled = true;
+            toggleCameraBtn.disabled = false; // Mở khóa nút tắt camera
             startBtn.innerHTML = '<span class="icon">▶️</span> Quay lại video khác';
         });
 
         // Khởi động camera ngay khi mở trang web
-        window.addEventListener('load', initCamera);
+        window.addEventListener('load', startCamera);
     </script>
 </body>
 </html>
