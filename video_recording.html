@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình Quay Video Trực Tuyến</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --danger-color: #ef4444;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #656565;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        video {
+            width: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        #startBtn {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        #startBtn:hover:not(:disabled) {
+            background-color: #4338ca;
+            transform: translateY(-2px);
+        }
+
+        #stopBtn {
+            background-color: var(--danger-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        }
+
+        #stopBtn:hover:not(:disabled) {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none;
+        }
+
+        /* Hiệu ứng khi đang quay */
+        .recording-pulse {
+            width: 12px;
+            height: 12px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #e5e7eb;
+            display: none; /* Ẩn đi cho đến khi có video */
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #10b981;
+        }
+
+        #downloadBtn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #10b981;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        #downloadBtn:hover {
+            background-color: #059669;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>📸 Studio Trực Tuyến</h1>
+        
+        <!-- Khung xem trực tiếp từ Camera -->
+        <div class="video-wrapper">
+            <video id="livePreview" autoplay muted playsinline></video>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn">
+                <span class="icon">▶️</span> Bắt đầu quay
+            </button>
+            <button id="stopBtn" disabled>
+                <span>⏹️</span> Dừng lại
+            </button>
+        </div>
+
+        <!-- Khhu vực hiển thị kết quả sau khi quay -->
+        <div class="result-section" id="resultSection">
+            <h2>✨ Video của bạn đã sẵn sàng!</h2>
+            <div class="video-wrapper">
+                <video id="playbackVideo" controls playsinline></video>
+            </div>
+            <a id="downloadBtn" download="video_da_quay.webm">⬇️ Tải Video Về Máy</a>
+        </div>
+    </div>
+
+    <script>
+        const livePreview = document.getElementById('livePreview');
+        const playbackVideo = document.getElementById('playbackVideo');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resultSection = document.getElementById('resultSection');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream;
+
+        // Yêu cầu quyền truy cập Camera và Micro khi tải trang
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                livePreview.srcObject = stream;
+            } catch (err) {
+                console.error("Lỗi truy cập thiết bị: ", err);
+                alert("Vui lòng cấp quyền truy cập Camera và Micro để sử dụng tính năng này!");
+            }
+        }
+
+        // Bắt đầu quay
+        startBtn.addEventListener('click', () => {
+            if (!stream) {
+                alert("Camera chưa sẵn sàng!");
+                return;
+            }
+
+            recordedChunks = [];
+            // Khởi tạo MediaRecorder
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+
+            // Lưu dữ liệu vào mảng khi có luồng video
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            // Xử lý khi dừng quay
+            mediaRecorder.onstop = () => {
+                // Gộp các mảnh video lại thành 1 file hoàn chỉnh (Blob)
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const videoURL = URL.createObjectURL(blob);
+                
+                // Gán URL vào thẻ video xem lại và nút tải xuống
+                playbackVideo.src = videoURL;
+                downloadBtn.href = videoURL;
+                
+                // Hiển thị khu vực kết quả
+                resultSection.style.display = 'block';
+                
+                // Tự động cuộn xuống xem video mượt mà
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            // Bắt đầu ghi
+            mediaRecorder.start();
+            
+            // Cập nhật giao diện nút bấm
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            startBtn.innerHTML = '<span class="recording-pulse"></span> Đang quay...';
+        });
+
+        // Dừng quay
+        stopBtn.addEventListener('click', () => {
+            mediaRecorder.stop();
+            
+            // Cập nhật lại giao diện nút bấm
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            startBtn.innerHTML = '<span class="icon">▶️</span> Quay lại video khác';
+        });
+
+        // Khởi động camera ngay khi mở trang web
+        window.addEventListener('load', initCamera);
+    </script>
+</body>
+</html>
