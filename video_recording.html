@@ -241,7 +241,7 @@
             </button>
         </div>
 
-        <!-- Khhu vực hiển thị kết quả sau khi quay -->
+        <!-- Khu vực hiển thị kết quả sau khi quay -->
         <div class="result-section" id="resultSection">
             <h2>✨ Video của bạn đã sẵn sàng!</h2>
             <div class="video-wrapper">
@@ -296,7 +296,6 @@
                 livePreview.style.display = 'block';
                 toggleCameraBtn.innerHTML = '<span>📷</span> Tắt Camera';
                 startBtn.disabled = false;
-                switchCameraBtn.disabled = false;
             } catch (err) {
                 console.error("Lỗi truy cập thiết bị: ", err);
                 alert("Vui lòng cấp quyền truy cập Camera và Micro để sử dụng tính năng này!");
@@ -315,7 +314,6 @@
             livePreview.style.display = 'none';
             toggleCameraBtn.innerHTML = '<span>📹</span> Bật Camera';
             startBtn.disabled = true; // Không cho quay nếu tắt camera
-            switchCameraBtn.disabled = true; // Không cho lật camera nếu đang tắt
         }
 
         // Sự kiện: Bật/Tắt Camera
@@ -327,15 +325,40 @@
             }
         });
 
-        // Sự kiện: Đảo chiều Camera (Trước <-> Sau)
-        switchCameraBtn.addEventListener('click', () => {
-            // Đổi trạng thái facingMode
+        // Sự kiện: Đảo chiều Camera (Trước <-> Sau) HỖ TRỢ TRONG LÚC ĐANG QUAY
+        switchCameraBtn.addEventListener('click', async () => {
+            switchCameraBtn.disabled = true; // Khóa tạm thời để tránh bấm liên tục gây lỗi
+            
             currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
             
-            // Khởi động lại camera ngay lập tức nếu nó đang mở
-            if (isCameraOn) {
-                startCamera();
+            if (isCameraOn && stream) {
+                try {
+                    // Xin quyền TẠO luồng video mới (NHƯNG KHÔNG xin audio để giữ luồng audio cũ không bị đứt)
+                    const newVideoStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: currentFacingMode }
+                    });
+
+                    // Lấy track hình ảnh mới và track hình ảnh cũ
+                    const newVideoTrack = newVideoStream.getVideoTracks()[0];
+                    const oldVideoTrack = stream.getVideoTracks()[0];
+
+                    if (oldVideoTrack) {
+                        // Tháo luồng video cũ ra khỏi stream tổng
+                        stream.removeTrack(oldVideoTrack);
+                        oldVideoTrack.stop(); // Tắt hẳn camera mặt cũ đi
+                    }
+
+                    // Cắm luồng video mới vào stream tổng đang được Record
+                    stream.addTrack(newVideoTrack);
+
+                } catch (err) {
+                    console.error("Lỗi lật camera: ", err);
+                    alert("Không thể lật camera trên thiết bị này!");
+                    currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user'; // Hoàn tác
+                }
             }
+            
+            switchCameraBtn.disabled = false; // Mở lại nút
         });
 
         // Sự kiện: Bắt đầu quay
@@ -346,6 +369,7 @@
             }
 
             recordedChunks = [];
+            // Đảm bảo lưu đúng định dạng webm
             mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
             mediaRecorder.ondataavailable = (event) => {
@@ -367,11 +391,11 @@
 
             mediaRecorder.start();
             
-            // Khóa các nút điều hướng camera để tránh làm hỏng file đang quay
+            // Khóa/Mở các nút điều hướng
             startBtn.disabled = true;
             stopBtn.disabled = false;
             toggleCameraBtn.disabled = true; 
-            switchCameraBtn.disabled = true; 
+            // Nút switchCameraBtn KHÔNG bị khóa nữa, cho phép ấn lật khi đang quay
             startBtn.innerHTML = '<span class="recording-pulse"></span> Đang quay...';
         });
 
@@ -382,7 +406,6 @@
             startBtn.disabled = false;
             stopBtn.disabled = true;
             toggleCameraBtn.disabled = false; 
-            switchCameraBtn.disabled = false;
             startBtn.innerHTML = '<span class="icon">▶️</span> Quay lại video khác';
         });
 
