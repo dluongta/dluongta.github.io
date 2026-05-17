@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,7 +62,7 @@
         canvas {
             background-color: transparent;
             border-radius: 50%;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
         }
 
         /* Mũi tên chỉ định ở trên đầu trỏ xuống */
@@ -133,7 +134,7 @@
             padding: 30px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
             max-width: 400px;
             width: 90%;
             transform: scale(0.8);
@@ -163,8 +164,32 @@
         .modal-box button:hover {
             background-color: #ec971f;
         }
+
+        @media (max-width: 768px) {
+            canvas {
+                width: 280px;
+                height: 280px;
+            }
+
+            .pointer {
+                top: -20px;
+                border-left: 12px solid transparent;
+                border-right: 12px solid transparent;
+                border-top: 24px solid #ff3333;
+            }
+
+            .spin-btn {
+                padding: 12px 30px;
+                font-size: 18px;
+            }
+
+            .status-result {
+                font-size: 24px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
     <h1>Vòng Quay May Mắn</h1>
@@ -208,7 +233,7 @@
         const radius = canvas.width / 2;
 
         const colorPalette = [
-            "#FF5733", "#33FF57", "#3357FF", "#F333FF", "#33FFF3", 
+            "#FF5733", "#33FF57", "#3357FF", "#F333FF", "#33FFF3",
             "#FFD433", "#FF8333", "#8333FF", "#33FF83", "#FF33A8",
             "#4CAF50", "#FFC107", "#00BCD4", "#E91E63", "#9C27B0"
         ];
@@ -254,14 +279,14 @@
 
             for (let i = 0; i < items.length; i++) {
                 let angle = startAngle + i * arc;
-                
+
                 // VẼ MẢNG MÀU
                 ctx.beginPath();
                 ctx.arc(radius, radius, radius, angle, angle + arc, false);
                 ctx.lineTo(radius, radius);
                 ctx.fillStyle = colors[i];
                 ctx.fill();
-                
+
                 // FIX LỖI ĐƯỜNG KẺ TRẮNG: 
                 // Đổi strokeStyle trùng với màu fill của mảng đó và tăng khít nét để chúng tự đè sát khít vào nhau không lộ nền trắng.
                 ctx.lineWidth = 1.5;
@@ -274,16 +299,16 @@
                 ctx.font = "bold 18px Arial";
                 ctx.shadowColor = "rgba(0,0,0,0.5)";
                 ctx.shadowBlur = 4;
-                
+
                 ctx.translate(
                     radius + Math.cos(angle + arc / 2) * (radius * 0.6),
                     radius + Math.sin(angle + arc / 2) * (radius * 0.6)
                 );
                 ctx.rotate(angle + arc / 2);
-                
+
                 let text = items[i];
-                if(text.length > 15) text = text.substring(0, 13) + '...';
-                
+                if (text.length > 15) text = text.substring(0, 13) + '...';
+
                 ctx.textAlign = "center";
                 ctx.fillText(text, 0, 5);
                 ctx.restore();
@@ -298,9 +323,9 @@
 
             document.getElementById("spinBtn").disabled = true;
 
-            spinAngleStart = Math.random() * 10 + 20; 
+            spinAngleStart = Math.random() * 10 + 20;
             spinTime = 0;
-            spinTimeTotal = Math.random() * 3000 + 4000; 
+            spinTimeTotal = Math.random() * 3000 + 4000;
 
             rotateWheel();
         }
@@ -311,11 +336,11 @@
                 stopRotateWheel();
                 return;
             }
-            
+
             let spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
             startAngle += (spinAngle * Math.PI / 180);
             drawWheel();
-            
+
             spinTimeout = requestAnimationFrame(rotateWheel);
         }
 
@@ -333,10 +358,10 @@
 
             let pointerAngle = 1.5 * Math.PI; // Vị trí 12 giờ trên Canvas
             let relativeAngle = (pointerAngle - normalizedStart + 2 * Math.PI) % (2 * Math.PI);
-            
+
             currentWinnerIndex = Math.floor(relativeAngle / arc);
 
-            if (currentWinnerIndex >= items.length) currentWinnerIndex = 0; 
+            if (currentWinnerIndex >= items.length) currentWinnerIndex = 0;
 
             // Cập nhật kết quả xuống dưới cùng ngay khi dừng quay
             document.getElementById("statusResult").innerHTML = `🎯 ${items[currentWinnerIndex]}`;
@@ -365,4 +390,5 @@
     </script>
 
 </body>
+
 </html>
