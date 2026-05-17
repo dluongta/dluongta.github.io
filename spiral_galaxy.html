@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Spiral Galaxy</title>
+    <title>3D Spiral Galaxy - 4 Arms (Square Particles)</title>
     <style>
         body {
             margin: 0;
@@ -44,7 +44,7 @@
     const stars = [];
     const focalLength = 500;
     const galaxyRadius = 500; 
-    const numArms = 3;
+    const numArms = 4; // Vẫn giữ 4 đường spiral
     const armSpin = 4.5;
 
     for (let i = 0; i < numStars; i++) {
@@ -63,14 +63,16 @@
         const bulge = Math.max(0, 80 - r);
         let z = (Math.random() - 0.5) * (15 + bulge);
 
-        let color;
-        if (r < galaxyRadius * 0.15) {
-            color = `hsl(${30 + Math.random() * 30}, 100%, ${70 + Math.random() * 30}%)`;
-        } else {
-            color = `hsl(${200 + Math.random() * 90}, 80%, ${50 + Math.random() * 40}%)`;
-        }
+        // Chỉnh sửa màu sắc: Trung tâm (cam) -> giữa (cam hồng) -> ngoài (tím)
+        // Dải Hue: 35 (Cam) giảm dần xuống 0 (Đỏ/Hồng) rồi vòng qua số âm -> 280 (Tím)
+        let h = 35 - normalizedR * 115 + (Math.random() - 0.5) * 20;
+        if (h < 0) h += 360; 
+        
+        let s = 80 + Math.random() * 20; // Saturation: 80% - 100%
+        let l = 65 - normalizedR * 20 + Math.random() * 15; // Càng ra ngoài độ sáng càng giảm đi một chút
 
-        const size = Math.random() * 1.5 + 0.2;
+        const color = `hsl(${h}, ${s}%, ${l}%)`;
+        const size = Math.random() * 1.5 + 0.2; // Đây là giá trị cơ sở cho kích thước
 
         stars.push({
             originalX: x, originalY: y, originalZ: z,
@@ -198,14 +200,26 @@
                 const drawSize = star.size * scale;
 
                 ctx.fillStyle = star.color;
-                ctx.beginPath();
-                ctx.arc(screenX, screenY, Math.max(0, drawSize), 0, Math.PI * 2);
-                ctx.fill();
+                
+                // --- THAY ĐỔI TỪ HÌNH TRÒN SANG HÌNH VUÔNG TẠI ĐÂY ---
+                // Trước đó: vẽ ctx.arc()
+                // Bây giờ: vẽ ctx.fillRect()
+                // Kích thước cảm nhận tương tự (side) được tính từ bán kính drawSize.
+                // sqrt(pi) * drawSize ≈ 1.77 * drawSize. 1.4 là một con số ước lượng trực quan tốt cho particle nhỏ.
+                const pSide = drawSize * 1.4;
+
+                // Vẽ hình vuông được căn giữa tại (screenX, screenY).
+                // pSide là độ dài cạnh.
+                ctx.fillRect(screenX - pSide / 2, screenY - pSide / 2, pSide, pSide);
+                // --- KẾT THÚC THAY ĐỔI ---
+
             }
         });
 
+        // Ánh sáng lõi (core glow) được tinh chỉnh để hợp với màu cam hồng
         const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 150 * currentZoom);
-        coreGradient.addColorStop(0, 'rgba(255, 230, 200, 0.08)');
+        coreGradient.addColorStop(0, 'rgba(255, 140, 50, 0.15)'); // Lõi sáng cam
+        coreGradient.addColorStop(0.5, 'rgba(255, 50, 150, 0.05)'); // Lan tỏa màu hồng
         coreGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = coreGradient;
         ctx.fillRect(0, 0, width, height);
