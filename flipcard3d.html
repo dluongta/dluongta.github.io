@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>3D Quiz Card Flip</title>
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family:Arial, sans-serif;
+    }
+
+    body{
+        height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        background:#0f172a;
+    }
+
+    .card-container{
+        perspective:1200px;
+    }
+
+    .card{
+        width:320px;
+        height:220px;
+        position:relative;
+        transform-style:preserve-3d;
+        transition:transform 0.7s;
+        cursor:pointer;
+    }
+
+    .card.flip{
+        transform:rotateY(180deg);
+    }
+
+    .face{
+        position:absolute;
+        width:100%;
+        height:100%;
+        border-radius:20px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        padding:20px;
+        text-align:center;
+        backface-visibility:hidden;
+        box-shadow:0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .front{
+        background:linear-gradient(135deg,#3b82f6,#06b6d4);
+        color:white;
+    }
+
+    .back{
+        background:white;
+        color:#111827;
+        transform:rotateY(180deg);
+    }
+
+    h2{
+        font-size:24px;
+        margin-bottom:10px;
+    }
+
+    p{
+        font-size:18px;
+        line-height:1.5;
+    }
+
+    .hint{
+        position:absolute;
+        bottom:15px;
+        font-size:14px;
+        opacity:0.8;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="card-container">
+    <div class="card" id="quizCard">
+
+        <!-- Mặt trước -->
+        <div class="face front">
+            <div>
+                <h2>Câu hỏi</h2>
+                <p>HTML viết tắt của gì?</p>
+                <!-- <div class="hint">Click để lật thẻ</div> -->
+            </div>
+        </div>
+
+        <!-- Mặt sau -->
+        <div class="face back">
+            <div>
+                <h2>Đáp án</h2>
+                <p>HyperText Markup Language</p>
+                <!-- <div class="hint">Click để quay lại</div> -->
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const card = document.getElementById("quizCard");
+
+    card.addEventListener("click", () => {
+        card.classList.toggle("flip");
+    });
+</script>
+
+</body>
+</html>
