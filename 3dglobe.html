@@ -541,7 +541,7 @@
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         // Position camera with a higher angle view
         if (isMobile) camera.position.z = 40;
-        else camera.position.z = 23;
+        else camera.position.z = 23.5;
         camera.position.y = 10; // Add elevation for top-down angle
         camera.lookAt(0, 0, 0); // Ensure camera is looking at the center of the globe
 
@@ -1370,9 +1370,17 @@
                             globeGroup.remove(arc.arc);
 
                             // Dispose old geometry to prevent memory leaks
+                            // ĐOẠN SỬA: Hủy geometry cũ trước khi tạo cái mới
                             if (arc.arc.geometry) {
                                 arc.arc.geometry.dispose();
                             }
+                            arc.arc.geometry = new THREE.TubeGeometry(
+                                tubePath,
+                                CONFIG.arcTubeSegments,
+                                CONFIG.arcThickness,
+                                CONFIG.arcRadialSegments,
+                                false
+                            );
 
                             // Replace with new geometry
                             arc.arc.geometry = newTubeGeometry;
@@ -1478,6 +1486,11 @@
                             arc.impactEffect = null;
                         }
 
+                        if (arc.arc) {
+                            globeGroup.remove(arc.arc);
+                            if (arc.arc.geometry) arc.arc.geometry.dispose();
+                            if (arc.arc.material) arc.arc.material.dispose();
+                        }
                         arcs.splice(i, 1);
                     }
                 }
@@ -1505,18 +1518,29 @@
                         if (fadeProgress >= 1) {
                             console.log("Fade out complete, removing bullseye elements");
 
-                            // Remove bullseye center dot
+                            // 1. Giải phóng các thành phần của tâm đỏ (Bullseye)
                             if (effect.centerDot) {
                                 globeGroup.remove(effect.centerDot);
-                                effect.centerDotMaterial.dispose();
-                                effect.centerDot.geometry.dispose();
+                                if (effect.centerDotMaterial) effect.centerDotMaterial.dispose();
+                                if (effect.centerDot.geometry) effect.centerDot.geometry.dispose();
                             }
 
-                            // Remove bullseye outer ring
                             if (effect.middleRing) {
                                 globeGroup.remove(effect.middleRing);
-                                effect.middleRingMaterial.dispose();
-                                effect.middleRing.geometry.dispose();
+                                if (effect.middleRingMaterial) effect.middleRingMaterial.dispose();
+                                if (effect.middleRing.geometry) effect.middleRing.geometry.dispose();
+                            }
+
+                            // 2. GIẢI PHÓNG TOÀN BỘ CÁC VÒNG TRÒN LAN TỎA (Dọn rác triệt để)
+                            if (effect.circle) {
+                                globeGroup.remove(effect.circle);
+                                if (effect.circleGeometry) effect.circleGeometry.dispose();
+                                if (effect.circleMaterial) effect.circleMaterial.dispose();
+                            }
+                            if (effect.outerCircle) {
+                                globeGroup.remove(effect.outerCircle);
+                                if (effect.outerCircleGeometry) effect.outerCircleGeometry.dispose();
+                                if (effect.outerCircleMaterial) effect.outerCircleMaterial.dispose();
                             }
 
                             // Remove the effect from the array and continue to next iteration
@@ -1527,6 +1551,44 @@
                         // Continue to next effect since we've handled this one
                         continue;
                     }
+                    // Handle expanding waves (Nhánh cập nhật vòng tròn lan tỏa bình thường)
+                    else {
+                        effect.age += 0.016; // Tăng thời gian (FPS ~ 60)
+                        const progress = Math.min(1, effect.age / effect.duration);
+
+                        // ... [GIỮ NGUYÊN ĐOẠN CODE CẬP NHẬT KÍCH THƯỚC VÒNG TRÒN CỦA BẠN Ở ĐÂY] ...
+
+                        // Khi hiệu ứng lan tỏa chạy hết thời gian 100%
+                        if (progress >= 1) {
+                            // GIẢI PHÓNG TOÀN BỘ VÒNG TRÒN LAN TỎA
+                            if (effect.circle) {
+                                globeGroup.remove(effect.circle);
+                                if (effect.circleGeometry) effect.circleGeometry.dispose();
+                                if (effect.circleMaterial) effect.circleMaterial.dispose();
+                            }
+                            if (effect.outerCircle) {
+                                globeGroup.remove(effect.outerCircle);
+                                if (effect.outerCircleGeometry) effect.outerCircleGeometry.dispose();
+                                if (effect.outerCircleMaterial) effect.outerCircleMaterial.dispose();
+                            }
+                            if (effect.middleRing) {
+                                globeGroup.remove(effect.middleRing);
+                                if (effect.middleRing.geometry) effect.middleRing.geometry.dispose();
+                                if (effect.middleRingMaterial) effect.middleRingMaterial.dispose();
+                            }
+
+                            // Phòng trường hợp có tâm đỏ (bullseye) nhưng chưa kịp kích hoạt fadeout đã bị xóa
+                            if (effect.centerDot) {
+                                globeGroup.remove(effect.centerDot);
+                                if (effect.centerDot.geometry) effect.centerDot.geometry.dispose();
+                                if (effect.centerDotMaterial) effect.centerDotMaterial.dispose();
+                            }
+
+                            // Xóa khỏi danh sách quản lý
+                            impactEffects.splice(i, 1);
+                        }
+                    }
+
 
                     // Safety check: if this effect is linked to an arc that no longer exists
                     // or is about to be removed, start fading it out
