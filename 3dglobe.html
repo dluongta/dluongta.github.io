@@ -1489,7 +1489,10 @@
                         if (arc.arc) {
                             globeGroup.remove(arc.arc);
                             if (arc.arc.geometry) arc.arc.geometry.dispose();
-                            if (arc.arc.material) arc.arc.material.dispose();
+                            if (arc.arc.material) {
+                                if (arc.arc.material.map) arc.arc.material.map.dispose();
+                                arc.arc.material.dispose();
+                            }
                         }
                         arcs.splice(i, 1);
                     }
@@ -1532,14 +1535,15 @@
                             }
 
                             // 2. GIẢI PHÓNG TOÀN BỘ CÁC VÒNG TRÒN LAN TỎA (Dọn rác triệt để)
+                            // 2. GIẢI PHÓNG TOÀN BỘ CÁC VÒNG TRÒN LAN TỎA (Đã fix)
                             if (effect.circle) {
                                 globeGroup.remove(effect.circle);
-                                if (effect.circleGeometry) effect.circleGeometry.dispose();
+                                if (effect.circle.geometry) effect.circle.geometry.dispose(); // Sửa thành effect.circle.geometry
                                 if (effect.circleMaterial) effect.circleMaterial.dispose();
                             }
                             if (effect.outerCircle) {
                                 globeGroup.remove(effect.outerCircle);
-                                if (effect.outerCircleGeometry) effect.outerCircleGeometry.dispose();
+                                if (effect.outerCircle.geometry) effect.outerCircle.geometry.dispose(); // Sửa thành effect.outerCircle.geometry
                                 if (effect.outerCircleMaterial) effect.outerCircleMaterial.dispose();
                             }
 
