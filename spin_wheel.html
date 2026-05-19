@@ -65,7 +65,6 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
         }
 
-        /* Mũi tên chỉ định ở trên đầu trỏ xuống */
         .pointer {
             position: absolute;
             top: -25px;
@@ -79,7 +78,6 @@
             z-index: 10;
         }
 
-        /* Nút quay */
         .spin-btn {
             margin-top: 30px;
             background-color: #ff9800;
@@ -92,77 +90,24 @@
             background-color: #ff6c03;
         }
 
-        /* Dòng hiển thị kết quả ở dưới cùng */
         .status-result {
             margin-top: 25px;
             font-size: 30px;
             font-weight: bold;
             color: #ff9800;
             padding: 10px 20px;
-            /* background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); */
-            min-width: 200px;
+            max-width: 90%;
             text-align: center;
+            word-wrap: break-word;
+            word-break: break-word;
+            line-height: 1.4;
         }
 
-        /* Modal Overlay */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* Modal Box */
-        .modal-box {
-            background: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            max-width: 400px;
-            width: 90%;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .modal-box {
-            transform: scale(1);
-        }
-
-        .modal-box h2 {
-            margin-top: 0;
-            color: #d9534f;
-        }
-
-        .modal-box p {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            margin: 20px 0;
-        }
-
-        .modal-box button {
-            background-color: #f0ad4e;
-        }
-
-        .modal-box button:hover {
-            background-color: #ec971f;
+        .status-result span {
+            display: block;
+            font-size: 28px;
+            color: #ff9800;
+            margin-top: 5px;
         }
 
         @media (max-width: 768px) {
@@ -186,6 +131,10 @@
             .status-result {
                 font-size: 24px;
             }
+
+            .status-result span {
+                font-size: 22px;
+            }
         }
     </style>
 </head>
@@ -207,14 +156,6 @@
     <button class="spin-btn" id="spinBtn" onclick="spin()">Quay Ngay</button>
 
     <div class="status-result" id="statusResult">Chưa có kết quả</div>
-
-    <div class="modal-overlay" id="resultModal">
-        <div class="modal-box">
-            <h2>🎉 Chúc Mừng! 🎉</h2>
-            <p id="winnerName">Tên vật phẩm</p>
-            <button onclick="closeModalAndRemove()">OK</button>
-        </div>
-    </div>
 
     <script>
         let items = [];
@@ -280,20 +221,16 @@
             for (let i = 0; i < items.length; i++) {
                 let angle = startAngle + i * arc;
 
-                // VẼ MẢNG MÀU
                 ctx.beginPath();
                 ctx.arc(radius, radius, radius, angle, angle + arc, false);
                 ctx.lineTo(radius, radius);
                 ctx.fillStyle = colors[i];
                 ctx.fill();
 
-                // FIX LỖI ĐƯỜNG KẺ TRẮNG: 
-                // Đổi strokeStyle trùng với màu fill của mảng đó và tăng khít nét để chúng tự đè sát khít vào nhau không lộ nền trắng.
                 ctx.lineWidth = 1.5;
                 ctx.strokeStyle = colors[i];
                 ctx.stroke();
 
-                // VẼ CHỮ
                 ctx.save();
                 ctx.fillStyle = "#fff";
                 ctx.font = "bold 18px Arial";
@@ -356,28 +293,15 @@
             let normalizedStart = startAngle % (2 * Math.PI);
             if (normalizedStart < 0) normalizedStart += 2 * Math.PI;
 
-            let pointerAngle = 1.5 * Math.PI; // Vị trí 12 giờ trên Canvas
+            let pointerAngle = 1.5 * Math.PI;
             let relativeAngle = (pointerAngle - normalizedStart + 2 * Math.PI) % (2 * Math.PI);
 
             currentWinnerIndex = Math.floor(relativeAngle / arc);
 
             if (currentWinnerIndex >= items.length) currentWinnerIndex = 0;
 
-            // Cập nhật kết quả xuống dưới cùng ngay khi dừng quay
-            document.getElementById("statusResult").innerHTML = `🎯 ${items[currentWinnerIndex]}`;
+            document.getElementById("statusResult").innerHTML = `<span>${items[currentWinnerIndex]}</span>`;
 
-            showModal();
-        }
-
-        function showModal() {
-            document.getElementById("winnerName").innerText = items[currentWinnerIndex];
-            document.getElementById("resultModal").classList.add("active");
-        }
-
-        function closeModalAndRemove() {
-            document.getElementById("resultModal").classList.remove("active");
-
-            // Xóa vật phẩm vừa trúng khỏi danh sách
             items.splice(currentWinnerIndex, 1);
             colors.splice(currentWinnerIndex, 1);
 
