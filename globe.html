@@ -542,7 +542,7 @@
         // const isMobile = window.innerWidth <= 768;
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         // Position camera with a higher angle view
-        if (isMobile) camera.position.z = 50;
+        if (isMobile) camera.position.z = 45;
         else camera.position.z = 30;
         camera.position.y = 10; // Add elevation for top-down angle
         camera.lookAt(0, 0, 0); // Ensure camera is looking at the center of the globe
