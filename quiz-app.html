@@ -13,8 +13,52 @@
 
     body {
       font-family: Arial, sans-serif;
-      display: flex;
       margin: 0;
+      height: 100vh;
+      background: #fafafa;
+    }
+
+    /* ===== MÀN HÌNH START KHỞI ĐẦU ===== */
+    #start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #start-screen h1 {
+      color: #2196F3;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+
+    #start-screen p {
+      color: #555;
+      font-size: 18px;
+      margin-bottom: 25px;
+    }
+
+    #startBtn {
+      font-size: 20px;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    #startBtn:hover {
+      background: #0b7dda;
+      transform: scale(1.05);
+    }
+
+    /* ===== VÙNG CHỨA GIAO DIỆN LÀM BÀI ===== */
+    .quiz-container {
+      display: none;
+      /* Ẩn đi lúc đầu, chuyển thành flex khi nhấn Start */
       height: 100vh;
     }
 
@@ -23,19 +67,10 @@
       background: #f4f4f4;
       padding: 10px;
       border-right: 1px solid #ccc;
-    }
-
-    .sidebar {
-      width: 120px;
-      background: #f4f4f4;
-      padding: 10px;
-      border-right: 1px solid #ccc;
-
       height: 100vh;
       overflow-y: auto;
       overflow-x: hidden;
     }
-
 
     .sidebar button {
       width: 100%;
@@ -59,17 +94,6 @@
       border: 2px solid #2196F3;
     }
 
-    .sidebar button.group-hover {
-      background: #0b7dda !important;
-      color: white !important;
-    }
-
-    .sidebar button.group-hover {
-      background: #2196F3 !important;
-      color: white !important;
-      border: none !important;
-    }
-
     .sidebar button.group-hover,
     .sidebar button.answered:hover,
     .sidebar button.active:hover {
@@ -91,7 +115,9 @@
     .main {
       flex: 1;
       padding: 20px;
+      height: 100vh;
       overflow-y: auto;
+      min-width: 0;
     }
 
     #timer {
@@ -103,6 +129,7 @@
     .question {
       margin-bottom: 25px;
       padding-left: 15px;
+      padding-right: 18px;
     }
 
     .question.correct-question {
@@ -155,14 +182,14 @@
       transform: rotate(45deg);
     }
 
-    .correct-answer {
+    .correct-answer-display {
       color: green;
       font-weight: bold;
-    }
-
-    .wrong-answer {
-      color: red;
-      font-weight: bold;
+      margin-top: 10px;
+      background: #e8f5e9;
+      padding: 10px;
+      border-radius: 5px;
+      border-left: 4px solid green;
     }
 
     input[type="text"] {
@@ -202,20 +229,6 @@
       max-width: 400px;
     }
 
-    .sidebar button.group-hover {
-      background: #2196F3 !important;
-      color: white !important;
-      border: none !important;
-    }
-
-    .main {
-      flex: 1;
-      padding: 20px;
-      height: 100vh;
-      overflow-y: auto;
-      min-width: 0;
-    }
-
     @media (max-width: 768px) {
       .sidebar {
         width: 92px;
@@ -240,39 +253,35 @@
         align-items: flex-start;
       }
     }
-
-    .question {
-      padding-right: 18px;
-    }
-
-    .option.correct-answer {
-      color: green;
-      font-weight: bold;
-    }
-
-    .option.wrong-answer {
-      color: red;
-      font-weight: bold;
-    }
   </style>
 </head>
 
 <body>
 
-  <div class="sidebar" id="sidebar"></div>
+  <!-- Màn hình chờ ban đầu -->
+  <div id="start-screen">
+    <h1>Programming Quiz</h1>
+    <p>Thời gian làm bài: 10 phút | Số lượng: 30 câu hỏi</p>
+    <button id="startBtn">Start Quiz</button>
+  </div>
 
-  <div class="main">
-    <div id="timer">Time Left: 00:10:00</div>
-    <div id="quiz"></div>
+  <!-- Vùng chứa toàn bộ giao diện bài trắc nghiệm (mặc định ẩn) -->
+  <div id="quiz-container" class="quiz-container">
+    <div class="sidebar" id="sidebar"></div>
 
-    <div class="action-buttons">
-      <button id="prevBtn">Previous</button>
-      <button id="nextBtn">Next</button>
-      <button id="resetBtn">Reset</button>
-      <button id="submitBtn">Submit</button>
+    <div class="main">
+      <div id="timer">Time Left: 00:10:00</div>
+      <div id="quiz"></div>
+
+      <div class="action-buttons">
+        <button id="prevBtn">Previous</button>
+        <button id="nextBtn">Next</button>
+        <button id="resetBtn">Reset</button>
+        <button id="submitBtn">Submit</button>
+      </div>
+
+      <div id="results"></div>
     </div>
-
-    <div id="results"></div>
   </div>
 
   <script>
@@ -341,18 +350,14 @@
 
     ];
 
-
-
     // const pages = [[0, 1], [2, 3], [4]];
     const QUESTIONS_PER_PAGE = 5;
 
     const pages = [];
     for (let i = 0; i < questions.length; i += QUESTIONS_PER_PAGE) {
       pages.push(
-        Array.from(
-          { length: QUESTIONS_PER_PAGE },
-          (_, j) => i + j
-        ).filter(index => index < questions.length)
+        Array.from({ length: QUESTIONS_PER_PAGE }, (_, j) => i + j)
+          .filter(index => index < questions.length)
       );
     }
 
@@ -366,10 +371,14 @@
     const sidebar = document.getElementById("sidebar");
     const results = document.getElementById("results");
 
-    /* ===== RADIO TOGGLE FIX ===== */
+    // Khai báo các phần tử DOM mới cho màn hình chờ
+    const startScreen = document.getElementById("start-screen");
+    const quizContainer = document.getElementById("quiz-container");
+    const startBtn = document.getElementById("startBtn");
+
     function handleSingleToggle(i, val) {
       if (userAnswers[i] === val) {
-        delete userAnswers[i]; // bỏ chọn
+        delete userAnswers[i];
       } else {
         userAnswers[i] = val;
       }
@@ -399,7 +408,7 @@
       const q = questions[i];
       const u = userAnswers[i];
       if (!u) return false;
-      if (q.type === "text") return q.correct.includes(u);
+      if (q.type === "text") return q.correct.some(ans => ans.toLowerCase() === u.toLowerCase());
       if (q.type === "multi") return u.length === q.correct.length && u.every(x => q.correct.includes(x));
       return u === q.correct[0];
     }
@@ -410,10 +419,11 @@
         const btn = document.createElement("button");
         btn.textContent = i + 1;
         const pageIndex = pages.findIndex(p => p.includes(i));
+
         if (pages[currentPage].includes(i)) btn.classList.add("active");
         if (!isSubmitted && isAnswered(i)) btn.classList.add("answered");
         if (isSubmitted) btn.classList.add(isCorrect(i) ? "correct" : "incorrect");
-        // btn.onclick=()=>{ currentPage=pageIndex; renderQuiz(); };
+
         btn.onclick = () => {
           currentPage = pageIndex;
           renderQuiz();
@@ -434,8 +444,6 @@
         };
 
         sidebar.appendChild(btn);
-
-        sidebar.appendChild(btn);
       });
     }
 
@@ -446,27 +454,20 @@
         let questionClass = "question";
 
         if (isSubmitted) {
-          questionClass += isCorrect(i)
-            ? " correct-question"
-            : " incorrect-question";
+          questionClass += isCorrect(i) ? " correct-question" : " incorrect-question";
         }
 
         let html = `<div class="${questionClass}">
-
-      <strong>Q${i + 1}.</strong> ${q.question}
-      <div class="question-type">
-        ${q.type === "single" ? "(Select one answer)" : q.type === "multi" ? "(Select multiple answers)" : "(Fill in the blank)"}
-      </div>`;
+          <strong>Q${i + 1}.</strong> ${q.question}
+          <div class="question-type">
+            ${q.type === "single" ? "(Select one answer)" : q.type === "multi" ? "(Select multiple answers)" : "(Fill in the blank)"}
+          </div>`;
 
         if (q.type === "text") {
           html += `<input type="text"
-  value="${userAnswers[i] || ""}"
-  ${isSubmitted ? "disabled" : ""}
-  ${!isSubmitted
-              ? `oninput="userAnswers[${i}]=this.value.trim(); renderSidebar()"`
-              : ""
-            }>
-`;
+            value="${userAnswers[i] || ""}"
+            ${isSubmitted ? "disabled" : ""}
+            ${!isSubmitted ? `oninput="userAnswers[${i}]=this.value.trim(); renderSidebar()"` : ""}>`;
         } else {
           Object.entries(q.answers).forEach(([k, v]) => {
             const checked = q.type === "multi"
@@ -474,23 +475,27 @@
               : userAnswers[i] === k;
 
             html += `
-        <label class="option">
-          <input type="${q.type === "multi" ? "checkbox" : "radio"}"
-  name="q${i}"
-  ${checked ? "checked" : ""}
-  ${isSubmitted ? "disabled" : ""}
-  ${!isSubmitted
-                ? (q.type === "multi"
-                  ? `onclick="handleChoice(${i},'${k}',true)"`
-                  : `onclick="handleSingleToggle(${i},'${k}')"`
-                )
-                : ""
-              }>
-
-          <span class="custom-check"></span>${k}. ${v}
-        </label>`;
+              <label class="option">
+                <input type="${q.type === "multi" ? "checkbox" : "radio"}"
+                  name="q${i}"
+                  ${checked ? "checked" : ""}
+                  ${isSubmitted ? "disabled" : ""}
+                  ${!isSubmitted ? (q.type === "multi" ? `onclick="handleChoice(${i},'${k}',true)"` : `onclick="handleSingleToggle(${i},'${k}')"`) : ""}>
+                <span class="custom-check"></span>${k}. ${v}
+              </label>`;
           });
         }
+
+        if (isSubmitted) {
+          let correctString = "";
+          if (q.type === "text") {
+            correctString = q.correct.join(" hoặc ");
+          } else {
+            correctString = q.correct.map(key => `${key}. ${q.answers[key]}`).join(" / ");
+          }
+          html += `<div class="correct-answer-display">Đáp án đúng: ${correctString}</div>`;
+        }
+
         html += "</div><hr>";
         quiz.innerHTML += html;
       });
@@ -530,9 +535,13 @@
       }, 1000);
     }
 
-
-    renderQuiz();
-    startTimer();
+    // Xử lý sự kiện nhấn nút Start Quiz
+    startBtn.onclick = () => {
+      startScreen.style.display = "none";
+      quizContainer.style.display = "flex";
+      renderQuiz();
+      startTimer();
+    };
   </script>
 </body>
 
