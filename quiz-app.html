@@ -74,7 +74,7 @@
       margin-bottom: 6px;
       padding: 10px;
       border-radius: 6px;
-      border: none;
+      border: 2px solid transparent;
       cursor: pointer;
       font-weight: bold;
       background: #ddd;
@@ -84,27 +84,27 @@
     .sidebar button.active {
       background: #2196F3 !important;
       color: white !important;
-      border: none !important;
+      border-color: transparent !important;
+    }
+
+    .sidebar button.answered,
+    .sidebar button.active.answered {
+      background: white !important;
+      color: #2196F3 !important;
+      border-color: #2196F3 !important;
     }
 
     .sidebar button:hover,
     .sidebar button.group-hover,
     .sidebar button.active:hover,
-    .sidebar button.active.group-hover {
-      background: #0b7dda !important;
-      color: white !important;
-      border: none !important;
-    }
-
-    .sidebar button.answered,
+    .sidebar button.active.group-hover,
     .sidebar button.answered:hover,
     .sidebar button.answered.group-hover,
-    .sidebar button.active.answered,
     .sidebar button.active.answered:hover,
     .sidebar button.active.answered.group-hover {
-      background: white !important;
-      color: #2196F3 !important;
-      border: 2px solid #2196F3 !important;
+      background: #0b7dda !important;
+      color: white !important;
+      border-color: #0b7dda !important;
     }
 
     .sidebar button.correct,
@@ -112,7 +112,7 @@
     .sidebar button.correct.group-hover {
       background: green !important;
       color: white !important;
-      border: none !important;
+      border-color: transparent !important;
     }
 
     .sidebar button.incorrect,
@@ -120,7 +120,7 @@
     .sidebar button.incorrect.group-hover {
       background: red !important;
       color: white !important;
-      border: none !important;
+      border-color: transparent !important;
     }
 
     .main {
