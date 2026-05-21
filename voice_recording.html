@@ -53,49 +53,12 @@
         .status {
             color: #57606f;
             font-size: 0.95rem;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             height: 20px;
             font-weight: 500;
         }
 
-        /* Hiệu ứng sóng âm khi ghi âm */
-        .visualizer-container {
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 30px;
-        }
-
-        .bar {
-            width: 4px;
-            height: 8px;
-            background-color: var(--primary);
-            border-radius: 4px;
-            transition: transform 0.2s ease;
-            animation: none;
-        }
-
-        .recording .bar {
-            animation: bounce 0.8s ease-in-out infinite alternate;
-        }
-
-        /* Tạo độ trễ cho từng cột sóng để nhìn tự nhiên hơn */
-        .recording .bar:nth-child(1) { animation-delay: 0.1s; }
-        .recording .bar:nth-child(2) { animation-delay: 0.3s; }
-        .recording .bar:nth-child(3) { animation-delay: 0.6s; }
-        .recording .bar:nth-child(4) { animation-delay: 0.2s; }
-        .recording .bar:nth-child(5) { animation-delay: 0.5s; }
-        .recording .bar:nth-child(6) { animation-delay: 0.4s; }
-        .recording .bar:nth-child(7) { animation-delay: 0.7s; }
-
-        @keyframes bounce {
-            0% { transform: scaleY(1); }
-            100% { transform: scaleY(6); }
-        }
-
-        /* Nút bấm điều khiển */
+        /* Bộ nút điều khiển */
         .controls {
             display: flex;
             justify-content: center;
@@ -147,6 +110,60 @@
             background-color: var(--primary-hover);
         }
 
+        /* -------------------------------------------
+           THIẾT LẬP ĐỂ SÓNG LAN TỪ ICON TRÒN BÊN TRONG
+        ------------------------------------------- */
+        .icon-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+        }
+
+        .icon-wrapper svg {
+            position: relative;
+            z-index: 2; /* Đảm bảo icon gốc luôn nằm trên cùng */
+        }
+
+        /* Tạo 2 lớp sóng tròn ẩn phía sau icon */
+        .recording-pulse .icon-wrapper::before,
+        .recording-pulse .icon-wrapper::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #fff; 
+            border-radius: 50%; 
+            z-index: 1;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* Kích hoạt animation khi bắt đầu ghi âm */
+        .recording-pulse .icon-wrapper::before {
+            animation: circleWave 1.4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+        }
+
+        .recording-pulse .icon-wrapper::after {
+            animation: circleWave 1.4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+            animation-delay: 0.7s; /* Lệch pha để tạo sóng gối đuôi mượt hơn */
+        }
+
+        /* Khung chuyển động: Phóng to hình tròn và mờ dần */
+        @keyframes circleWave {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(4.5); /* Độ rộng của vòng sóng tròn */
+                opacity: 0;
+            }
+        }
+        /* ------------------------------------------- */
+
         /* Khu vực nghe lại */
         .audio-preview {
             margin-top: 20px;
@@ -184,21 +201,13 @@
         <h1>Máy Ghi Âm</h1>
         <div class="status" id="statusText">Sẵn sàng ghi âm</div>
 
-        <!-- Sóng âm trang trí -->
-        <div class="visualizer-container" id="visualizer">
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-        </div>
-
         <!-- Bộ nút điều khiển -->
         <div class="controls">
             <button id="startBtn">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8"/></svg>
+                <!-- Bọc SVG trong một class wrapper để định vị tâm vòng tròn -->
+                <span class="icon-wrapper">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8"/></svg>
+                </span>
                 Bắt đầu
             </button>
             <button id="stopBtn" disabled>
@@ -217,11 +226,11 @@
     <script>
         let mediaRecorder;
         let audioChunks = [];
+        let currentStream = null;
 
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const statusText = document.getElementById('statusText');
-        const visualizer = document.getElementById('visualizer');
         const previewContainer = document.getElementById('previewContainer');
         const audioPlayback = document.getElementById('audioPlayback');
 
@@ -230,36 +239,36 @@
             audioChunks = []; 
             
             try {
-                // Xin quyền micro từ người dùng
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                
-                mediaRecorder = new MediaRecorder(stream);
+                currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(currentStream);
                 
                 mediaRecorder.ondataavailable = event => {
                     audioChunks.push(event.data);
                 };
 
                 mediaRecorder.onstop = () => {
-                    // Chuyển dữ liệu ghi âm thành một URL để có thể nghe lại
                     const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
                     const audioUrl = URL.createObjectURL(audioBlob);
                     audioPlayback.src = audioUrl;
                     
-                    // Hiển thị khung nghe lại
                     previewContainer.classList.add('show');
                     
-                    // Tắt luồng micro để bảo mật (đèn báo mic trên trình duyệt sẽ tắt)
-                    stream.getTracks().forEach(track => track.stop());
+                    if (currentStream) {
+                        currentStream.getTracks().forEach(track => track.stop());
+                    }
                 };
 
-                // Bắt đầu ghi
                 mediaRecorder.start();
                 
-                // Cập nhật giao diện
+                // Cập nhật giao diện khi đang ghi âm
                 statusText.innerText = "Đang ghi âm... nói đi nào!";
                 statusText.style.color = "#ff4757";
-                visualizer.classList.add('recording');
-                startBtn.disabled = true;
+                
+                // Kích hoạt class hiệu ứng sóng tròn tại Icon
+                startBtn.classList.add('recording-pulse');
+                
+                // Khóa bấm nhưng giữ hiệu ứng hoạt động
+                startBtn.style.pointerEvents = 'none'; 
                 stopBtn.disabled = false;
 
             } catch (err) {
@@ -274,11 +283,14 @@
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();
                 
-                // Cập nhật giao diện
+                // Cập nhật giao diện sau khi dừng
                 statusText.innerText = "Đã ghi xong!";
                 statusText.style.color = "#2ed573";
-                visualizer.classList.remove('recording');
-                startBtn.disabled = false;
+                
+                // Hủy bỏ hiệu ứng và mở khóa nút
+                startBtn.classList.remove('recording-pulse');
+                startBtn.style.pointerEvents = 'auto';
+                
                 stopBtn.disabled = true;
             }
         });

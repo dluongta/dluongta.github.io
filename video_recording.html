@@ -211,26 +211,26 @@
 <body>
 
     <div class="container">
-        <h1>📸 Studio Trực Tuyến</h1>
+        <h1>Studio Trực Tuyến</h1>
         
         <div class="video-wrapper">
-            <div class="camera-off-text" id="cameraOffText">📷 Camera đang tắt</div>
+            <div class="camera-off-text" id="cameraOffText">Camera đang tắt</div>
             <video id="livePreview" autoplay muted playsinline></video>
         </div>
 
         <div class="controls">
             <button id="switchCameraBtn">
-                <span>🔄</span> Lật Camera
+                <span></span> Lật Camera
             </button>
             <button id="toggleCameraBtn">
-                <span>📷</span> Tắt Camera
+                <span></span> Tắt Camera
             </button>
             
             <button id="startBtn">
-                <span class="icon">▶️</span> Bắt đầu quay
+                <span class="icon">▶</span> Bắt đầu quay
             </button>
             <button id="stopBtn" disabled>
-                <span>⏹️</span> Dừng lại
+                <span>⏹</span> Dừng lại
             </button>
         </div>
 
@@ -239,7 +239,7 @@
             <div class="video-wrapper">
                 <video id="playbackVideo" controls playsinline></video>
             </div>
-            <a id="downloadBtn" download="recorded_video.webm">⬇️ Tải Video Về Máy</a>
+            <a id="downloadBtn" download="recorded_video.webm">Tải Video Về Máy</a>
         </div>
     </div>
 
@@ -281,7 +281,7 @@
                 
                 cameraOffText.style.display = 'none';
                 livePreview.style.display = 'block';
-                toggleCameraBtn.innerHTML = '<span>📷</span> Tắt Camera';
+                toggleCameraBtn.innerHTML = '<span></span> Tắt Camera';
                 startBtn.disabled = false;
                 switchCameraBtn.disabled = false;
             } catch (err) {
