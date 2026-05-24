@@ -105,15 +105,13 @@
     <div class="small">3 → 2 → 1 → CHÚC MỪNG SINH NHẬT → 09/01/2003 → ĐÌNH LƯƠNG TẠ → DLUONGTA</div>
     <div style="margin-top:8px">
       <button id="restart">Chạy lại</button>
-      <button id="toggleAccent">Chữ có dấu: TẮT</button>
+      <button id="toggleAccent">Chữ có dấu: BẬT</button>
     </div>
   </div>
 </div>
 
 <div id="canvas-container">
-  <!-- Canvas mưa mã code -->
   <canvas id="rainCanvas"></canvas>
-  <!-- Canvas hạt text -->
   <canvas id="canvas"></canvas>
 </div>
 
@@ -144,7 +142,7 @@
   
   const textsUnaccented = ['3','2','1','CHUC', 'MUNG', 'SINH' ,'NHAT','09/01/2003','DINH LUONG TA', 'DLUONGTA'];
   const textsAccented = ['3','2','1','CHÚC', 'MỪNG', 'SINH', 'NHẬT','09/01/2003','ĐÌNH LƯƠNG TẠ', 'DLUONGTA'];
-  let useAccent = false;
+  let useAccent = true; 
 
   let particlePool = []; 
   let particles = []; 
@@ -157,9 +155,11 @@
   // --- CẤU HÌNH MƯA CODE (CODE RAIN) ---
   const rainFontSize = 18;
   const rainString = "DINHLUONGTA ";
-  // Tím, Xanh dương, Hồng, Cam
   const rainColors = ['#9370db', '#00bfff', '#ff69b4', '#ffa500'];
   let rainDrops = [];
+  
+  let lastRainDrawTime = 0;
+  const rainUpdateInterval = 60; // Thời gian delay vẽ mưa code (ms), giúp mưa rơi chậm lại
 
   // Logic Resize cho cả 2 canvas
   function resize(){
@@ -181,10 +181,14 @@
     rainCanvas.style.height = h + 'px';
     rainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-    // Cập nhật số cột mưa
+    // Tính số cột và khởi tạo hạt mưa theo số lượng (cho phép 3 hạt rơi trên cùng 1 cột)
     const rainColumns = Math.floor(w / rainFontSize) + 1;
-    rainDrops = Array.from({ length: rainColumns }).map(() => ({
-        y: Math.floor(Math.random() * -100),
+    const maxRows = Math.floor(h / rainFontSize);
+    const numDrops = rainColumns * 3;
+    
+    rainDrops = Array.from({ length: numDrops }).map(() => ({
+        x: Math.floor(Math.random() * rainColumns),
+        y: Math.floor(Math.random() * maxRows) - 50,
         color: rainColors[Math.floor(Math.random() * rainColors.length)]
     }));
   }
@@ -388,9 +392,11 @@
     }, formDuration + holdDuration);
   }
 
-  // --- HÀM VẼ MƯA CODE ---
-  function drawRain(logicalW, logicalH) {
-    // Độ mờ 0.05 tạo đuôi vệt siêu dài
+  // --- HÀM VẼ MƯA CODE (Chậm hơn & Nhiều chữ rơi trên cột) ---
+  function drawRain(logicalW, logicalH, now) {
+    if (now - lastRainDrawTime < rainUpdateInterval) return;
+    lastRainDrawTime = now;
+
     rainCtx.fillStyle = 'rgba(7, 5, 10, 0.05)';
     rainCtx.fillRect(0, 0, logicalW, logicalH);
 
@@ -400,26 +406,25 @@
     for (let i = 0; i < rainDrops.length; i++) {
       const drop = rainDrops[i];
       
-      // Ghép nối chữ "DINH LUONG TA" theo chiều dọc
-      const charIndex = drop.y % rainString.length;
-      const text = rainString.charAt(charIndex);
+      if (drop.y >= 0) {
+          const charIndex = drop.y % rainString.length;
+          const text = rainString.charAt(charIndex);
 
-      rainCtx.fillStyle = drop.color;
-      
-      // Tạo ánh sáng rực ở đầu phần tử
-      rainCtx.shadowBlur = 8;
-      rainCtx.shadowColor = drop.color;
+          rainCtx.fillStyle = drop.color;
+          rainCtx.shadowBlur = 8;
+          rainCtx.shadowColor = drop.color;
 
-      rainCtx.fillText(text, i * rainFontSize, drop.y * rainFontSize);
-
-      // Reset bóng đổ để không làm nhòe những thứ khác
-      rainCtx.shadowBlur = 0;
-
-      if (drop.y * rainFontSize > logicalH && Math.random() > 0.975) {
-        drop.y = 0;
-        drop.color = rainColors[Math.floor(Math.random() * rainColors.length)];
+          rainCtx.fillText(text, drop.x * rainFontSize, drop.y * rainFontSize);
+          rainCtx.shadowBlur = 0;
       }
-      drop.y++;
+
+      if (drop.y * rainFontSize > logicalH && Math.random() > 0.95) {
+        drop.y = Math.floor(Math.random() * -30); 
+        drop.x = Math.floor(Math.random() * (logicalW / rainFontSize)); 
+        drop.color = rainColors[Math.floor(Math.random() * rainColors.length)];
+      } else {
+        drop.y++;
+      }
     }
   }
 
@@ -431,10 +436,10 @@
     const logicalW = window.innerWidth;
     const logicalH = window.innerHeight;
 
-    // 1. Vẽ Mưa Code trên canvas dưới
-    drawRain(logicalW, logicalH);
+    // 1. Vẽ Mưa Code (Đưa biến now vào)
+    drawRain(logicalW, logicalH, now);
 
-    // 2. Vẽ Particle Text trên canvas trên (Xóa sạch trong suốt trước khi vẽ)
+    // 2. Vẽ Particle Text trên canvas
     ctx.clearRect(0,0, canvas.width, canvas.height);
 
     for (let i = 0; i < particles.length; i++){
