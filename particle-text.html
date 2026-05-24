@@ -1,516 +1,526 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Particle Text Canvas</title>
-<style>
-  html, body {
-    height: 100%;
-    margin: 0;
-    background: radial-gradient(circle at 20% 20%, #111022 0%, #0d0b1a 35%, #07050a 100%);
-    overflow: hidden;
-    font-family: "Segoe UI", Roboto, Arial, sans-serif;
-    color: #fff;
-  }
-  
-  /* Lớp chứa cả 2 canvas */
-  #canvas-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Particle Text Canvas</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(circle at 20% 20%, #111022 0%, #0d0b1a 35%, #07050a 100%);
+      overflow: hidden;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      color: #fff;
+    }
 
-  /* Canvas cho Mưa Code (Nằm dưới) */
-  #rainCanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    display: block;
-  }
+    /* Lớp chứa cả 2 canvas */
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
 
-  /* Canvas cho Particle Text (Nằm trên) */
-  #canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    display: block;
-  }
+    /* Canvas cho Mưa Code (Nằm dưới) */
+    #rainCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
 
-  .overlay {
-    position: absolute;
-    left: 20px;
-    top: 20px;
-    z-index: 10;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.85);
-    text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-    user-select: none;
-    pointer-events: none;
-  }
+    /* Canvas cho Particle Text (Nằm trên) */
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      display: block;
+    }
 
-  .overlay-content {
-    pointer-events: auto;
-  }
+    .overlay {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      z-index: 10;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: rgba(255, 255, 255, 0.85);
+      text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+      user-select: none;
+      pointer-events: none;
+    }
 
-  .small {
-    font-size: 14px;
-    opacity: 0.85;
-    margin-top: 4px;
-  }
+    .overlay-content {
+      pointer-events: auto;
+    }
 
-  .hint {
-    position: absolute;
-    left: 20px;
-    bottom: 20px;
-    z-index: 10;
-    color: rgba(255, 255, 255, 0.65);
-    font-size: 13px;
-    pointer-events: none;
-  }
+    .small {
+      font-size: 14px;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
 
-  .controls {
-    margin-top: 8px;
-  }
+    .hint {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      z-index: 10;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 13px;
+      pointer-events: none;
+    }
 
-  button {
-    background: linear-gradient(90deg, #ff9a9e, #fad0c4);
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-    font-weight: 700;
-    color: #000;
-    margin-right: 8px;
-    transition: transform 0.1s;
-  }
+    .controls {
+      margin-top: 8px;
+    }
 
-  button:active {
-    transform: translateY(1px);
-  }
-</style>
+    button {
+      background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      font-weight: 700;
+      color: #000;
+      margin-right: 8px;
+      transition: transform 0.1s;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="overlay">
-  <div class="overlay-content">
-    <div style="font-size:20px">DLUONGTA PARTICLE TEXT</div>
-    <div class="small">3 → 2 → 1 → CHÚC MỪNG SINH NHẬT → 09/01/2003 → ĐÌNH LƯƠNG TẠ → DLUONGTA</div>
-    <div class="controls">
-      <button id="restart">Chạy lại</button>
-      <button id="toggleAccent">Chữ có dấu: TẮT</button>
+  <div class="overlay">
+    <div class="overlay-content">
+      <div style="font-size:20px">DLUONGTA PARTICLE TEXT</div>
+      <div class="small">3 → 2 → 1 → CHÚC MỪNG SINH NHẬT → 09/01/2003 → ĐÌNH LƯƠNG TẠ → DLUONGTA</div>
+      <div class="controls">
+        <button id="restart">Chạy lại</button>
+        <button id="toggleAccent">Chữ có dấu: TẮT</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div id="canvas-container">
-  <canvas id="rainCanvas"></canvas>
-  <canvas id="canvas"></canvas>
-</div>
+  <div id="canvas-container">
+    <canvas id="rainCanvas"></canvas>
+    <canvas id="canvas"></canvas>
+  </div>
 
-<div class="hint">Website được tạo bởi DINH LUONG TA và sử dụng hiệu ứng Particle Text Canvas.</div>
+  <div class="hint">Website được tạo bởi DINH LUONG TA và sử dụng hiệu ứng Particle Text Canvas.</div>
 
-<script>
-(() => {
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d', { alpha: true });
-  
-  const rainCanvas = document.getElementById('rainCanvas');
-  const rainCtx = rainCanvas.getContext('2d', { alpha: true });
-  
-  let DPR = window.devicePixelRatio || 1;
+  <script>
+    (() => {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d', { alpha: true });
 
-  const off = document.createElement('canvas');
-  const offCtx = off.getContext('2d');
+      const rainCanvas = document.getElementById('rainCanvas');
+      const rainCtx = rainCanvas.getContext('2d', { alpha: true });
 
-  // --- CẤU HÌNH PARTICLE TEXT ---
-  const particleSize = 2.2; 
-  const sampleGap = 6; 
-  const formDuration = 900; 
-  const holdDuration = 700; 
-  const explodeDuration = 800; 
-  const betweenDuration = 200; 
-  
-  const textsUnaccented = ['3','2','1','CHUC', 'MUNG', 'SINH' ,'NHAT','09/01/2003','DINH LUONG TA', 'DLUONGTA'];
-  const textsAccented = ['3','2','1','CHÚC', 'MỪNG', 'SINH', 'NHẬT','09/01/2003','ĐÌNH LƯƠNG TẠ', 'DLUONGTA'];
-  let useAccent = false; // Mặc định là false giống useAccentRef.current = false ở bản React
+      let DPR = window.devicePixelRatio || 1;
 
-  let particlePool = []; 
-  let particles = []; 
-  let lastTime = performance.now();
+      const off = document.createElement('canvas');
+      const offCtx = off.getContext('2d');
 
-  let sequence = [];
-  let seqIndex = 0;
-  let timelineHandle = null;
-  let resizeTimeoutHandle = null;
+      // --- CẤU HÌNH PARTICLE TEXT ---
+      const particleSize = 2.2;
+      const sampleGap = 6;
+      const formDuration = 900;
+      const holdDuration = 700;
+      const explodeDuration = 800;
+      const betweenDuration = 200;
 
-  // --- CẤU HÌNH MƯA CODE (CODE RAIN) ---
-  const rainFontSize = 18;
-  const rainString = "DINHLUONGTA ";
-  const rainColors = ['#9370db', '#00bfff', '#ff69b4', '#ffa500'];
-  let rainDrops = [];
-  
-  let lastRainDrawTime = 0;
-  const rainUpdateInterval = 60; 
+      const textsUnaccented = ['3', '2', '1', 'CHUC', 'MUNG', 'SINH', 'NHAT', '09/01/2003', 'DINH LUONG TA', 'DLUONGTA'];
+      const textsAccented = ['3', '2', '1', 'CHÚC', 'MỪNG', 'SINH', 'NHẬT', '09/01/2003', 'ĐÌNH LƯƠNG TẠ', 'DLUONGTA'];
+      let useAccent = false; // Mặc định là false giống useAccentRef.current = false ở bản React
 
-  // Logic căn chỉnh kích thước màn hình
-  function resize(){
-    DPR = window.devicePixelRatio || 1;
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+      let particlePool = [];
+      let particles = [];
+      let lastTime = performance.now();
 
-    // Cập nhật Text Canvas
-    canvas.width = Math.floor(w * DPR);
-    canvas.height = Math.floor(h * DPR);
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      let sequence = [];
+      let seqIndex = 0;
+      let timelineHandle = null;
+      let resizeTimeoutHandle = null;
 
-    // Cập nhật Rain Canvas
-    rainCanvas.width = Math.floor(w * DPR);
-    rainCanvas.height = Math.floor(h * DPR);
-    rainCanvas.style.width = w + 'px';
-    rainCanvas.style.height = h + 'px';
-    rainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      // --- CẤU HÌNH MƯA CODE (CODE RAIN) ---
+      const rainFontSize = 18;
+      const rainString = "DINHLUONGTA ";
+      const rainColors = ['#9370db', '#00bfff', '#ff69b4', '#ffa500'];
+      let rainDrops = [];
 
-    const rainColumns = Math.floor(w / rainFontSize) + 1;
-    const dropsPerColumn = 2;
-    const totalDrops = rainColumns * dropsPerColumn;
-    
-    // Đồng bộ mẹo gán Y âm sâu dần ngẫu nhiên của React để tạo độ so le từ đỉnh màn hình đổ xuống
-    rainDrops = Array.from({ length: totalDrops }).map((_, index) => {
-        const col = index % rainColumns;
-        return {
-          x: col,
-          y: Math.floor(Math.random() * -60), 
-          color: rainColors[Math.floor(Math.random() * rainColors.length)]
-        };
-    });
+      let lastRainDrawTime = 0;
+      const rainUpdateInterval = 60;
 
-    // Debounce xử lý tính toán lại sequence khi kéo giãn màn hình
-    clearTimeout(resizeTimeoutHandle);
-    resizeTimeoutHandle = setTimeout(() => {
-      buildSequence();
-      const now = performance.now();
-      const targets = sequence[seqIndex];
-      if (targets) assignToTargets(targets, now);
-    }, 150);
-  }
+      // Logic căn chỉnh kích thước màn hình
+      function resize() {
+        DPR = window.devicePixelRatio || 1;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
 
-  // Animation helpers
-  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
-  function lerp(a,b,t){ return a + (b - a) * t; }
+        // Cập nhật Text Canvas
+        canvas.width = Math.floor(w * DPR);
+        canvas.height = Math.floor(h * DPR);
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-  class Particle {
-    constructor(x=0, y=0) {
-      this.init(x, y);
-    }
+        // Cập nhật Rain Canvas
+        rainCanvas.width = Math.floor(w * DPR);
+        rainCanvas.height = Math.floor(h * DPR);
+        rainCanvas.style.width = w + 'px';
+        rainCanvas.style.height = h + 'px';
+        rainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-    init(x, y) {
-      this.x = x;
-      this.y = y;
-      this.vx = 0;
-      this.vy = 0;
-      this.tx = x;
-      this.ty = y;
-      this.life = 1;
-      this.size = particleSize;
-      this.phase = 0; 
-      this.startX = x;
-      this.startY = y;
-      this.duration = formDuration;
-      this.alpha = 1;
-      this.color = "#fff";
-    }
+        const rainColumns = Math.floor(w / rainFontSize) + 1;
+        const dropsPerColumn = 2;
+        const totalDrops = rainColumns * dropsPerColumn;
 
-    to(targetX, targetY, now, dur=formDuration){
-      this.phase = 0;
-      this.startX = this.x;
-      this.startY = this.y;
-      this.tx = targetX;
-      this.ty = targetY;
-      this.startTime = now;
-      this.duration = dur;
-      const hue = 200 + Math.random() * 140;
-      this.color = `hsla(${hue}, 85%, ${45 + Math.random()*10}%, 1)`;
-    }
+        // Đồng bộ mẹo gán Y âm sâu dần ngẫu nhiên của React để tạo độ so le từ đỉnh màn hình đổ xuống
+        rainDrops = Array.from({ length: totalDrops }).map((_, index) => {
+          const col = index % rainColumns;
+          return {
+            x: col,
+            y: Math.floor(Math.random() * -60),
+            color: rainColors[Math.floor(Math.random() * rainColors.length)]
+          };
+        });
 
-    explode(now){
-      this.phase = 1;
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 6;
-      this.vx = Math.cos(angle) * speed;
-      this.vy = Math.sin(angle) * speed - (1 + Math.random() * 1.5);
-      this.startTime = now;
-      this.duration = explodeDuration;
-      this.alpha = 1;
-    }
-
-    update(dt, now){
-      if (this.phase === 0){
-        const t = Math.min(1, (now - this.startTime) / this.duration);
-        const e = easeOutCubic(t);
-        this.x = lerp(this.startX, this.tx, e);
-        this.y = lerp(this.startY, this.ty, e);
-        this.alpha = 0.95;
-        if (t >= 1) this.phase = 2; 
-      } else if (this.phase === 1){
-        this.vy += 0.06 * (1 + Math.random()*0.5); 
-        this.x += this.vx;
-        this.y += this.vy;
-        const t = Math.min(1, (now - this.startTime) / this.duration);
-        this.alpha = 1 - t;
-        if (t >= 1) this.alpha = 0;
-      } else {
-        this.y += Math.sin(now/800 + this.x*0.001) * 0.02;
+        // Debounce xử lý tính toán lại sequence khi kéo giãn màn hình
+        clearTimeout(resizeTimeoutHandle);
+        resizeTimeoutHandle = setTimeout(() => {
+          buildSequence();
+          const now = performance.now();
+          const targets = sequence[seqIndex];
+          if (targets) assignToTargets(targets, now);
+        }, 150);
       }
-    }
-  }
 
-  function createOrReuseParticle(x, y){
-    let p;
-    if (particlePool.length > 0){
-      p = particlePool.pop();
-      p.init(x, y);
-    } else {
-      p = new Particle(x, y);
-    }
-    return p;
-  }
+      // Animation helpers
+      function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
 
-  function buildTargetsForText(text, maxWidth){
-    const w = Math.min(window.innerWidth, 1200);
-    let fontSize;
-    if (text.length <= 3) {
-      fontSize = Math.round(w * 0.45);
-    } else {
-      fontSize = Math.round(w * 0.12);
-    }
-    fontSize = Math.max(28, Math.min(fontSize, 420));
+      class Particle {
+        constructor(x = 0, y = 0) {
+          this.init(x, y);
+        }
 
-    off.width = Math.floor(Math.min(maxWidth, canvas.width / DPR));
-    off.height = Math.floor(Math.min(400, canvas.height / DPR));
-    offCtx.clearRect(0, 0, off.width, off.height);
+        init(x, y) {
+          this.x = x;
+          this.y = y;
+          this.vx = 0;
+          this.vy = 0;
+          this.tx = x;
+          this.ty = y;
+          this.life = 1;
+          this.size = particleSize;
+          this.phase = 0;
+          this.startX = x;
+          this.startY = y;
+          this.duration = formDuration;
+          this.alpha = 1;
+          this.color = "#fff";
+        }
 
-    offCtx.textBaseline = 'middle';
-    offCtx.textAlign = 'center';
-    offCtx.fillStyle = '#fff';
-    offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
-    
-    const cx = off.width / 2;
-    const cy = off.height / 2;
-    offCtx.fillText(text, cx, cy);
+        to(targetX, targetY, now, dur = formDuration) {
+          this.phase = 0;
+          this.startX = this.x;
+          this.startY = this.y;
+          this.tx = targetX;
+          this.ty = targetY;
+          this.startTime = now;
+          this.duration = dur;
+          const hue = 200 + Math.random() * 140;
+          this.color = `hsla(${hue}, 85%, ${45 + Math.random() * 10}%, 1)`;
+        }
 
-    const img = offCtx.getImageData(0, 0, off.width, off.height);
-    const data = img.data;
-    const targets = [];
-    
-    for (let y = 0; y < off.height; y += sampleGap){
-      for (let x = 0; x < off.width; x += sampleGap){
-        const idx = (y * off.width + x) * 4;
-        const alpha = data[idx + 3];
-        if (alpha > 120){
-          const tx = (x - off.width/2) + (canvas.width / DPR) / 2;
-          const ty = (y - off.height/2) + (canvas.height / DPR) / 2;
-          targets.push({x: tx, y: ty});
+        explode(now) {
+          this.phase = 1;
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2 + Math.random() * 6;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed - (1 + Math.random() * 1.5);
+          this.startTime = now;
+          this.duration = explodeDuration;
+          this.alpha = 1;
+        }
+
+        update(dt, now) {
+          if (this.phase === 0) {
+            const t = Math.min(1, (now - this.startTime) / this.duration);
+            const e = easeOutCubic(t);
+            this.x = lerp(this.startX, this.tx, e);
+            this.y = lerp(this.startY, this.ty, e);
+            this.alpha = 0.95;
+            if (t >= 1) this.phase = 2;
+          } else if (this.phase === 1) {
+            this.vy += 0.06 * (1 + Math.random() * 0.5);
+            this.x += this.vx;
+            this.y += this.vy;
+            const t = Math.min(1, (now - this.startTime) / this.duration);
+            this.alpha = 1 - t;
+            if (t >= 1) this.alpha = 0;
+          } else {
+            this.y += Math.sin(now / 800 + this.x * 0.001) * 0.02;
+          }
         }
       }
-    }
-    return targets;
-  }
 
-  function buildSequence(){
-    const arr = useAccent ? textsAccented : textsUnaccented;
-    sequence = arr.map(t => buildTargetsForText(t, Math.floor(canvas.width / DPR) - 80));
-    seqIndex = 0;
-  }
-
-  function initParticles(count){
-    particles = [];
-    for (let i = 0; i < count; i++){
-      const px = Math.random() * (canvas.width / DPR);
-      const py = Math.random() * (canvas.height / DPR);
-      const p = createOrReuseParticle(px, py);
-      p.phase = 2;
-      particles.push(p);
-    }
-  }
-
-  function assignToTargets(targets, now){
-    if (particles.length < targets.length){
-      const need = targets.length - particles.length;
-      for (let i = 0; i < need; i++){
-        const px = Math.random() * (canvas.width / DPR);
-        const py = Math.random() * (canvas.height / DPR);
-        particles.push(createOrReuseParticle(px, py));
-      }
-    }
-    const cx = (canvas.width / DPR)/2, cy = (canvas.height / DPR)/2;
-    particles.sort((a,b) => (Math.hypot(a.x-cx, a.y-cy) - Math.hypot(b.x-cx, b.y-cy)));
-
-    for (let i = 0; i < targets.length; i++){
-      const t = targets[i];
-      const p = particles[i];
-      p.to(t.x + (Math.random()-0.5)*0.6, t.y + (Math.random()-0.5)*0.6, now, formDuration + Math.random()*200);
-    }
-    for (let i = targets.length; i < particles.length; i++){
-      const p = particles[i];
-      const edgeX = Math.random() < 0.5 ? -30 : (canvas.width / DPR) + 30;
-      const py = Math.random() * (canvas.height / DPR);
-      p.to(edgeX, py, now, 1000 + Math.random()*800);
-    }
-  }
-
-  function explodeAll(now){
-    particles.forEach(p => p.explode(now));
-  }
-
-  function startSequence(){
-    buildSequence();
-    const maxCount = Math.max(...sequence.map(a => a.length));
-
-    if (particles.length > 0) {
-      particlePool.push(...particles);
-      particles = [];
-    }
-
-    initParticles(Math.min(1500, maxCount + 200));
-    seqIndex = 0;
-    runNextStage();
-  }
-
-  function runNextStage(){
-    if (!sequence.length) return;
-    const now = performance.now();
-    const targets = sequence[seqIndex];
-    assignToTargets(targets, now);
-    
-    clearTimeout(timelineHandle);
-    timelineHandle = setTimeout(() => {
-      explodeAll(performance.now());
-      timelineHandle = setTimeout(() => {
-        seqIndex++;
-        if (seqIndex >= sequence.length){
-          timelineHandle = setTimeout(() => {
-            seqIndex = 0;
-            runNextStage();
-          }, 1200);
+      function createOrReuseParticle(x, y) {
+        let p;
+        if (particlePool.length > 0) {
+          p = particlePool.pop();
+          p.init(x, y);
         } else {
-          runNextStage();
+          p = new Particle(x, y);
         }
-      }, explodeDuration + betweenDuration);
-    }, formDuration + holdDuration);
-  }
-
-  // --- HÀM VẼ MƯA CODE MATRIX ---
-  function drawRain(logicalW, logicalH, now) {
-    if (now - lastRainDrawTime < rainUpdateInterval) return;
-    lastRainDrawTime = now;
-
-    rainCtx.fillStyle = 'rgba(7, 5, 10, 0.05)';
-    rainCtx.fillRect(0, 0, logicalW, logicalH);
-
-    rainCtx.font = `bold ${rainFontSize}px monospace`;
-    rainCtx.textAlign = "center";
-
-    for (let i = 0; i < rainDrops.length; i++) {
-      const drop = rainDrops[i];
-      
-      if (drop.y >= 0) {
-          const charIndex = drop.y % rainString.length;
-          const text = rainString.charAt(charIndex);
-
-          rainCtx.fillStyle = drop.color;
-          rainCtx.shadowColor = drop.color;
-
-          rainCtx.fillText(text, drop.x * rainFontSize, drop.y * rainFontSize);
-          rainCtx.shadowBlur = 0;
+        return p;
       }
 
-      if (drop.y * rainFontSize > logicalH) {
-        drop.y = Math.floor(Math.random() * -3); 
-        drop.color = rainColors[Math.floor(Math.random() * rainColors.length)];
-      } else {
-        drop.y++;
+      function buildTargetsForText(text, maxWidth) {
+        const w = Math.min(window.innerWidth, 1200);
+        let fontSize;
+        if (text.length <= 3) {
+          fontSize = Math.round(w * 0.45);
+        } else {
+          fontSize = Math.round(w * 0.12);
+        }
+        fontSize = Math.max(28, Math.min(fontSize, 420));
+
+        off.width = Math.floor(Math.min(maxWidth, canvas.width / DPR));
+        off.height = Math.floor(Math.min(400, canvas.height / DPR));
+        offCtx.clearRect(0, 0, off.width, off.height);
+
+        offCtx.textBaseline = 'middle';
+        offCtx.textAlign = 'center';
+        offCtx.fillStyle = '#fff';
+        offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
+
+        const cx = off.width / 2;
+        const cy = off.height / 2;
+        offCtx.fillText(text, cx, cy);
+
+        const img = offCtx.getImageData(0, 0, off.width, off.height);
+        const data = img.data;
+        const targets = [];
+
+        for (let y = 0; y < off.height; y += sampleGap) {
+          for (let x = 0; x < off.width; x += sampleGap) {
+            const idx = (y * off.width + x) * 4;
+            const alpha = data[idx + 3];
+            if (alpha > 120) {
+              const tx = (x - off.width / 2) + (canvas.width / DPR) / 2;
+              const ty = (y - off.height / 2) + (canvas.height / DPR) / 2;
+              targets.push({ x: tx, y: ty });
+            }
+          }
+        }
+        return targets;
       }
-    }
-  }
 
-  // Vòng lặp Render chính
-  function render(now){
-    const dt = now - lastTime;
-    lastTime = now;
-    
-    const logicalW = window.innerWidth;
-    const logicalH = window.innerHeight;
+      function buildSequence() {
+        const arr = useAccent ? textsAccented : textsUnaccented;
+        sequence = arr.map(t => buildTargetsForText(t, Math.floor(canvas.width / DPR) - 80));
+        seqIndex = 0;
+      }
 
-    // 1. Vẽ Layer Mưa Code Matrix trước
-    drawRain(logicalW, logicalH, now);
+      function initParticles(count) {
+        particles = [];
+        for (let i = 0; i < count; i++) {
+          const px = Math.random() * (canvas.width / DPR);
+          const py = Math.random() * (canvas.height / DPR);
+          const p = createOrReuseParticle(px, py);
+          p.phase = 2;
+          particles.push(p);
+        }
+      }
 
-    // 2. Vẽ Layer Particle Text đè lên trên
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+      function assignToTargets(targets, now) {
+        if (particles.length < targets.length) {
+          const need = targets.length - particles.length;
+          for (let i = 0; i < need; i++) {
+            const px = Math.random() * (canvas.width / DPR);
+            const py = Math.random() * (canvas.height / DPR);
+            particles.push(createOrReuseParticle(px, py));
+          }
+        }
+        const cx = (canvas.width / DPR) / 2, cy = (canvas.height / DPR) / 2;
+        particles.sort((a, b) => (Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy)));
 
-    for (let i = 0; i < particles.length; i++){
-      particles[i].update(dt, now);
-    }
+        for (let i = 0; i < targets.length; i++) {
+          const t = targets[i];
+          const p = particles[i];
+          p.to(t.x + (Math.random() - 0.5) * 0.6, t.y + (Math.random() - 0.5) * 0.6, now, formDuration + Math.random() * 200);
+        }
+        for (let i = targets.length; i < particles.length; i++) {
+          const p = particles[i];
+          const edgeX = Math.random() < 0.5 ? -30 : (canvas.width / DPR) + 30;
+          const py = Math.random() * (canvas.height / DPR);
+          p.to(edgeX, py, now, 1000 + Math.random() * 800);
+        }
+      }
 
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    for (let i = 0; i < particles.length; i++){
-      const p = particles[i];
-      if (p.alpha <= 0) continue;
-      ctx.globalAlpha = Math.min(0.9, p.alpha * 0.9);
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * 2.8, 0, Math.PI*2);
-      ctx.fill();
-    }
-    
-    for (let i = 0; i < particles.length; i++){
-      const p = particles[i];
-      if (p.alpha <= 0) continue;
-      ctx.globalAlpha = Math.min(1, p.alpha);
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(0.9, p.size * 0.9), 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
+      function explodeAll(now) {
+        particles.forEach(p => p.explode(now));
+      }
 
-    requestAnimationFrame(render);
-  }
+      function startSequence() {
+        buildSequence();
+        const maxCount = Math.max(...sequence.map(a => a.length));
 
-  // Xử lý sự kiện click nút UI
-  document.getElementById('restart').addEventListener('click', () => {
-    clearTimeout(timelineHandle);
-    startSequence();
-  });
+        if (particles.length > 0) {
+          particlePool.push(...particles);
+          particles = [];
+        }
 
-  const taBtn = document.getElementById('toggleAccent');
-  taBtn.addEventListener('click', () => {
-    useAccent = !useAccent;
-    taBtn.textContent = 'Chữ có dấu: ' + (useAccent ? 'TẮT' : 'BẬT');
-    clearTimeout(timelineHandle);
-    startSequence();
-  });
+        initParticles(Math.min(1500, maxCount + 200));
+        seqIndex = 0;
+        runNextStage();
+      }
 
-  // Đăng ký sự kiện Resize và khởi chạy ứng dụng
-  window.addEventListener('resize', resize);
-  resize();
-  startSequence();
-  requestAnimationFrame(render);
+      function runNextStage() {
+        if (!sequence.length) return;
+        const now = performance.now();
+        const targets = sequence[seqIndex];
+        assignToTargets(targets, now);
 
-})();
-</script>
+        clearTimeout(timelineHandle);
+        timelineHandle = setTimeout(() => {
+          explodeAll(performance.now());
+          timelineHandle = setTimeout(() => {
+            seqIndex++;
+            if (seqIndex >= sequence.length) {
+              timelineHandle = setTimeout(() => {
+                seqIndex = 0;
+                runNextStage();
+              }, 1200);
+            } else {
+              runNextStage();
+            }
+          }, explodeDuration + betweenDuration);
+        }, formDuration + holdDuration);
+      }
+
+      // --- HÀM VẼ MƯA CODE MATRIX ---
+      function drawRain(logicalW, logicalH, now) {
+        if (now - lastRainDrawTime < rainUpdateInterval) return;
+        lastRainDrawTime = now;
+
+        rainCtx.fillStyle = 'rgba(7, 5, 10, 0.05)';
+        rainCtx.fillRect(0, 0, logicalW, logicalH);
+
+        rainCtx.font = `bold ${rainFontSize}px monospace`;
+        rainCtx.textAlign = "center";
+
+        for (let i = 0; i < rainDrops.length; i++) {
+          const drop = rainDrops[i];
+
+          if (drop.y >= 0) {
+            const charIndex = drop.y % rainString.length;
+            const text = rainString.charAt(charIndex);
+
+            rainCtx.fillStyle = drop.color;
+            rainCtx.shadowColor = drop.color;
+
+            rainCtx.fillText(text, drop.x * rainFontSize, drop.y * rainFontSize);
+            rainCtx.shadowBlur = 0;
+          }
+
+          if (drop.y * rainFontSize > logicalH) {
+            // Tính toán số cột và tìm cột trung tâm để duy trì hiệu ứng sóng đối xứng khi hạt tái sinh
+            const rainColumns = Math.floor(logicalW / rainFontSize) + 1;
+            const midColumn = Math.floor(rainColumns / 2);
+            const distanceFromCenter = Math.abs(drop.x - midColumn);
+
+            // Đưa hạt trở lại phía trên đỉnh với độ sâu âm dựa vào khoảng cách tới tâm (giống hệt bản React)
+            drop.y = -Math.floor(distanceFromCenter * 0.8) - Math.floor(Math.random() * 3);
+            drop.color = rainColors[Math.floor(Math.random() * rainColors.length)];
+          } else {
+            drop.y++;
+          }
+        }
+      }
+
+      // Vòng lặp Render chính
+      function render(now) {
+        const dt = now - lastTime;
+        lastTime = now;
+
+        const logicalW = window.innerWidth;
+        const logicalH = window.innerHeight;
+
+        // 1. Vẽ Layer Mưa Code Matrix trước
+        drawRain(logicalW, logicalH, now);
+
+        // 2. Vẽ Layer Particle Text đè lên trên
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update(dt, now);
+        }
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          if (p.alpha <= 0) continue;
+          ctx.globalAlpha = Math.min(0.9, p.alpha * 0.9);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 2.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          if (p.alpha <= 0) continue;
+          ctx.globalAlpha = Math.min(1, p.alpha);
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, Math.max(0.9, p.size * 0.9), 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        requestAnimationFrame(render);
+      }
+
+      // Xử lý sự kiện click nút UI
+      document.getElementById('restart').addEventListener('click', () => {
+        clearTimeout(timelineHandle);
+        startSequence();
+      });
+
+      const taBtn = document.getElementById('toggleAccent');
+      taBtn.addEventListener('click', () => {
+        useAccent = !useAccent;
+        taBtn.textContent = 'Chữ có dấu: ' + (useAccent ? 'TẮT' : 'BẬT');
+        clearTimeout(timelineHandle);
+        startSequence();
+      });
+
+      // Đăng ký sự kiện Resize và khởi chạy ứng dụng
+      window.addEventListener('resize', resize);
+      resize();
+      startSequence();
+      requestAnimationFrame(render);
+
+    })();
+  </script>
 </body>
+
 </html>
