@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Particle Text Canvas - Smooth Morphing</title>
+<title>Particle Text Canvas - Perfect Morphing</title>
 <style>
   html, body {
     height: 100%;
@@ -154,8 +154,8 @@
 
   // --- CẤU HÌNH PARTICLE TEXT ---
   const particleSize = 2.2; 
-  const formDuration = 1400; // Tăng nhẹ thời gian bay để hiệu ứng mượt mà hơn
-  const holdDuration = 1200; // Thời gian đứng yên của chữ
+  const formDuration = 1400; // Thời gian bay
+  const holdDuration = 1200; // Thời gian đứng yên
   
   const textsUnaccented = ['3','2','1','CHUC', 'MUNG', 'SINH' ,'NHAT','09/01/2003','DINH LUONG TA'];
   const textsAccented = ['3','2','1','CHÚC', 'MỪNG', 'SINH', 'NHẬT','09/01/2003','ĐÌNH LƯƠNG TẠ'];
@@ -232,7 +232,7 @@
       this.tx = x;
       this.ty = y;
       this.size = particleSize;
-      this.phase = 2; // 0: Đang di chuyển, 2: Đang đứng yên nhấp nhô
+      this.phase = 2; 
       this.startX = x;
       this.startY = y;
       this.duration = formDuration;
@@ -244,7 +244,7 @@
 
     to(targetX, targetY, now, dur=formDuration, targetAlpha=1){
       this.phase = 0;
-      this.startX = this.x; // Kế thừa vị trí hiện tại của hạt (Không reset về tâm)
+      this.startX = this.x; 
       this.startY = this.y;
       this.tx = targetX;
       this.ty = targetY;
@@ -358,14 +358,14 @@
   }
 
   function assignToTargets(targets, now){
-    // Tự động sinh thêm hạt nếu chữ tiếp theo cần nhiều hạt hơn chữ trước
+    // 1. Tự động sinh thêm hạt nếu chữ tiếp theo có NHIỀU ĐIỂM hơn lượng hạt hiện tại
     if (particles.length < targets.length){
       const need = targets.length - particles.length;
       for (let i = 0; i < need; i++){
         const px = Math.random() * (canvas.width / DPR);
         const py = Math.random() * (canvas.height / DPR);
         const p = createOrReuseParticle(px, py);
-        p.alpha = 0; // Ban đầu ẩn đi để fade-in mượt mà
+        p.alpha = 0; // Hạt mới sẽ mờ dần xuất hiện
         particles.push(p);
       }
     }
@@ -373,24 +373,27 @@
     const cx = (canvas.width / DPR) / 2;
     const cy = (canvas.height / DPR) / 2;
 
-    // THUẬT TOÁN QUAN TRỌNG: Sắp xếp hạt và điểm đích theo khoảng cách đến tâm màn hình.
-    // Giúp hạt ở vòng trong đi vào chữ bên trong, hạt vòng ngoài đi vào góc chữ ngoài -> Tạo hiệu ứng Morphing mượt mà không chéo nhau.
+    // Sắp xếp hạt và điểm đích theo khoảng cách đến tâm để Morphing mượt không bị rối
     particles.sort((a, b) => (Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy)));
     targets.sort((a, b) => (Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy)));
 
-    // Điều hướng các hạt tạo nên chữ mới công thêm hiệu ứng lóa sáng nhẹ
+    // 2. Phân bổ các hạt chính vào chữ mới
     for (let i = 0; i < targets.length; i++){
       const t = targets[i];
       const p = particles[i];
       p.to(t.x + (Math.random() - 0.5) * 0.5, t.y + (Math.random() - 0.5) * 0.5, now, formDuration + Math.random() * 200, 1);
     }
     
-    // THAY ĐỔI Ở ĐÂY: Hạt dư thừa không bắn sang 2 bên nữa mà trôi nhẹ tại chỗ rồi fade-out biến mất hoàn toàn
+    // 3. ĐIỂM THAY ĐỔI: Phân bổ toàn bộ CÁC HẠT DƯ THỪA bay vào chữ mới
+    // Bằng cách dùng lại các điểm đích của chữ mới (chia dư i % targets.length).
+    // Giờ đây sẽ không có hạt nào đứng im mờ đi hay bay ra ngoài.
     for (let i = targets.length; i < particles.length; i++){
+      // Lấy ngẫu nhiên lại một điểm đích trong chữ mới
+      const t = targets[i % targets.length];
       const p = particles[i];
-      const driftX = p.x + (Math.random() - 0.5) * 60;
-      const driftY = p.y + (Math.random() - 0.5) * 60;
-      p.to(driftX, driftY, now, formDuration, 0); 
+      
+      // Cho biên độ bù đắp (offset) hơi lớn hơn 1 xíu để nét chữ dày hơn, hạt không đè 100% lên nhau
+      p.to(t.x + (Math.random() - 0.5) * 2.5, t.y + (Math.random() - 0.5) * 2.5, now, formDuration + Math.random() * 200, 1); 
     }
   }
 
@@ -417,7 +420,6 @@
     
     clearTimeout(timelineHandle);
     
-    // Đợi thời gian di chuyển (formDuration) + Thời gian giữ chữ đọc (holdDuration) rồi chuyển chữ mượt luôn
     timelineHandle = setTimeout(() => {
       seqIndex++;
       if (seqIndex >= sequence.length){
@@ -476,7 +478,7 @@
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < particles.length; i++){
       const p = particles[i];
-      if (p.alpha <= 0) continue; // Tối ưu hiệu năng: Không vẽ hạt đã ẩn hoàn toàn
+      if (p.alpha <= 0) continue; 
       ctx.globalAlpha = Math.min(0.9, p.alpha * 0.9);
       ctx.fillStyle = p.color;
       ctx.beginPath();
@@ -520,3 +522,4 @@
 </script>
 </body>
 </html>
+          
