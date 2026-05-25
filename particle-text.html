@@ -56,7 +56,7 @@
     text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
     user-select: none;
     pointer-events: none;
-    max-width: 90%; /* Thêm max-width để không bị tràn trên mobile */
+    max-width: 90%;
   }
 
   .overlay-content {
@@ -102,14 +102,13 @@
     transform: translateY(1px);
   }
 
-  /* THAY ĐỔI Ở ĐÂY: Thay vì display: none, ta thu nhỏ chữ và cho phép xuống dòng */
   @media (max-width: 600px) {
     .overlay {
       left: 15px;
       top: 15px;
     }
     .overlay-content > div:first-child {
-      font-size: 18px !important; /* Thu nhỏ tiêu đề một chút */
+      font-size: 18px !important; 
     }
     .small {
       font-size: 16px; 
@@ -158,10 +157,8 @@
 
   // --- CẤU HÌNH PARTICLE TEXT ---
   const particleSize = 2.2; 
-  const formDuration = 900; 
-  const holdDuration = 700; 
-  const explodeDuration = 800; 
-  const betweenDuration = 200; 
+  const formDuration = 1200; // Thời gian bay và sắp xếp thành chữ mới
+  const holdDuration = 1500; // Thời gian giữ nguyên chữ để đọc
   
   const textsUnaccented = ['3','2','1','CHUC', 'MUNG', 'SINH' ,'NHAT','09/01/2003','DINH LUONG TA'];
   const textsAccented = ['3','2','1','CHÚC', 'MỪNG', 'SINH', 'NHẬT','09/01/2003','ĐÌNH LƯƠNG TẠ'];
@@ -235,13 +232,10 @@
     init(x, y) {
       this.x = x;
       this.y = y;
-      this.vx = 0;
-      this.vy = 0;
       this.tx = x;
       this.ty = y;
-      this.life = 1;
       this.size = particleSize;
-      this.phase = 0; 
+      this.phase = 0; // 0: Đang di chuyển tới đích, 2: Nhấp nhô tại chỗ
       this.startX = x;
       this.startY = y;
       this.duration = formDuration;
@@ -251,7 +245,7 @@
 
     to(targetX, targetY, now, dur=formDuration){
       this.phase = 0;
-      this.startX = this.x;
+      this.startX = this.x; // Bắt đầu từ vị trí hiện tại của hạt
       this.startY = this.y;
       this.tx = targetX;
       this.ty = targetY;
@@ -259,36 +253,21 @@
       this.duration = dur;
       const hue = 200 + Math.random() * 140;
       this.color = `hsla(${hue}, 85%, ${45 + Math.random()*10}%, 1)`;
-    }
-
-    explode(now){
-      this.phase = 1;
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 6;
-      this.vx = Math.cos(angle) * speed;
-      this.vy = Math.sin(angle) * speed - (1 + Math.random() * 1.5);
-      this.startTime = now;
-      this.duration = explodeDuration;
       this.alpha = 1;
     }
 
-    update(dt, now){
+    update(now){
       if (this.phase === 0){
         const t = Math.min(1, (now - this.startTime) / this.duration);
         const e = easeOutCubic(t);
         this.x = lerp(this.startX, this.tx, e);
         this.y = lerp(this.startY, this.ty, e);
         this.alpha = 0.95;
-        if (t >= 1) this.phase = 2; 
-      } else if (this.phase === 1){
-        this.vy += 0.06 * (1 + Math.random()*0.5); 
-        this.x += this.vx;
-        this.y += this.vy;
-        const t = Math.min(1, (now - this.startTime) / this.duration);
-        this.alpha = 1 - t;
-        if (t >= 1) this.alpha = 0;
+        if (t >= 1) this.phase = 2; // Đã tới nơi, chuyển sang nhấp nhô
       } else {
+        // Nhấp nhô nhẹ khi đang giữ nguyên chữ
         this.y += Math.sin(now/800 + this.x*0.001) * 0.02;
+        this.alpha = 0.95;
       }
     }
   }
@@ -308,7 +287,6 @@
     const w = Math.min(window.innerWidth, 1200);
     let fontSize;
     
-    // Tối ưu kích thước chữ cho các độ dài chuỗi khác nhau
     if (text.length <= 3) {
       fontSize = Math.round(w * 0.45);
     } else if (text.length >= 10) {
@@ -325,7 +303,6 @@
     offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
     let textWidth = offCtx.measureText(text).width;
 
-    // KIỂM TRA TRÀN CHỮ: Thu nhỏ font nếu vượt quá màn hình
     const maxAllowedWidth = off.width - 20;
     if (textWidth > maxAllowedWidth) {
       fontSize = Math.floor(fontSize * (maxAllowedWidth / textWidth));
@@ -344,7 +321,6 @@
     const data = img.data;
     const targets = [];
     
-    // Gap quét pixel tự động theo màn hình (PC: 6, Mobile: 3)
     const isMobile = window.innerWidth < 768;
     const dynamicSampleGap = isMobile ? 3 : 6;
 
@@ -381,6 +357,7 @@
   }
 
   function assignToTargets(targets, now){
+    // Bổ sung hạt nếu từ mới cần nhiều hạt hơn
     if (particles.length < targets.length){
       const need = targets.length - particles.length;
       for (let i = 0; i < need; i++){
@@ -389,24 +366,24 @@
         particles.push(createOrReuseParticle(px, py));
       }
     }
-    const cx = (canvas.width / DPR)/2, cy = (canvas.height / DPR)/2;
-    particles.sort((a,b) => (Math.hypot(a.x-cx, a.y-cy) - Math.hypot(b.x-cx, b.y-cy)));
+    
+    // Đảo lộn danh sách hạt ngẫu nhiên để tạo hiệu ứng "bầy đàn" đan chéo nhau khi morphing
+    particles.sort(() => Math.random() - 0.5);
 
+    // Điều hướng các hạt vào các điểm đích của chữ
     for (let i = 0; i < targets.length; i++){
       const t = targets[i];
       const p = particles[i];
-      p.to(t.x + (Math.random()-0.5)*0.6, t.y + (Math.random()-0.5)*0.6, now, formDuration + Math.random()*200);
+      p.to(t.x + (Math.random()-0.5)*0.6, t.y + (Math.random()-0.5)*0.6, now, formDuration + Math.random()*300);
     }
+    
+    // Xử lý các hạt dư thừa: Cho bay tản ra ngoài mép màn hình và giấu đi
     for (let i = targets.length; i < particles.length; i++){
       const p = particles[i];
-      const edgeX = Math.random() < 0.5 ? -30 : (canvas.width / DPR) + 30;
+      const edgeX = Math.random() < 0.5 ? -100 : (canvas.width / DPR) + 100;
       const py = Math.random() * (canvas.height / DPR);
-      p.to(edgeX, py, now, 1000 + Math.random()*800);
+      p.to(edgeX, py, now, formDuration + Math.random()*500);
     }
-  }
-
-  function explodeAll(now){
-    particles.forEach(p => p.explode(now));
   }
 
   function startSequence(){
@@ -418,7 +395,6 @@
       particles = [];
     }
 
-    // Tăng trần hạt lên 3000 để nét đẹp trên cả mobile và PC
     initParticles(Math.min(3000, maxCount + 200));
     seqIndex = 0;
     runNextStage();
@@ -428,22 +404,19 @@
     if (!sequence.length) return;
     const now = performance.now();
     const targets = sequence[seqIndex];
+    
+    // Giao đích đến mới cho các particle (Bắt đầu morphing)
     assignToTargets(targets, now);
     
     clearTimeout(timelineHandle);
+    
+    // Chờ cho hạt bay xong (formDuration) + dừng lại để đọc (holdDuration) rồi mới next
     timelineHandle = setTimeout(() => {
-      explodeAll(performance.now());
-      timelineHandle = setTimeout(() => {
-        seqIndex++;
-        if (seqIndex >= sequence.length){
-          timelineHandle = setTimeout(() => {
-            seqIndex = 0;
-            runNextStage();
-          }, 1200);
-        } else {
-          runNextStage();
-        }
-      }, explodeDuration + betweenDuration);
+      seqIndex++;
+      if (seqIndex >= sequence.length){
+        seqIndex = 0;
+      }
+      runNextStage();
     }, formDuration + holdDuration);
   }
 
@@ -481,9 +454,6 @@
   }
 
   function render(now){
-    const dt = now - lastTime;
-    lastTime = now;
-    
     const logicalW = window.innerWidth;
     const logicalH = window.innerHeight;
 
@@ -492,14 +462,13 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let i = 0; i < particles.length; i++){
-      particles[i].update(dt, now);
+      particles[i].update(now);
     }
 
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < particles.length; i++){
       const p = particles[i];
-      if (p.alpha <= 0) continue;
       ctx.globalAlpha = Math.min(0.9, p.alpha * 0.9);
       ctx.fillStyle = p.color;
       ctx.beginPath();
@@ -509,7 +478,6 @@
     
     for (let i = 0; i < particles.length; i++){
       const p = particles[i];
-      if (p.alpha <= 0) continue;
       ctx.globalAlpha = Math.min(1, p.alpha);
       ctx.fillStyle = '#fff';
       ctx.beginPath();
@@ -521,7 +489,6 @@
     requestAnimationFrame(render);
   }
 
-  // Khai báo sự kiện click UI
   document.getElementById('restart').addEventListener('click', () => {
     clearTimeout(timelineHandle);
     startSequence();
@@ -535,7 +502,6 @@
     startSequence();
   });
 
-  // Chạy ứng dụng
   window.addEventListener('resize', resize);
   resize();
   startSequence();
