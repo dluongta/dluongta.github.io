@@ -98,6 +98,13 @@
   button:active {
     transform: translateY(1px);
   }
+
+  /* Ẩn bớt text dài trên màn hình cực nhỏ để đỡ chiếm diện tích nút */
+  @media (max-width: 600px) {
+    .small {
+      display: none;
+    }
+  }
 </style>
 </head>
 <body>
@@ -135,15 +142,14 @@
 
   // --- CẤU HÌNH PARTICLE TEXT ---
   const particleSize = 2.2; 
-  const sampleGap = 6; 
   const formDuration = 900; 
   const holdDuration = 700; 
   const explodeDuration = 800; 
   const betweenDuration = 200; 
   
-  const textsUnaccented = ['3','2','1','CHUC', 'MUNG', 'SINH' ,'NHAT','09','01','03','DLUONGTA'];
-  const textsAccented = ['3','2','1','CHÚC', 'MỪNG', 'SINH', 'NHẬT','09','01','03','DLUONGTA'];
-  let useAccent = false; // Mặc định là false giống useAccentRef.current = false ở bản React
+  const textsUnaccented = ['3','2','1','CHUC', 'MUNG', 'SINH' ,'NHAT','09/01/2003','DINH LUONG TA'];
+  const textsAccented = ['3','2','1','CHÚC', 'MỪNG', 'SINH', 'NHẬT','09/01/2003','ĐÌNH LƯƠNG TẠ'];
+  let useAccent = false;
 
   let particlePool = []; 
   let particles = []; 
@@ -163,20 +169,17 @@
   let lastRainDrawTime = 0;
   const rainUpdateInterval = 60; 
 
-  // Logic căn chỉnh kích thước màn hình
   function resize(){
     DPR = window.devicePixelRatio || 1;
     const w = window.innerWidth;
     const h = window.innerHeight;
 
-    // Cập nhật Text Canvas
     canvas.width = Math.floor(w * DPR);
     canvas.height = Math.floor(h * DPR);
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-    // Cập nhật Rain Canvas
     rainCanvas.width = Math.floor(w * DPR);
     rainCanvas.height = Math.floor(h * DPR);
     rainCanvas.style.width = w + 'px';
@@ -187,7 +190,6 @@
     const dropsPerColumn = 2;
     const totalDrops = rainColumns * dropsPerColumn;
     
-    // Đồng bộ mẹo gán Y âm sâu dần ngẫu nhiên của React để tạo độ so le từ đỉnh màn hình đổ xuống
     rainDrops = Array.from({ length: totalDrops }).map((_, index) => {
         const col = index % rainColumns;
         return {
@@ -197,7 +199,6 @@
         };
     });
 
-    // Debounce xử lý tính toán lại sequence khi kéo giãn màn hình
     clearTimeout(resizeTimeoutHandle);
     resizeTimeoutHandle = setTimeout(() => {
       buildSequence();
@@ -207,7 +208,6 @@
     }, 150);
   }
 
-  // Animation helpers
   function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
   function lerp(a,b,t){ return a + (b - a) * t; }
 
@@ -291,21 +291,34 @@
   function buildTargetsForText(text, maxWidth){
     const w = Math.min(window.innerWidth, 1200);
     let fontSize;
+    
+    // Tối ưu kích thước chữ cho các độ dài chuỗi khác nhau
     if (text.length <= 3) {
       fontSize = Math.round(w * 0.45);
+    } else if (text.length >= 10) {
+      fontSize = Math.round(w * 0.09);
     } else {
       fontSize = Math.round(w * 0.12);
     }
-    fontSize = Math.max(28, Math.min(fontSize, 420));
+    fontSize = Math.max(24, Math.min(fontSize, 420));
 
     off.width = Math.floor(Math.min(maxWidth, canvas.width / DPR));
     off.height = Math.floor(Math.min(400, canvas.height / DPR));
     offCtx.clearRect(0, 0, off.width, off.height);
 
+    offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
+    let textWidth = offCtx.measureText(text).width;
+
+    // KIỂM TRA TRÀN CHỮ: Thu nhỏ font nếu vượt quá màn hình
+    const maxAllowedWidth = off.width - 20;
+    if (textWidth > maxAllowedWidth) {
+      fontSize = Math.floor(fontSize * (maxAllowedWidth / textWidth));
+      offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
+    }
+
     offCtx.textBaseline = 'middle';
     offCtx.textAlign = 'center';
     offCtx.fillStyle = '#fff';
-    offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
     
     const cx = off.width / 2;
     const cy = off.height / 2;
@@ -315,8 +328,12 @@
     const data = img.data;
     const targets = [];
     
-    for (let y = 0; y < off.height; y += sampleGap){
-      for (let x = 0; x < off.width; x += sampleGap){
+    // Gap quét pixel tự động theo màn hình (PC: 6, Mobile: 3)
+    const isMobile = window.innerWidth < 768;
+    const dynamicSampleGap = isMobile ? 3 : 6;
+
+    for (let y = 0; y < off.height; y += dynamicSampleGap){
+      for (let x = 0; x < off.width; x += dynamicSampleGap){
         const idx = (y * off.width + x) * 4;
         const alpha = data[idx + 3];
         if (alpha > 120){
@@ -331,7 +348,8 @@
 
   function buildSequence(){
     const arr = useAccent ? textsAccented : textsUnaccented;
-    sequence = arr.map(t => buildTargetsForText(t, Math.floor(canvas.width / DPR) - 80));
+    const screenPadding = window.innerWidth < 768 ? 20 : 80;
+    sequence = arr.map(t => buildTargetsForText(t, Math.floor(canvas.width / DPR) - screenPadding));
     seqIndex = 0;
   }
 
@@ -384,7 +402,8 @@
       particles = [];
     }
 
-    initParticles(Math.min(1500, maxCount + 200));
+    // Tăng trần hạt lên 3000 để nét đẹp trên cả mobile và PC
+    initParticles(Math.min(3000, maxCount + 200));
     seqIndex = 0;
     runNextStage();
   }
@@ -412,7 +431,6 @@
     }, formDuration + holdDuration);
   }
 
-  // --- HÀM VẼ MƯA CODE MATRIX ---
   function drawRain(logicalW, logicalH, now) {
     if (now - lastRainDrawTime < rainUpdateInterval) return;
     lastRainDrawTime = now;
@@ -446,7 +464,6 @@
     }
   }
 
-  // Vòng lặp Render chính
   function render(now){
     const dt = now - lastTime;
     lastTime = now;
@@ -454,10 +471,8 @@
     const logicalW = window.innerWidth;
     const logicalH = window.innerHeight;
 
-    // 1. Vẽ Layer Mưa Code Matrix trước
     drawRain(logicalW, logicalH, now);
 
-    // 2. Vẽ Layer Particle Text đè lên trên
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let i = 0; i < particles.length; i++){
@@ -490,7 +505,7 @@
     requestAnimationFrame(render);
   }
 
-  // Xử lý sự kiện click nút UI
+  // Khai báo sự kiện click UI
   document.getElementById('restart').addEventListener('click', () => {
     clearTimeout(timelineHandle);
     startSequence();
@@ -504,7 +519,7 @@
     startSequence();
   });
 
-  // Đăng ký sự kiện Resize và khởi chạy ứng dụng
+  // Chạy ứng dụng
   window.addEventListener('resize', resize);
   resize();
   startSequence();
