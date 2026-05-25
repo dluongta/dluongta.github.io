@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Particle Text Canvas</title>
+<title>Particle Text Canvas - Smooth Morphing</title>
 <style>
   html, body {
     height: 100%;
@@ -14,7 +14,6 @@
     color: #fff;
   }
   
-  /* Lớp chứa cả 2 canvas */
   #canvas-container {
     position: absolute;
     top: 0;
@@ -23,7 +22,6 @@
     height: 100%;
   }
 
-  /* Canvas cho Mưa Code (Nằm dưới) */
   #rainCanvas {
     position: absolute;
     top: 0;
@@ -34,7 +32,6 @@
     display: block;
   }
 
-  /* Canvas cho Particle Text (Nằm trên) */
   #canvas {
     position: absolute;
     top: 0;
@@ -56,7 +53,7 @@
     text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
     user-select: none;
     pointer-events: none;
-    max-width: 90%;
+    max-width: 90%; 
   }
 
   .overlay-content {
@@ -157,8 +154,8 @@
 
   // --- CẤU HÌNH PARTICLE TEXT ---
   const particleSize = 2.2; 
-  const formDuration = 1200; // Thời gian bay và sắp xếp thành chữ mới
-  const holdDuration = 1500; // Thời gian giữ nguyên chữ để đọc
+  const formDuration = 1400; // Tăng nhẹ thời gian bay để hiệu ứng mượt mà hơn
+  const holdDuration = 1200; // Thời gian đứng yên của chữ
   
   const textsUnaccented = ['3','2','1','CHUC', 'MUNG', 'SINH' ,'NHAT','09/01/2003','DINH LUONG TA'];
   const textsAccented = ['3','2','1','CHÚC', 'MỪNG', 'SINH', 'NHẬT','09/01/2003','ĐÌNH LƯƠNG TẠ'];
@@ -173,7 +170,7 @@
   let timelineHandle = null;
   let resizeTimeoutHandle = null;
 
-  // --- CẤU HÌNH MƯA CODE (CODE RAIN) ---
+  // --- CẤU HÌNH MƯA CODE ---
   const rainFontSize = 18;
   const rainString = "DINHLUONGTA ";
   const rainColors = ['#9370db', '#00bfff', '#ff69b4', '#ffa500'];
@@ -235,25 +232,30 @@
       this.tx = x;
       this.ty = y;
       this.size = particleSize;
-      this.phase = 0; // 0: Đang di chuyển tới đích, 2: Nhấp nhô tại chỗ
+      this.phase = 2; // 0: Đang di chuyển, 2: Đang đứng yên nhấp nhô
       this.startX = x;
       this.startY = y;
       this.duration = formDuration;
       this.alpha = 1;
+      this.startAlpha = 1;
+      this.targetAlpha = 1;
       this.color = "#fff";
     }
 
-    to(targetX, targetY, now, dur=formDuration){
+    to(targetX, targetY, now, dur=formDuration, targetAlpha=1){
       this.phase = 0;
-      this.startX = this.x; // Bắt đầu từ vị trí hiện tại của hạt
+      this.startX = this.x; // Kế thừa vị trí hiện tại của hạt (Không reset về tâm)
       this.startY = this.y;
       this.tx = targetX;
       this.ty = targetY;
       this.startTime = now;
       this.duration = dur;
+      
       const hue = 200 + Math.random() * 140;
       this.color = `hsla(${hue}, 85%, ${45 + Math.random()*10}%, 1)`;
-      this.alpha = 1;
+      
+      this.startAlpha = this.alpha;
+      this.targetAlpha = targetAlpha;
     }
 
     update(now){
@@ -262,12 +264,11 @@
         const e = easeOutCubic(t);
         this.x = lerp(this.startX, this.tx, e);
         this.y = lerp(this.startY, this.ty, e);
-        this.alpha = 0.95;
-        if (t >= 1) this.phase = 2; // Đã tới nơi, chuyển sang nhấp nhô
+        this.alpha = lerp(this.startAlpha, this.targetAlpha, e);
+        if (t >= 1) this.phase = 2;
       } else {
-        // Nhấp nhô nhẹ khi đang giữ nguyên chữ
         this.y += Math.sin(now/800 + this.x*0.001) * 0.02;
-        this.alpha = 0.95;
+        this.alpha = this.targetAlpha;
       }
     }
   }
@@ -357,32 +358,39 @@
   }
 
   function assignToTargets(targets, now){
-    // Bổ sung hạt nếu từ mới cần nhiều hạt hơn
+    // Tự động sinh thêm hạt nếu chữ tiếp theo cần nhiều hạt hơn chữ trước
     if (particles.length < targets.length){
       const need = targets.length - particles.length;
       for (let i = 0; i < need; i++){
         const px = Math.random() * (canvas.width / DPR);
         const py = Math.random() * (canvas.height / DPR);
-        particles.push(createOrReuseParticle(px, py));
+        const p = createOrReuseParticle(px, py);
+        p.alpha = 0; // Ban đầu ẩn đi để fade-in mượt mà
+        particles.push(p);
       }
     }
-    
-    // Đảo lộn danh sách hạt ngẫu nhiên để tạo hiệu ứng "bầy đàn" đan chéo nhau khi morphing
-    particles.sort(() => Math.random() - 0.5);
 
-    // Điều hướng các hạt vào các điểm đích của chữ
+    const cx = (canvas.width / DPR) / 2;
+    const cy = (canvas.height / DPR) / 2;
+
+    // THUẬT TOÁN QUAN TRỌNG: Sắp xếp hạt và điểm đích theo khoảng cách đến tâm màn hình.
+    // Giúp hạt ở vòng trong đi vào chữ bên trong, hạt vòng ngoài đi vào góc chữ ngoài -> Tạo hiệu ứng Morphing mượt mà không chéo nhau.
+    particles.sort((a, b) => (Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy)));
+    targets.sort((a, b) => (Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy)));
+
+    // Điều hướng các hạt tạo nên chữ mới công thêm hiệu ứng lóa sáng nhẹ
     for (let i = 0; i < targets.length; i++){
       const t = targets[i];
       const p = particles[i];
-      p.to(t.x + (Math.random()-0.5)*0.6, t.y + (Math.random()-0.5)*0.6, now, formDuration + Math.random()*300);
+      p.to(t.x + (Math.random() - 0.5) * 0.5, t.y + (Math.random() - 0.5) * 0.5, now, formDuration + Math.random() * 200, 1);
     }
     
-    // Xử lý các hạt dư thừa: Cho bay tản ra ngoài mép màn hình và giấu đi
+    // THAY ĐỔI Ở ĐÂY: Hạt dư thừa không bắn sang 2 bên nữa mà trôi nhẹ tại chỗ rồi fade-out biến mất hoàn toàn
     for (let i = targets.length; i < particles.length; i++){
       const p = particles[i];
-      const edgeX = Math.random() < 0.5 ? -100 : (canvas.width / DPR) + 100;
-      const py = Math.random() * (canvas.height / DPR);
-      p.to(edgeX, py, now, formDuration + Math.random()*500);
+      const driftX = p.x + (Math.random() - 0.5) * 60;
+      const driftY = p.y + (Math.random() - 0.5) * 60;
+      p.to(driftX, driftY, now, formDuration, 0); 
     }
   }
 
@@ -405,12 +413,11 @@
     const now = performance.now();
     const targets = sequence[seqIndex];
     
-    // Giao đích đến mới cho các particle (Bắt đầu morphing)
     assignToTargets(targets, now);
     
     clearTimeout(timelineHandle);
     
-    // Chờ cho hạt bay xong (formDuration) + dừng lại để đọc (holdDuration) rồi mới next
+    // Đợi thời gian di chuyển (formDuration) + Thời gian giữ chữ đọc (holdDuration) rồi chuyển chữ mượt luôn
     timelineHandle = setTimeout(() => {
       seqIndex++;
       if (seqIndex >= sequence.length){
@@ -469,6 +476,7 @@
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < particles.length; i++){
       const p = particles[i];
+      if (p.alpha <= 0) continue; // Tối ưu hiệu năng: Không vẽ hạt đã ẩn hoàn toàn
       ctx.globalAlpha = Math.min(0.9, p.alpha * 0.9);
       ctx.fillStyle = p.color;
       ctx.beginPath();
@@ -478,6 +486,7 @@
     
     for (let i = 0; i < particles.length; i++){
       const p = particles[i];
+      if (p.alpha <= 0) continue;
       ctx.globalAlpha = Math.min(1, p.alpha);
       ctx.fillStyle = '#fff';
       ctx.beginPath();
