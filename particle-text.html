@@ -56,6 +56,7 @@
     text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
     user-select: none;
     pointer-events: none;
+    max-width: 90%; /* Thêm max-width để không bị tràn trên mobile */
   }
 
   .overlay-content {
@@ -66,6 +67,7 @@
     font-size: 14px;
     opacity: 0.85;
     margin-top: 4px;
+    line-height: 1.4;
   }
 
   .hint {
@@ -92,6 +94,7 @@
     font-weight: 700;
     color: #000;
     margin-right: 8px;
+    margin-bottom: 8px; /* Thêm margin-bottom cho các nút khi màn hình nhỏ */
     transition: transform 0.1s;
   }
 
@@ -99,10 +102,23 @@
     transform: translateY(1px);
   }
 
-  /* Ẩn bớt text dài trên màn hình cực nhỏ để đỡ chiếm diện tích nút */
+  /* THAY ĐỔI Ở ĐÂY: Thay vì display: none, ta thu nhỏ chữ và cho phép xuống dòng */
   @media (max-width: 600px) {
+    .overlay {
+      left: 15px;
+      top: 15px;
+    }
+    .overlay-content > div:first-child {
+      font-size: 18px !important; /* Thu nhỏ tiêu đề một chút */
+    }
     .small {
-      display: none;
+      font-size: 11px; /* Thu nhỏ font thay vì ẩn */
+      margin-bottom: 10px;
+    }
+    .hint {
+      font-size: 11px;
+      left: 15px;
+      bottom: 15px;
     }
   }
 </style>
