@@ -1,123 +1,123 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Particle Text Canvas</title>
-<style>
-  html, body {
-    height: 100%;
-    margin: 0;
-    background: radial-gradient(circle at 20% 20%, #111022 0%, #0d0b1a 35%, #07050a 100%);
-    overflow: hidden;
-    font-family: "Segoe UI", Roboto, Arial, sans-serif;
-    color: #fff;
-  }
-  
-  #canvas-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Particle Text Canvas</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(circle at 20% 20%, #111022 0%, #0d0b1a 35%, #07050a 100%);
+      overflow: hidden;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      color: #fff;
+    }
+    
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
 
-  #rainCanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    display: block;
-  }
+    #rainCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
 
-  #canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    display: block;
-  }
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      display: block;
+    }
 
-  .overlay {
-    position: absolute;
-    left: 20px;
-    top: 20px;
-    z-index: 10;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.85);
-    text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-    user-select: none;
-    pointer-events: none;
-    max-width: 90%; 
-  }
-
-  .overlay-content {
-    pointer-events: auto;
-  }
-
-  .small {
-    font-size: 16px;
-    opacity: 0.85;
-    margin-top: 4px;
-    line-height: 1.4;
-  }
-
-  .hint {
-    position: absolute;
-    left: 20px;
-    bottom: 20px;
-    z-index: 10;
-    color: rgba(255, 255, 255, 0.65);
-    font-size: 14px;
-    pointer-events: none;
-  }
-
-  .controls {
-    margin-top: 8px;
-  }
-
-  button {
-    background: linear-gradient(90deg, #ff9a9e, #fad0c4);
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-    font-weight: 700;
-    color: #000;
-    margin-right: 8px;
-    margin-bottom: 8px; 
-    transition: transform 0.1s;
-  }
-
-  button:active {
-    transform: translateY(1px);
-  }
-
-  @media (max-width: 600px) {
     .overlay {
-      left: 15px;
-      top: 15px;
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      z-index: 10;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: rgba(255, 255, 255, 0.85);
+      text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+      user-select: none;
+      pointer-events: none;
+      max-width: 90%; 
     }
-    .overlay-content > div:first-child {
-      font-size: 18px !important; 
+
+    .overlay-content {
+      pointer-events: auto;
     }
+
     .small {
-      font-size: 16px; 
-      margin-bottom: 10px;
+      font-size: 16px;
+      opacity: 0.85;
+      margin-top: 4px;
+      line-height: 1.4;
     }
+
     .hint {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      z-index: 10;
+      color: rgba(255, 255, 255, 0.65);
       font-size: 14px;
-      left: 15px;
-      bottom: 15px;
+      pointer-events: none;
     }
-  }
-</style>
+
+    .controls {
+      margin-top: 8px;
+    }
+
+    button {
+      background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      font-weight: 700;
+      color: #000;
+      margin-right: 8px;
+      margin-bottom: 8px; 
+      transition: transform 0.1s;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    @media (max-width: 768px) {
+      .overlay {
+        left: 15px;
+        top: 15px;
+      }
+      .overlay-content > div:first-child {
+        font-size: 18px !important; 
+      }
+      .small {
+        font-size: 16px; 
+        margin-bottom: 10px;
+      }
+      .hint {
+        font-size: 14px;
+        left: 15px;
+        bottom: 15px;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -126,8 +126,8 @@
     <div style="font-size:24px">DLUONGTA PARTICLE TEXT</div>
     <div class="small">3 → 2 → 1 → CHÚC MỪNG SINH NHẬT → 09/01/2003 → ĐÌNH LƯƠNG TẠ</div>
     <div class="controls">
-      <button id="restart">Chạy lại</button>
-      <button id="toggleAccent">Chữ có dấu: BẬT</button>
+      <button id="restartBtn">Chạy lại</button>
+      <button id="toggleAccentBtn">Chữ có dấu: BẬT</button>
     </div>
   </div>
 </div>
@@ -162,7 +162,6 @@
 
   let particlePool = []; 
   let particles = []; 
-  let lastTime = performance.now();
 
   let sequence = [];
   let seqIndex = 0;
@@ -181,50 +180,8 @@
   function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
   function lerp(a,b,t){ return a + (b - a) * t; }
 
-  // Hàm lấy kích thước hạt tự động tùy màn hình
-  const getParticleSize = () => window.innerWidth < 768 ? 1.6 : 2.2;
-
-  function resize(){
-    DPR = window.devicePixelRatio || 1;
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-
-    canvas.width = Math.floor(w * DPR);
-    canvas.height = Math.floor(h * DPR);
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-    rainCanvas.width = Math.floor(w * DPR);
-    rainCanvas.height = Math.floor(h * DPR);
-    rainCanvas.style.width = w + 'px';
-    rainCanvas.style.height = h + 'px';
-    rainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-    const rainColumns = Math.floor(w / rainFontSize) + 1;
-    const dropsPerColumn = 2;
-    const totalDrops = rainColumns * dropsPerColumn;
-    
-    rainDrops = Array.from({ length: totalDrops }).map((_, index) => {
-        const col = index % rainColumns;
-        return {
-          x: col,
-          y: Math.floor(Math.random() * -60), 
-          color: rainColors[Math.floor(Math.random() * rainColors.length)]
-        };
-    });
-
-    // Cập nhật lại size hạt khi resize màn hình
-    particles.forEach(p => p.size = getParticleSize());
-
-    clearTimeout(resizeTimeoutHandle);
-    resizeTimeoutHandle = setTimeout(() => {
-      buildSequence();
-      const now = performance.now();
-      const targets = sequence[seqIndex];
-      if (targets) assignToTargets(targets, now);
-    }, 150);
-  }
+  // Kích thước hạt cân đối để vừa thấy màu vừa thấy nét chữ
+  const getParticleSize = () => window.innerWidth < 768 ? 1.4 : 2.0;
 
   class Particle {
     constructor(x=0, y=0) {
@@ -256,8 +213,9 @@
       this.startTime = now;
       this.duration = dur;
       
+      // Dải màu: Hue từ 200 đến 340 (Xanh dương -> Tím -> Hồng)
       const hue = 200 + Math.random() * 140;
-      this.color = `hsla(${hue}, 85%, ${45 + Math.random()*10}%, 1)`;
+      this.color = `hsla(${hue}, 85%, ${55 + Math.random()*10}%, 1)`;
       
       this.startAlpha = this.alpha;
       this.targetAlpha = targetAlpha;
@@ -272,6 +230,7 @@
         this.alpha = lerp(this.startAlpha, this.targetAlpha, e);
         if (t >= 1) this.phase = 2;
       } else {
+        // Nhấp nhô cực nhẹ
         this.y += Math.sin(now/800 + this.x*0.001) * 0.02;
         this.alpha = this.targetAlpha;
       }
@@ -289,54 +248,68 @@
     return p;
   }
 
-  function buildTargetsForText(text, maxWidth){
-    const w = Math.min(window.innerWidth, 1200);
-    let fontSize;
+  // Luôn lấy mẫu ở độ phân giải siêu cao (để giữ dấu rõ ràng) rồi thu nhỏ lại
+  function buildTargetsForText(text) {
+    const isMobile = window.innerWidth < 768;
     
-    if (text.length <= 3) {
-      fontSize = Math.round(w * 0.45);
-    } else if (text.length >= 10) {
-      fontSize = Math.round(w * 0.09);
-    } else {
-      fontSize = Math.round(w * 0.12);
-    }
-    fontSize = Math.max(24, Math.min(fontSize, 420));
+    const offW = 1600;
+    const offH = 600;
+    off.width = offW;
+    off.height = offH;
+    offCtx.clearRect(0, 0, offW, offH);
 
-    off.width = Math.floor(Math.min(maxWidth, canvas.width / DPR));
-    off.height = Math.floor(Math.min(400, canvas.height / DPR));
-    offCtx.clearRect(0, 0, off.width, off.height);
+    let fontSize = text.length <= 3 ? 300 : 130; 
 
     offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
     let textWidth = offCtx.measureText(text).width;
 
-    const maxAllowedWidth = off.width - 20;
-    if (textWidth > maxAllowedWidth) {
-      fontSize = Math.floor(fontSize * (maxAllowedWidth / textWidth));
+    if (textWidth > offW - 60) {
+      fontSize = Math.floor(fontSize * ((offW - 60) / textWidth));
       offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
     }
 
     offCtx.textBaseline = 'middle';
     offCtx.textAlign = 'center';
     offCtx.fillStyle = '#fff';
-    
-    const cx = off.width / 2;
-    const cy = off.height / 2;
-    offCtx.fillText(text, cx, cy);
+    offCtx.fillText(text, offW / 2, offH / 2);
 
-    const img = offCtx.getImageData(0, 0, off.width, off.height);
+    const img = offCtx.getImageData(0, 0, offW, offH);
     const data = img.data;
     const targets = [];
-    
-    const isMobile = window.innerWidth < 768;
-    const dynamicSampleGap = isMobile ? 3 : 6;
+    const sampleGap = 4; // Lấy mẫu dày để nét không bị đứt
 
-    for (let y = 0; y < off.height; y += dynamicSampleGap){
-      for (let x = 0; x < off.width; x += dynamicSampleGap){
-        const idx = (y * off.width + x) * 4;
+    const actualCanvasWidth = canvas.width / DPR;
+    const actualCanvasHeight = canvas.height / DPR;
+    const screenPadding = isMobile ? 20 : 80;
+    const maxAllowedWidth = actualCanvasWidth - screenPadding;
+
+    let minX = offW, maxX = 0;
+    for (let y = 0; y < offH; y += sampleGap) {
+      for (let x = 0; x < offW; x += sampleGap) {
+        if (data[(y * offW + x) * 4 + 3] > 120) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+        }
+      }
+    }
+    const drawnWidth = maxX - minX;
+
+    let scale = 1;
+    if (drawnWidth > 0 && drawnWidth > maxAllowedWidth) {
+      scale = maxAllowedWidth / drawnWidth;
+    }
+    if (isMobile) scale *= 0.85; 
+
+    for (let y = 0; y < offH; y += sampleGap) {
+      for (let x = 0; x < offW; x += sampleGap) {
+        const idx = (y * offW + x) * 4;
         const alpha = data[idx + 3];
-        if (alpha > 120){
-          const tx = (x - off.width/2) + (canvas.width / DPR) / 2;
-          const ty = (y - off.height/2) + (canvas.height / DPR) / 2;
+        if (alpha > 120) {
+          const offsetX = (x - offW / 2) * scale;
+          const offsetY = (y - offH / 2) * scale;
+          
+          const tx = (actualCanvasWidth / 2) + offsetX;
+          const ty = (actualCanvasHeight / 2) + offsetY;
           targets.push({x: tx, y: ty});
         }
       }
@@ -346,8 +319,7 @@
 
   function buildSequence(){
     const arr = useAccent ? textsAccented : textsUnaccented;
-    const screenPadding = window.innerWidth < 768 ? 20 : 80;
-    sequence = arr.map(t => buildTargetsForText(t, Math.floor(canvas.width / DPR) - screenPadding));
+    sequence = arr.map(t => buildTargetsForText(t));
     seqIndex = 0;
   }
 
@@ -371,7 +343,7 @@
         const px = Math.random() * (canvas.width / DPR);
         const py = Math.random() * (canvas.height / DPR);
         const p = createOrReuseParticle(px, py);
-        p.alpha = 0; // Hạt mới sẽ mờ dần xuất hiện
+        p.alpha = 0; 
         particles.push(p);
       }
     }
@@ -388,21 +360,20 @@
       const p = particles[i];
       
       const angle = Math.random() * Math.PI * 2;
-      const radius = Math.random() * 1.5; 
+      const radius = isMobile ? Math.random() * 0.5 : Math.random() * 1.2; 
       
       p.to(t.x + Math.cos(angle)*radius, t.y + Math.sin(angle)*radius, now, formDuration + Math.random() * 200, 1);
     }
     
-    // 2. Phân bổ các HẠT DƯ THỪA (Tạo quầng sáng phép thuật bao quanh)
-    const maxSpread = isMobile ? 18 : 8; 
-    const surplusTargetAlpha = isMobile ? 0.15 : 0.35;
+    // 2. Phân bổ các HẠT DƯ THỪA (ĐÃ FIX: Xóa sạch sự lộn xộn)
+    const surplusTargetAlpha = 0; 
 
     for (let i = targets.length; i < particles.length; i++){
       const t = targets[i % targets.length];
       const p = particles[i];
       
       const angle = Math.random() * Math.PI * 2;
-      const radius = 2 + Math.random() * maxSpread;
+      const radius = 2 + Math.random() * 5;
 
       p.to(t.x + Math.cos(angle)*radius, t.y + Math.sin(angle)*radius, now, formDuration + Math.random() * 200, surplusTargetAlpha); 
     }
@@ -476,6 +447,7 @@
   function render(now){
     const logicalW = window.innerWidth;
     const logicalH = window.innerHeight;
+    const isMobile = logicalW < 768;
 
     drawRain(logicalW, logicalH, now);
 
@@ -488,14 +460,16 @@
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     
-    // Lượt vẽ 1: Quầng sáng màu (Aura)
+    // Lượt vẽ 1: Quầng sáng màu (Hồng, Tím, Xanh)
     for (let i = 0; i < particles.length; i++){
       const p = particles[i];
       if (p.alpha <= 0.05) continue; 
-      ctx.globalAlpha = Math.min(0.9, p.alpha * 0.9);
+      
+      const auraAlpha = isMobile ? 0.7 : 0.45; 
+      ctx.globalAlpha = p.alpha * auraAlpha;
       ctx.fillStyle = p.color;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * 2.8, 0, Math.PI*2);
+      ctx.arc(p.x, p.y, p.size * (isMobile ? 2.2 : 2.6), 0, Math.PI*2);
       ctx.fill();
     }
     
@@ -504,10 +478,10 @@
       const p = particles[i];
       if (p.alpha <= 0.05) continue;
       
-      ctx.globalAlpha = p.alpha * p.alpha; 
+      ctx.globalAlpha = p.alpha * (isMobile ? 0.9 : 0.6); 
       ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(0.9, p.size * 0.9), 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, p.size * 0.75, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
@@ -515,12 +489,54 @@
     requestAnimationFrame(render);
   }
 
-  document.getElementById('restart').addEventListener('click', () => {
+  function handleResize(){
+    DPR = window.devicePixelRatio || 1;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    canvas.width = Math.floor(w * DPR);
+    canvas.height = Math.floor(h * DPR);
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    rainCanvas.width = Math.floor(w * DPR);
+    rainCanvas.height = Math.floor(h * DPR);
+    rainCanvas.style.width = w + 'px';
+    rainCanvas.style.height = h + 'px';
+    rainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    const rainColumns = Math.floor(w / rainFontSize) + 1;
+    const dropsPerColumn = 2;
+    const totalDrops = rainColumns * dropsPerColumn;
+    
+    rainDrops = Array.from({ length: totalDrops }).map((_, index) => {
+        const col = index % rainColumns;
+        return {
+          x: col,
+          y: Math.floor(Math.random() * -60), 
+          color: rainColors[Math.floor(Math.random() * rainColors.length)]
+        };
+    });
+
+    particles.forEach(p => p.size = getParticleSize());
+
+    clearTimeout(resizeTimeoutHandle);
+    resizeTimeoutHandle = setTimeout(() => {
+      buildSequence();
+      const now = performance.now();
+      const targets = sequence[seqIndex];
+      if (targets) assignToTargets(targets, now);
+    }, 150);
+  }
+
+  // Khởi tạo sự kiện Buttons
+  document.getElementById('restartBtn').addEventListener('click', () => {
     clearTimeout(timelineHandle);
     startSequence();
   });
 
-  const taBtn = document.getElementById('toggleAccent');
+  const taBtn = document.getElementById('toggleAccentBtn');
   taBtn.addEventListener('click', () => {
     useAccent = !useAccent;
     taBtn.textContent = 'Chữ có dấu: ' + (useAccent ? 'TẮT' : 'BẬT');
@@ -528,8 +544,10 @@
     startSequence();
   });
 
-  window.addEventListener('resize', resize);
-  resize();
+  window.addEventListener('resize', handleResize);
+  
+  // Khởi chạy
+  handleResize();
   startSequence();
   requestAnimationFrame(render);
 
