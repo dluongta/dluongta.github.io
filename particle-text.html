@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Particle Text Canvas</title>
   <style>
-    html, body {
+    html,
+    body {
       height: 100%;
       margin: 0;
       background: radial-gradient(circle at 20% 20%, #111022 0%, #0d0b1a 35%, #07050a 100%);
@@ -13,7 +15,7 @@
       font-family: "Segoe UI", Roboto, Arial, sans-serif;
       color: #fff;
     }
-    
+
     #canvas-container {
       position: absolute;
       top: 0;
@@ -53,7 +55,7 @@
       text-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
       user-select: none;
       pointer-events: none;
-      max-width: 90%; 
+      max-width: 90%;
     }
 
     .overlay-content {
@@ -91,11 +93,11 @@
       padding: 8px 12px;
       border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
       font-weight: 700;
       color: #000;
       margin-right: 8px;
-      margin-bottom: 8px; 
+      margin-bottom: 8px;
       transition: transform 0.1s;
     }
 
@@ -108,13 +110,16 @@
         left: 15px;
         top: 15px;
       }
+
       .title {
-        font-size: 18px; 
+        font-size: 18px;
       }
+
       .small {
-        font-size: 16px; 
+        font-size: 16px;
         margin-bottom: 10px;
       }
+
       .hint {
         font-size: 14px;
         left: 15px;
@@ -123,451 +128,457 @@
     }
   </style>
 </head>
+
 <body>
 
-<div class="overlay">
-  <div class="overlay-content">
-    <div class="title">DLUONGTA PARTICLE TEXT</div>
-    <div class="small">3 → 2 → 1 → CHÚC MỪNG SINH NHẬT → 09/01/2003 → ĐÌNH LƯƠNG TẠ</div>
-    <div class="controls">
-      <button id="btnRestart">Chạy lại</button>
-      <button id="btnToggleAccent">Chữ có dấu: BẬT</button>
+  <div class="overlay">
+    <div class="overlay-content">
+      <div class="title">DLUONGTA PARTICLE TEXT</div>
+      <div class="small">3 → 2 → 1 → CHÚC MỪNG SINH NHẬT → 09/01/2003 → ĐÌNH LƯƠNG TẠ</div>
+      <div class="controls">
+        <button id="btnRestart">Chạy lại</button>
+        <button id="btnToggleAccent">Chữ có dấu: BẬT</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div id="canvas-container">
-  <canvas id="rainCanvas"></canvas>
-  <canvas id="particleCanvas"></canvas>
-</div>
+  <div id="canvas-container">
+    <canvas id="rainCanvas"></canvas>
+    <canvas id="particleCanvas"></canvas>
+  </div>
 
-<div class="hint">Website được tạo bởi DINH LUONG TA và sử dụng hiệu ứng Particle Text Canvas.</div>
+  <div class="hint">Website được tạo bởi DINH LUONG TA và sử dụng hiệu ứng Particle Text Canvas.</div>
 
-<script>
-(() => {
-  const canvas = document.getElementById("particleCanvas");
-  const ctx = canvas.getContext("2d", { alpha: true });
+  <script>
+    (() => {
+      const canvas = document.getElementById("particleCanvas");
+      const ctx = canvas.getContext("2d", { alpha: true });
 
-  const rainCanvas = document.getElementById("rainCanvas");
-  const rainCtx = rainCanvas.getContext("2d", { alpha: true });
+      const rainCanvas = document.getElementById("rainCanvas");
+      const rainCtx = rainCanvas.getContext("2d", { alpha: true });
 
-  // --- CẤU HÌNH PARTICLE TEXT ---
-  const formDuration = 1400; 
-  const holdDuration = 1200; 
+      // --- CẤU HÌNH PARTICLE TEXT ---
+      const formDuration = 1400;
+      const holdDuration = 1200;
 
-  const textsUnaccented = ['3', '2', '1', 'CHUC', 'MUNG', 'SINH', 'NHAT', '09/01/2003', 'DINH LUONG TA'];
-  const textsAccented = ['3', '2', '1', 'CHÚC', 'MỪNG', 'SINH', 'NHẬT', '09/01/2003', 'ĐÌNH LƯƠNG TẠ'];
+      const textsUnaccented = ['3', '2', '1', 'CHUC', 'MUNG', 'SINH', 'NHAT', '09/01/2003', 'DINH LUONG TA'];
+      const textsAccented = ['3', '2', '1', 'CHÚC', 'MỪNG', 'SINH', 'NHẬT', '09/01/2003', 'ĐÌNH LƯƠNG TẠ'];
 
-  // --- CẤU HÌNH CODE RAIN ---
-  const rainFontSize = 18;
-  const rainString = "DINHLUONGTA ";
-  const rainColors = ['#9370db', '#00bfff', '#ff69b4', '#ffa500'];
-  const rainUpdateInterval = 60;
+      // --- CẤU HÌNH CODE RAIN ---
+      const rainFontSize = 18;
+      const rainString = "DINHLUONGTA ";
+      const rainColors = ['#9370db', '#00bfff', '#ff69b4', '#ffa500'];
+      const rainUpdateInterval = 60;
 
-  let DPR = window.devicePixelRatio || 1;
+      let DPR = window.devicePixelRatio || 1;
 
-  const off = document.createElement("canvas");
-  const offCtx = off.getContext("2d");
+      const off = document.createElement("canvas");
+      const offCtx = off.getContext("2d");
 
-  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-  const lerp = (a, b, t) => a + (b - a) * t;
+      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+      const lerp = (a, b, t) => a + (b - a) * t;
 
-  let particles = [];
-  let particlePool = [];
-  let rainDrops = [];
-  let sequence = [];
-  let seqIndex = 0;
-  let useAccent = false;
+      let particles = [];
+      let particlePool = [];
+      let rainDrops = [];
+      let sequence = [];
+      let seqIndex = 0;
+      let useAccent = false;
 
-  let rafHandle = null;
-  let timeoutHandle = null;
-  let resizeTimeoutHandle = null;
-  let lastRainDrawTime = 0;
+      let rafHandle = null;
+      let timeoutHandle = null;
+      let resizeTimeoutHandle = null;
+      let lastRainDrawTime = 0;
 
-  const getParticleSize = () => window.innerWidth < 768 ? 2.3 : 2.0;
+      const getParticleSize = () => window.innerWidth < 768 ? 2.3 : 2.0;
 
-  class Particle {
-    constructor(x = 0, y = 0) {
-      this.init(x, y);
-    }
+      class Particle {
+        constructor(x = 0, y = 0) {
+          this.init(x, y);
+        }
 
-    init(x, y) {
-      this.x = x;
-      this.y = y;
-      this.tx = x;
-      this.ty = y;
-      this.size = getParticleSize();
-      this.phase = 2;
-      this.startX = x;
-      this.startY = y;
-      this.duration = formDuration;
-      this.alpha = 1;
-      this.startAlpha = 1;
-      this.targetAlpha = 1;
-      this.color = "#fff";
-    }
+        init(x, y) {
+          this.x = x;
+          this.y = y;
+          this.tx = x;
+          this.ty = y;
+          this.size = getParticleSize();
+          this.phase = 2;
+          this.startX = x;
+          this.startY = y;
+          this.duration = formDuration;
+          this.alpha = 1;
+          this.startAlpha = 1;
+          this.targetAlpha = 1;
+          this.color = "#fff";
+        }
 
-    to(targetX, targetY, now, dur = formDuration, targetAlpha = 1) {
-      this.phase = 0;
-      this.startX = this.x;
-      this.startY = this.y;
-      this.tx = targetX;
-      this.ty = targetY;
-      this.startTime = now;
-      this.duration = dur;
+        to(targetX, targetY, now, dur = formDuration, targetAlpha = 1) {
+          this.phase = 0;
+          this.startX = this.x;
+          this.startY = this.y;
+          this.tx = targetX;
+          this.ty = targetY;
+          this.startTime = now;
+          this.duration = dur;
 
-      const hue = 200 + Math.random() * 140;
-      this.color = `hsla(${hue}, 85%, ${55 + Math.random() * 10}%, 1)`;
+          const hue = 200 + Math.random() * 140;
+          this.color = `hsla(${hue}, 85%, ${55 + Math.random() * 10}%, 1)`;
 
-      this.startAlpha = this.alpha;
-      this.targetAlpha = targetAlpha;
-    }
+          this.startAlpha = this.alpha;
+          this.targetAlpha = targetAlpha;
+        }
 
-    update(now) {
-      if (this.phase === 0) {
-        const t = Math.min(1, (now - this.startTime) / this.duration);
-        const e = easeOutCubic(t);
-        this.x = lerp(this.startX, this.tx, e);
-        this.y = lerp(this.startY, this.ty, e);
-        this.alpha = lerp(this.startAlpha, this.targetAlpha, e);
-        if (t >= 1) this.phase = 2;
-      } else {
-        this.y += Math.sin(now / 800 + this.x * 0.001) * 0.02;
-        this.alpha = this.targetAlpha;
-      }
-    }
-  }
-
-  function createOrReuseParticle(x, y) {
-    let p;
-    if (particlePool.length > 0) {
-      p = particlePool.pop();
-      p.init(x, y);
-    } else {
-      p = new Particle(x, y);
-    }
-    return p;
-  }
-
-  function buildTargetsForText(text) {
-    const isMobile = window.innerWidth < 768;
-
-    const offW = 1600;
-    const offH = 600;
-    off.width = offW;
-    off.height = offH;
-    offCtx.clearRect(0, 0, offW, offH);
-
-    let fontSize;
-
-    if (text.length <= 3) {
-      fontSize = 300;
-    } else if (isMobile && text.length >= 12) {
-      fontSize = 145;
-    } else if (isMobile && text.length >= 8) {
-      fontSize = 155;
-    } else {
-      fontSize = 130;
-    }
-
-    offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
-    let textWidth = offCtx.measureText(text).width;
-
-    if (textWidth > offW - 60) {
-      fontSize = Math.floor(fontSize * ((offW - 60) / textWidth));
-      offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
-    }
-
-    offCtx.textBaseline = "middle";
-    offCtx.textAlign = "center";
-    offCtx.fillStyle = "#fff";
-    offCtx.fillText(text, offW / 2, offH / 2);
-
-    const img = offCtx.getImageData(0, 0, offW, offH);
-    const data = img.data;
-    const targets = [];
-    let sampleGap = 4;
-
-    if (isMobile && text.length >= 8) {
-      sampleGap = 7;
-    }
-    if (isMobile && text.length >= 12) {
-      sampleGap = 8;
-    }
-
-    const actualCanvasWidth = canvas.width / DPR;
-    const actualCanvasHeight = canvas.height / DPR;
-    const screenPadding = isMobile ? 20 : 80;
-    const maxAllowedWidth = actualCanvasWidth - screenPadding;
-
-    let minX = offW, maxX = 0;
-    for (let y = 0; y < offH; y += sampleGap) {
-      for (let x = 0; x < offW; x += sampleGap) {
-        if (data[(y * offW + x) * 4 + 3] > 120) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
+        update(now) {
+          if (this.phase === 0) {
+            const t = Math.min(1, (now - this.startTime) / this.duration);
+            const e = easeOutCubic(t);
+            this.x = lerp(this.startX, this.tx, e);
+            this.y = lerp(this.startY, this.ty, e);
+            this.alpha = lerp(this.startAlpha, this.targetAlpha, e);
+            if (t >= 1) this.phase = 2;
+          } else {
+            this.y += Math.sin(now / 800 + this.x * 0.001) * 0.02;
+            this.alpha = this.targetAlpha;
+          }
         }
       }
-    }
-    const drawnWidth = maxX - minX;
 
-    let scale = 1;
-    if (drawnWidth > 0 && drawnWidth > maxAllowedWidth) {
-      scale = maxAllowedWidth / drawnWidth;
-    }
-    
-    if (isMobile) {
-      if (text.length >= 12) {
-        scale *= 1.02;
-      } else if (text.length >= 8) {
-        scale *= 1.02;
-      }
-    }
-
-    for (let y = 0; y < offH; y += sampleGap) {
-      for (let x = 0; x < offW; x += sampleGap) {
-        const idx = (y * offW + x) * 4;
-        const alpha = data[idx + 3];
-        if (alpha > 120) {
-          const offsetX = (x - offW / 2) * scale;
-          const offsetY = (y - offH / 2) * scale;
-
-          const tx = (actualCanvasWidth / 2) + offsetX;
-          const ty = (actualCanvasHeight / 2) + offsetY;
-          targets.push({ x: tx, y: ty });
+      function createOrReuseParticle(x, y) {
+        let p;
+        if (particlePool.length > 0) {
+          p = particlePool.pop();
+          p.init(x, y);
+        } else {
+          p = new Particle(x, y);
         }
+        return p;
       }
-    }
-    return targets;
-  }
 
-  function buildSequence() {
-    const arr = useAccent ? textsAccented : textsUnaccented;
-    sequence = arr.map(t => buildTargetsForText(t));
-    seqIndex = 0;
-  }
+      function buildTargetsForText(text) {
+        const isMobile = window.innerWidth < 768;
 
-  function initParticles(count) {
-    particles = [];
-    for (let i = 0; i < count; i++) {
-      const px = Math.random() * (canvas.width / DPR);
-      const py = Math.random() * (canvas.height / DPR);
-      const p = createOrReuseParticle(px, py);
-      p.phase = 2;
-      particles.push(p);
-    }
-  }
+        const offW = 1600;
+        const offH = 600;
+        off.width = offW;
+        off.height = offH;
+        offCtx.clearRect(0, 0, offW, offH);
 
-  function assignToTargets(targets, now) {
-    const isMobile = window.innerWidth < 768;
+        let fontSize;
 
-    if (particles.length < targets.length) {
-      const need = targets.length - particles.length;
-      for (let i = 0; i < need; i++) {
-        const px = Math.random() * (canvas.width / DPR);
-        const py = Math.random() * (canvas.height / DPR);
-        const p = createOrReuseParticle(px, py);
-        p.alpha = 0;
-        particles.push(p);
+        if (text.length <= 3) {
+          fontSize = 300;
+        } else if (isMobile && text.length >= 12) {
+          fontSize = 145;
+        } else if (isMobile && text.length >= 8) {
+          fontSize = 155;
+        } else {
+          fontSize = 130;
+        }
+
+        offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
+        let textWidth = offCtx.measureText(text).width;
+
+        if (textWidth > offW - 60) {
+          fontSize = Math.floor(fontSize * ((offW - 60) / textWidth));
+          offCtx.font = `bold ${fontSize}px "Segoe UI", "Roboto", Arial`;
+        }
+
+        offCtx.textBaseline = "middle";
+        offCtx.textAlign = "center";
+        offCtx.fillStyle = "#fff";
+        offCtx.fillText(text, offW / 2, offH / 2);
+
+        const img = offCtx.getImageData(0, 0, offW, offH);
+        const data = img.data;
+        const targets = [];
+        let sampleGap = 5;
+
+        // MOBILE + TEXT DÀI
+        // giảm mật độ particle để chữ thoáng như PC
+
+        if (isMobile && text.length >= 8) {
+          sampleGap = 8;
+        }
+
+        if (isMobile && text.length >= 12) {
+          sampleGap = 10;
+        }
+
+        const actualCanvasWidth = canvas.width / DPR;
+        const actualCanvasHeight = canvas.height / DPR;
+        const screenPadding = isMobile ? 20 : 80;
+        const maxAllowedWidth = actualCanvasWidth - screenPadding;
+
+        let minX = offW, maxX = 0;
+        for (let y = 0; y < offH; y += sampleGap) {
+          for (let x = 0; x < offW; x += sampleGap) {
+            if (data[(y * offW + x) * 4 + 3] > 120) {
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+            }
+          }
+        }
+        const drawnWidth = maxX - minX;
+
+        let scale = 1;
+        if (drawnWidth > 0 && drawnWidth > maxAllowedWidth) {
+          scale = maxAllowedWidth / drawnWidth;
+        }
+
+        if (isMobile) {
+          if (text.length >= 12) {
+            scale *= 1.02;
+          } else if (text.length >= 8) {
+            scale *= 1.02;
+          }
+        }
+
+        for (let y = 0; y < offH; y += sampleGap) {
+          for (let x = 0; x < offW; x += sampleGap) {
+            const idx = (y * offW + x) * 4;
+            const alpha = data[idx + 3];
+            if (alpha > 120) {
+              const offsetX = (x - offW / 2) * scale;
+              const offsetY = (y - offH / 2) * scale;
+
+              const tx = (actualCanvasWidth / 2) + offsetX;
+              const ty = (actualCanvasHeight / 2) + offsetY;
+              targets.push({ x: tx, y: ty });
+            }
+          }
+        }
+        return targets;
       }
-    }
 
-    const cx = (canvas.width / DPR) / 2;
-    const cy = (canvas.height / DPR) / 2;
-
-    particles.sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy));
-    targets.sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy));
-
-    for (let i = 0; i < targets.length; i++) {
-      const t = targets[i];
-      const p = particles[i];
-
-      const angle = Math.random() * Math.PI * 2;
-      const radius = isMobile ? Math.random() * 0.5 : Math.random() * 1.2;
-
-      p.to(t.x + Math.cos(angle) * radius, t.y + Math.sin(angle) * radius, now, formDuration + Math.random() * 200, 1);
-    }
-
-    const surplusTargetAlpha = 0;
-
-    for (let i = targets.length; i < particles.length; i++) {
-      const t = targets[i % targets.length];
-      const p = particles[i];
-
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 2 + Math.random() * 5;
-
-      p.to(t.x + Math.cos(angle) * radius, t.y + Math.sin(angle) * radius, now, formDuration + Math.random() * 200, surplusTargetAlpha);
-    }
-  }
-
-  function runNextStage() {
-    if (!sequence.length) return;
-
-    const now = performance.now();
-    const targets = sequence[seqIndex];
-    assignToTargets(targets, now);
-
-    clearTimeout(timeoutHandle);
-
-    timeoutHandle = setTimeout(() => {
-      seqIndex++;
-      if (seqIndex >= sequence.length) {
+      function buildSequence() {
+        const arr = useAccent ? textsAccented : textsUnaccented;
+        sequence = arr.map(t => buildTargetsForText(t));
         seqIndex = 0;
       }
-      runNextStage();
-    }, formDuration + holdDuration);
-  }
 
-  function drawRain(logicalW, logicalH, now) {
-    if (now - lastRainDrawTime < rainUpdateInterval) return;
-    lastRainDrawTime = now;
-
-    rainCtx.fillStyle = 'rgba(7, 5, 10, 0.05)';
-    rainCtx.fillRect(0, 0, logicalW, logicalH);
-
-    rainCtx.font = `bold ${rainFontSize}px monospace`;
-    rainCtx.textAlign = "center";
-
-    for (let i = 0; i < rainDrops.length; i++) {
-      const drop = rainDrops[i];
-
-      if (drop.y >= 0) {
-        const charIndex = drop.y % rainString.length;
-        const text = rainString.charAt(charIndex);
-
-        rainCtx.fillStyle = drop.color;
-        rainCtx.shadowColor = drop.color;
-
-        rainCtx.fillText(text, drop.x * rainFontSize, drop.y * rainFontSize);
-        rainCtx.shadowBlur = 0;
+      function initParticles(count) {
+        particles = [];
+        for (let i = 0; i < count; i++) {
+          const px = Math.random() * (canvas.width / DPR);
+          const py = Math.random() * (canvas.height / DPR);
+          const p = createOrReuseParticle(px, py);
+          p.phase = 2;
+          particles.push(p);
+        }
       }
 
-      if (drop.y * rainFontSize > logicalH) {
-        drop.y = Math.floor(Math.random() * -3);
-        drop.color = rainColors[Math.floor(Math.random() * rainColors.length)];
-      } else {
-        drop.y++;
+      function assignToTargets(targets, now) {
+        const isMobile = window.innerWidth < 768;
+
+        if (particles.length < targets.length) {
+          const need = targets.length - particles.length;
+          for (let i = 0; i < need; i++) {
+            const px = Math.random() * (canvas.width / DPR);
+            const py = Math.random() * (canvas.height / DPR);
+            const p = createOrReuseParticle(px, py);
+            p.alpha = 0;
+            particles.push(p);
+          }
+        }
+
+        const cx = (canvas.width / DPR) / 2;
+        const cy = (canvas.height / DPR) / 2;
+
+        particles.sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy));
+        targets.sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy));
+
+        for (let i = 0; i < targets.length; i++) {
+          const t = targets[i];
+          const p = particles[i];
+
+          const angle = Math.random() * Math.PI * 2;
+          const radius = isMobile ? Math.random() * 0.5 : Math.random() * 1.2;
+
+          p.to(t.x + Math.cos(angle) * radius, t.y + Math.sin(angle) * radius, now, formDuration + Math.random() * 200, 1);
+        }
+
+        const surplusTargetAlpha = 0;
+
+        for (let i = targets.length; i < particles.length; i++) {
+          const t = targets[i % targets.length];
+          const p = particles[i];
+
+          const angle = Math.random() * Math.PI * 2;
+          const radius = 2 + Math.random() * 5;
+
+          p.to(t.x + Math.cos(angle) * radius, t.y + Math.sin(angle) * radius, now, formDuration + Math.random() * 200, surplusTargetAlpha);
+        }
       }
-    }
-  }
 
-  function render(now) {
-    const logicalW = window.innerWidth;
-    const logicalH = window.innerHeight;
-    const isMobile = logicalW < 768;
+      function runNextStage() {
+        if (!sequence.length) return;
 
-    drawRain(logicalW, logicalH, now);
+        const now = performance.now();
+        const targets = sequence[seqIndex];
+        assignToTargets(targets, now);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+        clearTimeout(timeoutHandle);
 
-    for (let i = 0; i < particles.length; i++) {
-      particles[i].update(now);
-    }
+        timeoutHandle = setTimeout(() => {
+          seqIndex++;
+          if (seqIndex >= sequence.length) {
+            seqIndex = 0;
+          }
+          runNextStage();
+        }, formDuration + holdDuration);
+      }
 
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
+      function drawRain(logicalW, logicalH, now) {
+        if (now - lastRainDrawTime < rainUpdateInterval) return;
+        lastRainDrawTime = now;
 
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      if (p.alpha <= 0.05) continue;
+        rainCtx.fillStyle = 'rgba(7, 5, 10, 0.05)';
+        rainCtx.fillRect(0, 0, logicalW, logicalH);
 
-      const auraAlpha = isMobile ? 0.4 : 0.5;
-      ctx.globalAlpha = p.alpha * auraAlpha;
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * (isMobile ? 2.2 : 2.6), 0, Math.PI * 2);
-      ctx.fill();
-    }
+        rainCtx.font = `bold ${rainFontSize}px monospace`;
+        rainCtx.textAlign = "center";
 
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      if (p.alpha <= 0.05) continue;
+        for (let i = 0; i < rainDrops.length; i++) {
+          const drop = rainDrops[i];
 
-      ctx.globalAlpha = p.alpha * (isMobile ? 0.9 : 0.6);
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * 0.75, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
+          if (drop.y >= 0) {
+            const charIndex = drop.y % rainString.length;
+            const text = rainString.charAt(charIndex);
 
-    rafHandle = requestAnimationFrame(render);
-  }
+            rainCtx.fillStyle = drop.color;
+            rainCtx.shadowColor = drop.color;
 
-  const startSequence = () => {
-    buildSequence();
-    const maxCount = Math.max(...sequence.map(a => a.length));
+            rainCtx.fillText(text, drop.x * rainFontSize, drop.y * rainFontSize);
+            rainCtx.shadowBlur = 0;
+          }
 
-    if (particles.length > 0) {
-      particlePool.push(...particles);
-      particles = [];
-    }
+          if (drop.y * rainFontSize > logicalH) {
+            drop.y = Math.floor(Math.random() * -3);
+            drop.color = rainColors[Math.floor(Math.random() * rainColors.length)];
+          } else {
+            drop.y++;
+          }
+        }
+      }
 
-    initParticles(Math.min(3000, maxCount + 200));
-    seqIndex = 0;
-    runNextStage();
-  };
+      function render(now) {
+        const logicalW = window.innerWidth;
+        const logicalH = window.innerHeight;
+        const isMobile = logicalW < 768;
 
-  const handleResize = () => {
-    DPR = window.devicePixelRatio || 1;
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+        drawRain(logicalW, logicalH, now);
 
-    canvas.width = Math.floor(w * DPR);
-    canvas.height = Math.floor(h * DPR);
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    rainCanvas.width = Math.floor(w * DPR);
-    rainCanvas.height = Math.floor(h * DPR);
-    rainCanvas.style.width = w + 'px';
-    rainCanvas.style.height = h + 'px';
-    rainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update(now);
+        }
 
-    const rainColumns = Math.floor(w / rainFontSize) + 1;
-    const dropsPerColumn = 2;
-    const totalDrops = rainColumns * dropsPerColumn;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
 
-    rainDrops = Array.from({ length: totalDrops }).map((_, index) => {
-      const col = index % rainColumns;
-      return {
-        x: col,
-        y: Math.floor(Math.random() * -60),
-        color: rainColors[Math.floor(Math.random() * rainColors.length)]
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          if (p.alpha <= 0.05) continue;
+
+          const auraAlpha = isMobile ? 0.4 : 0.5;
+          ctx.globalAlpha = p.alpha * auraAlpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * (isMobile ? 2.2 : 2.6), 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          if (p.alpha <= 0.05) continue;
+
+          ctx.globalAlpha = p.alpha * (isMobile ? 0.9 : 0.6);
+          ctx.fillStyle = "#fff";
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 0.75, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        rafHandle = requestAnimationFrame(render);
+      }
+
+      const startSequence = () => {
+        buildSequence();
+        const maxCount = Math.max(...sequence.map(a => a.length));
+
+        if (particles.length > 0) {
+          particlePool.push(...particles);
+          particles = [];
+        }
+
+        initParticles(Math.min(3000, maxCount + 200));
+        seqIndex = 0;
+        runNextStage();
       };
-    });
 
-    particles.forEach(p => p.size = getParticleSize());
+      const handleResize = () => {
+        DPR = window.devicePixelRatio || 1;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
 
-    clearTimeout(resizeTimeoutHandle);
-    resizeTimeoutHandle = setTimeout(() => {
-      buildSequence();
-      const now = performance.now();
-      const targets = sequence[seqIndex];
-      if (targets) assignToTargets(targets, now);
-    }, 150);
-  };
+        canvas.width = Math.floor(w * DPR);
+        canvas.height = Math.floor(h * DPR);
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-  document.getElementById("btnRestart").addEventListener("click", () => {
-    clearTimeout(timeoutHandle);
-    startSequence();
-  });
+        rainCanvas.width = Math.floor(w * DPR);
+        rainCanvas.height = Math.floor(h * DPR);
+        rainCanvas.style.width = w + 'px';
+        rainCanvas.style.height = h + 'px';
+        rainCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-  const btnToggleAccent = document.getElementById("btnToggleAccent");
-  btnToggleAccent.addEventListener("click", () => {
-    useAccent = !useAccent;
-    btnToggleAccent.textContent = `Chữ có dấu: ${useAccent ? "TẮT" : "BẬT"}`;
-    clearTimeout(timeoutHandle);
-    startSequence();
-  });
+        const rainColumns = Math.floor(w / rainFontSize) + 1;
+        const dropsPerColumn = 2;
+        const totalDrops = rainColumns * dropsPerColumn;
 
-  window.addEventListener("resize", handleResize);
-  handleResize();
-  startSequence();
-  rafHandle = requestAnimationFrame(render);
-})();
-</script>
+        rainDrops = Array.from({ length: totalDrops }).map((_, index) => {
+          const col = index % rainColumns;
+          return {
+            x: col,
+            y: Math.floor(Math.random() * -60),
+            color: rainColors[Math.floor(Math.random() * rainColors.length)]
+          };
+        });
+
+        particles.forEach(p => p.size = getParticleSize());
+
+        clearTimeout(resizeTimeoutHandle);
+        resizeTimeoutHandle = setTimeout(() => {
+          buildSequence();
+          const now = performance.now();
+          const targets = sequence[seqIndex];
+          if (targets) assignToTargets(targets, now);
+        }, 150);
+      };
+
+      document.getElementById("btnRestart").addEventListener("click", () => {
+        clearTimeout(timeoutHandle);
+        startSequence();
+      });
+
+      const btnToggleAccent = document.getElementById("btnToggleAccent");
+      btnToggleAccent.addEventListener("click", () => {
+        useAccent = !useAccent;
+        btnToggleAccent.textContent = `Chữ có dấu: ${useAccent ? "TẮT" : "BẬT"}`;
+        clearTimeout(timeoutHandle);
+        startSequence();
+      });
+
+      window.addEventListener("resize", handleResize);
+      handleResize();
+      startSequence();
+      rafHandle = requestAnimationFrame(render);
+    })();
+  </script>
 </body>
+
 </html>
