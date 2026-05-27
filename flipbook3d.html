@@ -16,7 +16,6 @@
             --text-color: #ecf0f1;
         }
 
-
         body {
             background-color: var(--bg-color);
             margin: 0;
@@ -58,12 +57,11 @@
         @media (max-width: 600px) {
             .desktop-only { display: none; }
             .btn-group { padding: 4px 6px; gap: 4px; }
-            #pageDisplay { font-size: 13px; min-width: 55px; text-align: center; }
-            button { padding: 6px 10px; font-size: 13px; }
+            #pageDisplay { font-size: 13px; min-width: 75px; text-align: center; }
         }
 
         input#pageInput {
-            width: 40px;
+            width: 60px;
             padding: 4px;
             background: rgba(255,255,255,0.1);
             border: 1px solid #777;
@@ -71,12 +69,9 @@
             text-align: center;
             border-radius: 4px;
             font-weight: bold;
-            -moz-appearance: textfield;
             outline: none;
         }
         input#pageInput:focus { border-color: var(--accent-color); }
-        input#pageInput::-webkit-outer-spin-button,
-        input#pageInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
         button {
             padding: 6px 14px;
@@ -154,10 +149,8 @@
         .align-end { transform: translateX(var(--page-width)); }
 
         @media (max-width: 768px) {
-            /* Tinh chỉnh riêng cho Mobile để sách mặc định to rõ ràng */
             .align-open { transform: translateX(calc(var(--page-width) / 2)) scale(1); }
             .align-end { transform: translateX(var(--page-width)) scale(1); }
-            /* Trang bìa khi chưa mở sẽ được phóng to 1.35 lần giữa màn hình */
             .align-cover { transform: scale(1.35); } 
         }
 
@@ -287,7 +280,10 @@
 
         <div class="btn-group">
             <span class="desktop-only">Trang:</span>
-            <input type="number" id="pageInput" min="1" value="1" onchange="goToPage()">
+            <input type="text" id="pageInput" inputmode="numeric" pattern="[0-9]*" value="1" 
+                   onfocus="handleInputFocus()" 
+                   onblur="handleInputBlur()" 
+                   onkeydown="handleInputKeyDown(event)">
         </div>
 
         <div class="btn-group">
@@ -313,7 +309,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const pdfUrl = 'book.pdf'; // URL file PDF của bạn
+        const pdfUrl = 'book.pdf'; 
         const pdfjsLib = window['pdfjs-dist/build/pdf'];
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
 
@@ -328,26 +324,24 @@
         let isDragging = false;
         let startX, startY;
         let initialPinchDistance = 0, initialZoom = 1;
+        let isProcessingPage = false; // Flag chống trùng lặp xử lý cuộc gọi trang
 
         function updateBookDimensions() {
             const viewport = document.getElementById('viewport');
             const vWidth = viewport.clientWidth;
             const vHeight = viewport.clientHeight;
             let pWidth, pHeight;
-            const aspectRatio = 0.707; // Chuẩn A4
+            const aspectRatio = 0.707; 
 
             if (vWidth < 768) { 
-                // Ép kích thước khung sách trên mobile chiếm 96% chiều rộng (mỗi trang chiếm 48%)
                 pWidth = vWidth * 0.48;
                 pHeight = pWidth / aspectRatio;
                 
-                // Tránh tình trạng bị khuất màn hình dọc khi scale bìa sách lên 1.35x
                 if (pHeight > vHeight * 0.6) {
                     pHeight = vHeight * 0.6;
                     pWidth = pHeight * aspectRatio;
                 }
             } else { 
-                // PC giữ nguyên chuẩn 100% cực nét
                 pHeight = vHeight * 0.85;
                 pWidth = pHeight * aspectRatio;
             }
@@ -367,7 +361,6 @@
                 const loadingTask = pdfjsLib.getDocument(pdfUrl);
                 pdfDoc = await loadingTask.promise;
                 totalPages = pdfDoc.numPages;
-                document.getElementById('pageInput').max = totalPages;
                 
                 buildDOMStructure();
                 document.getElementById('main-loading').style.display = 'none';
@@ -531,9 +524,16 @@
             }
         }
 
+        // --- XỬ LÝ NHẢY TRANG KHI NHẤN ENTER ---
         function goToPage() {
+            if (isProcessingPage) return;
+            isProcessingPage = true;
+
             const input = document.getElementById('pageInput');
-            let p = parseInt(input.value);
+            // Tách chuỗi loại bỏ phần dấu gạch chéo phụ nếu có
+            let valStr = input.value.split('/')[0].trim();
+            let p = parseInt(valStr);
+            
             if (isNaN(p) || p < 1) p = 1;
             if (p > totalPages) p = totalPages;
             
@@ -552,9 +552,43 @@
             }
             
             updateUI();
-            input.blur(); 
+            input.blur(); // Tự động kích hoạt định dạng lại text dạng X/92
+            isProcessingPage = false;
         }
 
+        // Khi người dùng click chọn ô input để điền trang
+        function handleInputFocus() {
+            const input = document.getElementById('pageInput');
+            input.value = input.dataset.currentPage || "1"; // Chỉ hiện số trang thuần túy
+            input.select(); // Bôi đen toàn bộ số cũ để gõ đè cho nhanh
+        }
+
+        // Khi người dùng bấm lệch chuột ra ngoài ô input
+        function handleInputBlur() {
+            setTimeout(() => {
+                const input = document.getElementById('pageInput');
+                if (document.activeElement !== input) {
+                    let valStr = input.value.split('/')[0].trim();
+                    let p = parseInt(valStr);
+                    // Nếu người dùng đổi số rồi bấm ra ngoài (không nhấn Enter) -> tự nhảy trang luôn
+                    if (!isNaN(p) && p !== parseInt(input.dataset.currentPage) && p >= 1 && p <= totalPages) {
+                        goToPage();
+                    } else {
+                        // Trả lại cấu trúc hiển thị X/Tổng trang ban đầu
+                        input.value = (input.dataset.currentPage || "1") + "/" + totalPages;
+                    }
+                }
+            }, 120);
+        }
+
+        // Bắt phím Enter tức thì cho cả Mobile và PC
+        function handleInputKeyDown(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                goToPage();
+            }
+        }
+
+        // --- CẬP NHẬT GIAO DIỆN PAGINATION CHUẨN ---
         function updateUI() {
             const aligner = document.getElementById('book-aligner');
             if (currentSheet === 0) aligner.className = 'book-aligner align-cover';
@@ -565,15 +599,26 @@
             const pLeft = currentSheet * 2;
             const pRight = pLeft + 1;
 
+            let currentInputPage = 1;
+
             if (currentSheet === 0) {
-                display.innerText = `1 / ${totalPages}`;
-                document.getElementById('pageInput').value = 1;
+                display.innerText = `1/${totalPages}`; // Sửa lỗi hiển thị ban đầu
+                currentInputPage = 1;
             } else if (currentSheet === sheetsArray.length) {
-                display.innerText = `Hết`;
-                document.getElementById('pageInput').value = totalPages;
+                display.innerText = `${totalPages}/${totalPages}`; // Hiện trang cuối thay vì chữ "Hết"
+                currentInputPage = totalPages;
             } else {
-                display.innerText = `${pLeft}-${pRight > totalPages ? pLeft : pRight}`;
-                document.getElementById('pageInput').value = pLeft;
+                // Sửa lỗi hiển thị nút bên trái: 2-3 thành 2-3/92
+                display.innerText = `${pLeft}-${pRight > totalPages ? pLeft : pRight}/${totalPages}`;
+                currentInputPage = pLeft;
+            }
+
+            // Đồng bộ dữ liệu vào ô hiển thị Trang bên phải
+            const input = document.getElementById('pageInput');
+            input.dataset.currentPage = currentInputPage;
+
+            if (document.activeElement !== input) {
+                input.value = `${currentInputPage}/${totalPages}`; // Sửa lỗi ô trang chỉ ghi số -> đổi thành 2/92
             }
 
             sheetsArray.forEach((sheetInfo, index) => {
@@ -677,9 +722,8 @@
         });
 
         window.addEventListener('keydown', (e) => {
-            if (document.activeElement.tagName === 'INPUT') {
-                if (e.key === 'Enter') goToPage();
-                return; 
+            if (document.activeElement.id === 'pageInput') {
+                return; // Tránh xung đột phím điều hướng hệ thống khi đang gõ
             }
             
             if (e.key === 'ArrowRight') nextPage();
