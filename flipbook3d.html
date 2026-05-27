@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>3D PDF Flipbook</title>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script> -->
     <script src="pdf.min.js"></script>
     <style>
         :root {
@@ -117,6 +116,7 @@
             overflow: hidden;
             position: relative;
             touch-action: none;
+            perspective: 2000px;
         }
 
         .side-nav {
@@ -171,6 +171,7 @@
             height: var(--page-height);
             position: relative;
             transition: transform var(--transition-speed) cubic-bezier(0.2, 1, 0.3, 1);
+            transform-origin: center center;
         }
 
         .align-cover {
@@ -187,11 +188,15 @@
 
         @media (max-width: 768px) {
             .align-open {
-                transform: translateX(0);
+                transform: translateX(calc(var(--page-width) / 2)) scale(0.9);
             }
 
             .align-end {
-                transform: translateX(0);
+                transform: translateX(var(--page-width)) scale(0.9);
+            }
+
+            .align-cover {
+                transform: scale(0.9);
             }
         }
 
@@ -212,6 +217,7 @@
             transform-origin: left;
             transform-style: preserve-3d;
             transition: transform var(--transition-speed) cubic-bezier(0.645, 0.045, 0.355, 1);
+            pointer-events: none;
         }
 
         .page.flipped {
@@ -227,6 +233,8 @@
             background: white;
             overflow: hidden;
             border-radius: 2px 4px 4px 2px;
+            pointer-events: auto;
+            z-index: 10;
         }
 
         .front {
@@ -285,105 +293,9 @@
             position: absolute;
             top: 0;
             bottom: 0;
-            width: 25%;
-            z-index: 1000;
-            cursor: pointer;
-        }
-
-        /* Đảm bảo lớp page không chặn click của lớp dưới nó */
-        .page {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            transform-origin: left;
-            transform-style: preserve-3d;
-            transition: transform var(--transition-speed) cubic-bezier(0.645, 0.045, 0.355, 1);
-            pointer-events: none;
-            /* Quan trọng: Click xuyên qua các lớp rỗng */
-        }
-
-        /* Chỉ những gì hiển thị mới nhận click */
-        .front,
-        .back {
-            pointer-events: auto;
-            z-index: 10;
-        }
-
-        .click-area {
-            position: absolute;
-            top: 0;
-            bottom: 0;
             z-index: 5000;
-            /* Luôn nằm trên cùng của mặt trang */
             cursor: pointer;
             background: rgba(0, 0, 0, 0);
-            /* Trong suốt */
-        }
-
-        #viewport {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-            touch-action: none;
-            /* Đảm bảo nội dung luôn ở giữa */
-            perspective: 2000px;
-        }
-
-        .book-aligner {
-            width: var(--page-width);
-            height: var(--page-height);
-            position: relative;
-            transition: transform var(--transition-speed) cubic-bezier(0.2, 1, 0.3, 1);
-            /* Giúp căn giữa trên mobile khi mở sách */
-            transform-origin: center center;
-        }
-
-        /* Khi mở sách trên PC: dịch chuyển sang phải để lộ trang trái */
-        .align-open {
-            transform: translateX(calc(var(--page-width) / 2));
-        }
-
-        .align-end {
-            transform: translateX(var(--page-width));
-        }
-
-        /* TRÊN MOBILE: Thu nhỏ toàn bộ để hiện đủ 2 trang */
-        @media (max-width: 768px) {
-            .align-open {
-                /* Không dịch chuyển ngang mà dùng scale nhỏ lại nếu cần */
-                transform: translateX(calc(var(--page-width) / 2)) scale(0.9);
-            }
-
-            .align-end {
-                transform: translateX(var(--page-width)) scale(0.9);
-            }
-
-            .align-cover {
-                transform: scale(0.9);
-            }
-        }
-
-        /* Fix click xuyên thấu */
-        .page {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            transform-origin: left;
-            transform-style: preserve-3d;
-            transition: transform var(--transition-speed) cubic-bezier(0.645, 0.045, 0.355, 1);
-            pointer-events: none;
-        }
-
-        .front,
-        .back {
-            pointer-events: auto;
         }
     </style>
 </head>
@@ -427,7 +339,6 @@
         // --- CẤU HÌNH ---
         const pdfUrl = 'book.pdf';
         const pdfjsLib = window['pdfjs-dist/build/pdf'];
-        // pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
 
         let pdfDoc = null;
@@ -441,7 +352,6 @@
         let isDragging = false;
         let startX, startY;
 
-        // Các biến cho Pinch Zoom
         let initialPinchDistance = 0;
         let initialZoom = 1;
 
@@ -453,18 +363,14 @@
             const aspectRatio = 0.707; // Tỉ lệ A4
 
             if (vWidth < 768) {
-                // Trên mobile, vì hiển thị 2 trang cạnh nhau nên chiều rộng 1 trang 
-                // tối đa chỉ được bằng ~45% chiều rộng màn hình
                 pWidth = vWidth * 0.42;
                 pHeight = pWidth / aspectRatio;
 
-                // Nếu chiều cao vẫn quá lớn so với màn hình
                 if (pHeight > vHeight * 0.7) {
                     pHeight = vHeight * 0.7;
                     pWidth = pHeight * aspectRatio;
                 }
             } else {
-                // Trên Desktop
                 pHeight = vHeight * 0.8;
                 pWidth = pHeight * aspectRatio;
             }
@@ -503,14 +409,14 @@
                 sheetEl.className = 'page';
                 sheetEl.style.zIndex = totalSheets - i;
 
-                // --- Mặt trước (Nằm bên phải) ---
+                // Mặt trước
                 const front = document.createElement('div');
                 front.className = 'front';
 
                 const nextTrigger = document.createElement('div');
                 nextTrigger.className = 'click-area';
                 nextTrigger.style.right = '0';
-                nextTrigger.style.width = '40%'; // Vùng nhấn lật tới
+                nextTrigger.style.width = '40%'; 
                 nextTrigger.onclick = (e) => {
                     e.stopPropagation();
                     nextPage();
@@ -519,14 +425,14 @@
                 await renderPageToCanvas(pageNumFront, front);
                 sheetEl.appendChild(front);
 
-                // --- Mặt sau (Sẽ nằm bên trái sau khi lật) ---
+                // Mặt sau
                 const back = document.createElement('div');
                 back.className = 'back';
 
                 const prevTrigger = document.createElement('div');
                 prevTrigger.className = 'click-area';
                 prevTrigger.style.left = '0';
-                prevTrigger.style.width = '40%'; // Vùng nhấn lật lui
+                prevTrigger.style.width = '40%'; 
                 prevTrigger.onclick = (e) => {
                     e.stopPropagation();
                     prevPage();
@@ -549,15 +455,31 @@
             try {
                 const page = await pdfDoc.getPage(num);
                 const cssWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--page-width'));
-                const desiredWidth = cssWidth * 2;
-                const viewport = page.getViewport({ scale: 1 });
-                const scale = desiredWidth / viewport.width;
-                const scaledViewport = page.getViewport({ scale: scale });
+                
+                // Lấy viewport chuẩn để tính toán tỷ lệ
+                const defaultViewport = page.getViewport({ scale: 1 });
+                const baseScale = cssWidth / defaultViewport.width;
+
+                // BÍ QUYẾT XỬ LÝ MỜ NHÒE Ở ĐÂY:
+                // Lấy Pixel Ratio của thiết bị (màn hình điện thoại/retina thường là 2 hoặc 3)
+                const pixelRatio = window.devicePixelRatio || 1;
+                
+                // Nhân thêm hệ số 2.5 để dự trù độ nét dư dả khi người dùng bấm Zoom (+)
+                // Mật độ điểm ảnh cao giúp chữ sắc nét như file gốc
+                const highResScale = baseScale * pixelRatio * 2.5; 
+                
+                const scaledViewport = page.getViewport({ scale: highResScale });
 
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
-                canvas.height = scaledViewport.height;
+                
+                // Gán kích thước THẬT cực lớn cho Canvas
                 canvas.width = scaledViewport.width;
+                canvas.height = scaledViewport.height;
+
+                // Tối ưu render ảnh & font chữ trên canvas
+                context.imageSmoothingEnabled = true;
+                context.imageSmoothingQuality = 'high';
 
                 await page.render({ canvasContext: context, viewport: scaledViewport }).promise;
                 container.appendChild(canvas);
