@@ -385,7 +385,7 @@
 
         <div class="btn-group">
             <span class="desktop-only">Trang:</span>
-            <input type="text" id="pageInput" inputmode="numeric" pattern="[0-9]*" value="1"
+            <input type="text" id="pageInput" inputmode="numeric" pattern="[0-9]*" value="Loading..."
                 onfocus="handleInputFocus()" onblur="handleInputBlur()" onkeydown="handleInputKeyDown(event)">
         </div>
 
@@ -461,7 +461,7 @@
                 updateBookDimensions();
                 setTimeout(() => loadVisiblePages(currentSheet, true), 300);
             });
-
+            document.getElementById('pageInput').value = "Loading...";
             try {
                 const loadingTask = pdfjsLib.getDocument(pdfUrl);
                 pdfDoc = await loadingTask.promise;
