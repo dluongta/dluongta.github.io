@@ -299,7 +299,7 @@
     </div>
 
     <div id="viewport">
-        <div id="main-loading"><div class="loader-spinner"></div> Đang tải sách...</div>
+        <div id="main-loading"><div class="loader-spinner"></div>PDF Book Loading...</div>
 
         <div class="side-nav left" onclick="prevPage()">‹</div>
         <div class="side-nav right" onclick="nextPage()">›</div>
@@ -374,8 +374,8 @@
                 updateUI(); 
             } catch (err) {
                 console.error("PDF Load Error:", err);
-                document.getElementById('main-loading').innerHTML = "Lỗi tải file PDF!";
-                document.getElementById('main-loading').style.background = "rgba(220, 53, 69, 0.9)";
+                document.getElementById('main-loading').innerHTML = "PDF file not found: " + pdfUrl;
+                document.getElementById('main-loading').style.background = "red";
             }
         }
 
