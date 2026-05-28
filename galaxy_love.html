@@ -329,7 +329,7 @@
                 let repeatCount = Math.floor(ring.radius / 15);
                 let fullText = ring.text.repeat(repeatCount);
                 for (let j = 0; j < fullText.length; j++) {
-                    let cA = (-time * ring.speed) + (j * (Math.PI * 2 / fullText.length));                    
+                    let cA = (time * ring.speed) + (j * (Math.PI * 2 / fullText.length));                    
                     let tx = (ring.tilt === "vertical") ? 0 : Math.cos(cA) * ring.radius;
                     let tz = Math.sin(cA) * ring.radius;
                     let ty = (ring.tilt === "vertical") ? Math.cos(cA) * ring.radius : tx * ring.tilt;
