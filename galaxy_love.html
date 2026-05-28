@@ -248,7 +248,7 @@
 
             if (!shootingStar.active && Math.random() < 0.02) {
                 shootingStar.active = true; shootingStar.x = -400; shootingStar.y = rand(50, h * 0.7);
-                shootingStar.len = rand(200, 400); shootingStar.speed = rand(15, 25); shootingStar.opacity = 1;
+                shootingStar.len = rand(200, 400); shootingStar.speed = rand(20, 40); shootingStar.opacity = 1;
             } else if (shootingStar.active) {
                 shootingStar.x += shootingStar.speed; shootingStar.opacity -= 0.003;
                 if (shootingStar.x > w + 400 || shootingStar.opacity <= 0) shootingStar.active = false;
