@@ -3,478 +3,387 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Galaxy Animation 3D - Dinh Luong Ta</title>
     <style>
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #000; font-family: Arial, sans-serif;
+            touch-action: none; user-select: none; -webkit-user-select: none;
         }
 
         #canvas-container {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
+            width: 100vw; height: 100vh; position: relative;
         }
 
         canvas {
-            display: block;
-            touch-action: none;
+            display: block; width: 100%; height: 100%;
+        }
+
+        /* ===== Màn hình Loading ===== */
+        #loading-screen {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid rgba(255, 140, 0, 0.2);
+            border-top: 4px solid #FF8C00; border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .loading-text {
+            color: #FF8C00; margin-top: 15px; font-weight: bold; 
+            letter-spacing: 2px; font-size: 14px;
         }
     </style>
 </head>
 
 <body>
-
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <div class="loading-text">LOADING UNIVERSE...</div>
+    </div>
+    
     <div id="canvas-container">
         <canvas id="galaxyCanvas"></canvas>
     </div>
 
     <script>
         const canvas = document.getElementById("galaxyCanvas");
-        const container = document.getElementById("canvas-container");
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { alpha: false });
 
-        /* ===== 1. CẤU HÌNH (CONFIG) ===== */
-        const TEXT_STR = "DINH LUONG TA";
-        const imageSources = ["luen_logo.png", "hexagon-main.png", "luen-1.jpg"];
-
+        /* ===== 1. CẤU HÌNH & NHẬN DIỆN THIẾT BỊ ===== */
+        const isMobile = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent);
+        
+        const STAR_COUNT = isMobile ? 250 : 600;
+        const PARTICLE_COUNT = isMobile ? 400 : 1200;
+        const IMAGE_SHOW_SCALE = 0.8;
+        
         let w, h, cx, cy;
-        // let zoom = window.innerWidth < 768 ? 0.25 : 0.4;
-        let zoom = 0.25;
-        let initialZoom = zoom;
+        let zoom = 0.25, initialZoom = zoom;
         const PERSPECTIVE = 2000;
-        let rotX = 1.8;
-        let rotY = 0;
+        let rotX = 1.8, rotY = 0;
 
         const PLANET_RADIUS = 110;
-        const ORBIT_RADIUS = 280;
-        const ORBIT_TILT = -80;
-        const IMAGE_SHOW_SCALE = 0.8;
-
-        const PARTICLE_TILT_X = Math.PI / 2.3;
-        const PARTICLE_TILT_Z = Math.PI / 6;
-        // const BLUE_COLOR = "#00ccff";
-        const PARTICLE_COLOR = "#FF8C00";
-        /* ===== 1. CẤU HÌNH (CONFIG) ===== */
-        // ... các dòng cũ giữ nguyên ...
-        // const RINGS = [
-        //     { text: "DINH ", radius: 220, tilt: -0.5, speed: 1.2, color: "#ff6200" },  // Chéo xuống phải
-        //     { text: "LUONG ", radius: 320, tilt: 0.5, speed: 0.8, color: "#00ccff" },   // Chéo xuống trái
-        //     { text: "TA ", radius: 420, tilt: 0, speed: 0.5, color: "#ffffff" }        // Thẳng đứng/Ngang
-        // ];
+        const imageSources = ["luen_logo.png", "hexagon-main.png", "luen-1.jpg"];
+        
         const RINGS = [
-            { text: "DINH ", radius: 220, tilt: -0.8, speed: 1.2, color: "#ff6200" },  // Chéo xuống Phải
-            { text: "LUONG ", radius: 320, tilt: 0.8, speed: 0.8, color: "#6a00ff" },   // Chéo xuống Trái
-            { text: "TA ", radius: 420, tilt: "vertical", speed: 0.5, color: "#ff0066" } // Thẳng đứng
+            { text: "DINH ", radius: 220, tilt: -0.8, speed: 1.2, color: "#ff6200" },
+            { text: "LUONG ", radius: 320, tilt: 0.8, speed: 0.8, color: "#6a00ff" },
+            { text: "TA ", radius: 420, tilt: "vertical", speed: 0.5, color: "#ff0066" }
         ];
-        // --- QUẢN LÝ SAO BĂNG ---
-        let shootingStar = {
-            active: false,
-            x: 0, y: 0,
-            len: 0,
-            speed: 0,
-            opacity: 0
-        };
 
-        const images = imageSources.map(src => {
-            const img = new Image();
-            img.src = src;
-            return img;
-        });
-
+        let images = [], bgStars = [], particles = [];
         const rand = (a, b) => Math.random() * (b - a) + a;
 
+        /* ===== 2. KỸ THUẬT CACHING (OFF-SCREEN RENDER) ===== */
+        const caches = { text: {}, planet: null, auraOrange: null, auraPurple: null };
+
+        function createCacheCanvas(size, renderFunc) {
+            const c = document.createElement('canvas');
+            c.width = size; c.height = size;
+            renderFunc(c.getContext('2d'), size / 2);
+            return c;
+        }
+
+        function initCaches() {
+            caches.planet = createCacheCanvas(400, (ctxCache, center) => {
+                const pr = 60;
+                ctxCache.globalCompositeOperation = "lighter";
+                const glow = ctxCache.createRadialGradient(center, center, pr * 0.2, center, center, pr * 3);
+                glow.addColorStop(0, "rgba(255,255,220,0.9)");
+                glow.addColorStop(0.2, "rgba(255,180,0,0.8)");
+                glow.addColorStop(0.5, "rgba(255,120,0,0.35)");
+                glow.addColorStop(1, "rgba(255,80,0,0)");
+                ctxCache.fillStyle = glow;
+                ctxCache.beginPath(); ctxCache.arc(center, center, pr * 3, 0, Math.PI * 2); ctxCache.fill();
+                
+                const sun = ctxCache.createRadialGradient(center - pr*0.3, center - pr*0.3, pr*0.1, center, center, pr);
+                sun.addColorStop(0, "#fff7cc"); sun.addColorStop(0.3, "#ffcc33");
+                sun.addColorStop(0.7, "#ff8800"); sun.addColorStop(1, "#ff5500");
+                ctxCache.fillStyle = sun;
+                ctxCache.beginPath(); ctxCache.arc(center, center, pr, 0, Math.PI * 2); ctxCache.fill();
+            });
+
+            const buildAura = (colorRGB) => createCacheCanvas(400, (ctxCache, center) => {
+                const g = ctxCache.createRadialGradient(center, center, 0, center, center, center);
+                g.addColorStop(0, `rgba(${colorRGB}, 0.5)`);
+                g.addColorStop(0.3, `rgba(${colorRGB}, 0.25)`);
+                g.addColorStop(0.7, `rgba(${colorRGB}, 0.08)`);
+                g.addColorStop(1, "rgba(0,0,0,0)");
+                ctxCache.fillStyle = g;
+                ctxCache.beginPath(); ctxCache.arc(center, center, center, 0, Math.PI*2); ctxCache.fill();
+            });
+            caches.auraOrange = buildAura("255, 140, 0");
+            caches.auraPurple = buildAura("180, 0, 255");
+
+            RINGS.forEach(ring => {
+                const uniqueChars = [...new Set(ring.text)];
+                uniqueChars.forEach(char => {
+                    const key = char + ring.color;
+                    if (!caches.text[key]) {
+                        caches.text[key] = createCacheCanvas(80, (ctxCache, center) => {
+                            ctxCache.font = "bold 35px Impact, Arial";
+                            ctxCache.textAlign = "center"; ctxCache.textBaseline = "middle";
+                            ctxCache.shadowColor = ring.color; ctxCache.shadowBlur = 12;
+                            ctxCache.strokeStyle = ring.color; ctxCache.lineWidth = 3; ctxCache.lineJoin = "round";
+                            ctxCache.strokeText(char, center, center);
+                            ctxCache.shadowBlur = 0;
+                            ctxCache.fillStyle = "#ffffff";
+                            ctxCache.fillText(char, center, center);
+                        });
+                    }
+                });
+            });
+        }
+
+        /* ===== 3. PRELOAD & KHỞI TẠO CÓ FAILSAFE ===== */
+        let isAppStarted = false;
+
+        function startUniverse() {
+            if (isAppStarted) return; // Chống chạy 2 lần
+            isAppStarted = true;
+
+            initCaches();
+            initGalaxy();
+            
+            const loadingScreen = document.getElementById("loading-screen");
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => loadingScreen.style.display = 'none', 500);
+        }
+
+        function preloadImages() {
+            const promises = imageSources.map(src => {
+                return new Promise((resolve) => {
+                    const img = new Image(); 
+                    // CHỐT CHẶN 1: Phải gán onload/onerror TRƯỚC src
+                    img.onload = () => resolve(img); 
+                    img.onerror = () => resolve(img);
+                    img.src = src; 
+                });
+            });
+
+            Promise.all(promises).then(loadedImages => {
+                images = loadedImages;
+                startUniverse();
+            });
+
+            // CHỐT CHẶN 2: Ép chạy sau 3 giây bất chấp hình ảnh có lỗi mạng hay kẹt Promise
+            setTimeout(() => {
+                startUniverse();
+            }, 3000);
+        }
+
+        function initGalaxy() {
+            bgStars = Array.from({ length: STAR_COUNT }, () => ({
+                x: rand(-3000, 3000), y: rand(-3000, 3000), z: rand(-3000, 3000),
+                size: rand(4, 7), color: "#ffffff"
+            }));
+
+            particles = Array.from({ length: PARTICLE_COUNT }, () => ({
+                radius: rand(500, 900), angle: Math.random() * Math.PI * 2,
+                speed: rand(0.0005, 0.002), yOffset: rand(-50, 50),
+                size: rand(4, 6),
+                imgIndex: Math.floor(Math.random() * imageSources.length)
+            }));
+
+            resize();
+            requestAnimationFrame(animate);
+        }
+
         function resize() {
-            w = canvas.width = container.clientWidth;
-            h = canvas.height = container.clientHeight;
-            cx = w / 2;
-            cy = h / 2;
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            cx = w / 2; cy = h / 2;
         }
         window.addEventListener("resize", resize);
-        resize();
 
-        /* ===== 2. KHỞI TẠO ĐỐI TƯỢNG ===== */
-        const bgStars = Array.from({ length: 800 }, () => ({
-            x: rand(-3000, 3000), y: rand(-3000, 3000), z: rand(-3000, 3000),
-            size: rand(6, 8), color: "#ffffff"
-        }));
-
-        const particles = Array.from({ length: 1500 }, () => ({
-            radius: rand(500, 900),
-            angle: Math.random() * Math.PI * 2,
-            speed: rand(0.0005, 0.002),
-            yOffset: rand(-50, 50),
-            size: rand(4, 7),
-            color: PARTICLE_COLOR,
-            imgIndex: Math.floor(Math.random() * images.length)
-        }));
-
-        /* ===== 3. LOGIC SAO BĂNG NGANG (HORIZONTAL SHOOTING STAR) ===== */
-        function updateShootingStar() {
-            if (!shootingStar.active) {
-                if (Math.random() < 0.02) {
-                    shootingStar.active = true;
-                    shootingStar.x = -400;
-                    shootingStar.y = rand(50, h * 0.7);
-                    shootingStar.len = rand(200, 400);
-                    shootingStar.speed = rand(40, 60);
-                    shootingStar.opacity = 1;
-                }
-            } else {
-                // Chạy ngang (chỉ tăng X)
-                shootingStar.x += shootingStar.speed;
-                // Mờ dần theo chiều dài đường đi
-                shootingStar.opacity -= 0.008;
-
-                if (shootingStar.x > w + 400 || shootingStar.opacity <= 0) {
-                    shootingStar.active = false;
-                }
-            }
-        }
-
-        function drawShootingStar() {
-            if (!shootingStar.active) return;
-
-            ctx.save();
-            ctx.globalCompositeOperation = "lighter";
-
-            const grad = ctx.createLinearGradient(
-                shootingStar.x, shootingStar.y,
-                shootingStar.x - shootingStar.len, shootingStar.y
-            );
-            grad.addColorStop(0, `rgba(255, 255, 255, ${shootingStar.opacity})`);
-            grad.addColorStop(1, "rgba(255, 255, 255, 0)");
-
-            ctx.strokeStyle = grad;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(shootingStar.x, shootingStar.y);
-            ctx.lineTo(shootingStar.x - shootingStar.len, shootingStar.y);
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        /* ===== 4. 3D & ZOOM LOGIC ===== */
-        function rotate3D(x, y, z) {
-            let y1 = y * Math.cos(rotX) - z * Math.sin(rotX);
-            let z1 = y * Math.sin(rotX) + z * Math.cos(rotX);
-            let x2 = x * Math.cos(rotY) + z1 * Math.sin(rotY);
-            let z2 = -x * Math.sin(rotY) + z1 * Math.cos(rotY);
-            return { x: x2, y: y1, z: z2 };
-        }
-
-        function project(p) {
-            const s = (PERSPECTIVE / (PERSPECTIVE + p.z)) * zoom;
-            return { x: cx + p.x * s, y: cy + p.y * s, s, z: p.z };
-        }
-
-        /* ===== 5. TƯƠNG TÁC (TOUCH & MOUSE) ===== */
+        /* ===== 4. TƯƠNG TÁC ===== */
         let dragging = false, lastX = 0, lastY = 0, initialPinchDist = null;
+        
+        canvas.addEventListener("touchstart", (e) => {
+            if (e.touches.length === 1) { dragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; } 
+            else if (e.touches.length === 2) { dragging = false; initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); initialZoom = zoom; }
+        }, { passive: true });
 
-        canvas.addEventListener("wheel", (e) => {
-            e.preventDefault();
-            zoom = Math.max(0.05, Math.min(4, zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
-        }, { passive: false });
+        canvas.addEventListener("touchmove", (e) => {
+            if (e.touches.length === 1 && dragging) {
+                rotY += (e.touches[0].clientX - lastX) * 0.006; rotX += (e.touches[0].clientY - lastY) * 0.006;
+                lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+            } else if (e.touches.length === 2 && initialPinchDist) {
+                const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                zoom = Math.max(0.05, Math.min(4, initialZoom * (dist / initialPinchDist)));
+            }
+        }, { passive: true });
 
+        canvas.addEventListener("touchend", () => { dragging = false; initialPinchDist = null; });
+        
         canvas.addEventListener("mousedown", (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
         window.addEventListener("mousemove", (e) => {
             if (!dragging) return;
             rotY += (e.clientX - lastX) * 0.004; rotX += (e.clientY - lastY) * 0.004;
             lastX = e.clientX; lastY = e.clientY;
         });
-        window.addEventListener("mouseup", () => { dragging = false; });
+        window.addEventListener("mouseup", () => dragging = false);
+        canvas.addEventListener("wheel", (e) => { zoom = Math.max(0.05, Math.min(4, zoom * (e.deltaY > 0 ? 0.9 : 1.1))); }, { passive: true });
 
-        const getDist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+        /* ===== 5. RENDERING CORE ===== */
+        const MAX_RENDER = STAR_COUNT + PARTICLE_COUNT + 300;
+        const renderPool = Array.from({ length: MAX_RENDER }, () => ({
+            type: 0, x: 0, y: 0, z: 0, size: 0, charKey: '', imgIdx: 0, cache: null
+        }));
+        
+        let shootingStar = { active: false, x: 0, y: 0, len: 0, speed: 0, opacity: 0 };
+        const PTX = Math.PI / 2.3, PTZ = Math.PI / 6;
+        const cPTX = Math.cos(PTX), sPTX = Math.sin(PTX), cPTZ = Math.cos(PTZ), sPTZ = Math.sin(PTZ);
 
-        canvas.addEventListener("touchstart", (e) => {
-            if (e.touches.length === 1) {
-                dragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
-            } else if (e.touches.length === 2) {
-                dragging = false; initialPinchDist = getDist(e.touches); initialZoom = zoom;
-            }
-        }, { passive: false });
-
-        window.addEventListener("touchmove", (e) => {
-            if (e.touches.length === 1 && dragging) {
-                rotY += (e.touches[0].clientX - lastX) * 0.006; rotX += (e.touches[0].clientY - lastY) * 0.006;
-                lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
-            } else if (e.touches.length === 2 && initialPinchDist) {
-                e.preventDefault();
-                zoom = Math.max(0.05, Math.min(4, initialZoom * (getDist(e.touches) / initialPinchDist)));
-            }
-        }, { passive: false });
-
-        window.addEventListener("touchend", () => { dragging = false; initialPinchDist = null; });
-
-        /* ===== 6. RENDERING ===== */
-        // function drawDynamicAura(time) {
-        //     ctx.save();
-        //     ctx.globalCompositeOperation = "screen";
-        //     const lights = [
-        //         { color: "rgba(0, 150, 255, 0.35)", angle: time * 0.5 },
-        //         { color: "rgba(180, 0, 255, 0.35)", angle: time * 0.4 + 2 },
-        //         { color: "rgba(255, 100, 0, 0.25)", angle: time * 0.3 + 4 }
-        //     ];
-        //     lights.forEach(light => {
-        //         const orbit = w * 0.15;
-        //         const lx = cx + Math.cos(light.angle) * orbit;
-        //         const ly = cy + Math.sin(light.angle) * orbit;
-        //         const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, w * 0.7);
-        //         g.addColorStop(0, light.color); g.addColorStop(1, "transparent");
-        //         ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-        //     });
-        //     ctx.restore();
-        // }
-        // function drawDynamicAura(time) {
-
-        //     // Vị trí 3D của ánh sáng
-        //     const light3D = rotate3D(0, 0, 0);
-
-        //     // Project ra màn hình
-        //     const p = project(light3D);
-
-        //     // Kích thước glow
-        //     const radius = 500 * p.s;
-
-        //     // Gradient glow
-        //     const g = ctx.createRadialGradient(
-        //         p.x, p.y, 0,
-        //         p.x, p.y, radius
-        //     );
-
-        //     g.addColorStop(0, "rgba(255,255,255,0.35)");
-        //     g.addColorStop(0.2, "rgba(0,200,255,0.18)");
-        //     g.addColorStop(0.5, "rgba(255,120,0,0.08)");
-        //     g.addColorStop(1, "rgba(0,0,0,0)");
-
-        //     ctx.save();
-        //     ctx.globalCompositeOperation = "screen";
-        //     ctx.fillStyle = g;
-        //     ctx.fillRect(0, 0, w, h);
-        //     ctx.restore();
-        // }
-        // function drawDynamicAura(time, renderList) {
-        //     const auraConfigs = [
-        //         // 1. Màu CAM: Nằm ngay giữa mặt trời (x=0, y=0)
-        //         { color: "255, 102, 0", x: 0, y: 0, z: 0, speed: 0.3, radius: 1800 },
-
-        //         // 2. Màu XANH: Nằm bên TRÁI (x âm) và ở DƯỚI (y dương)
-        //         { color: "0, 150, 255", x: -800, y: 600, z: -200, speed: 0.5, radius: 2200 },
-
-        //         // 3. Màu TÍM: Nằm bên PHẢI (x dương) và ở DƯỚI (y dương)
-        //         { color: "180, 0, 255", x: 800, y: 600, z: -200, speed: 0.4, radius: 2200 }
-        //     ];
-
-        //     auraConfigs.forEach(cfg => {
-        //         // Tạo chuyển động lượn lờ nhẹ nhàng để vầng sáng trông sinh động hơn
-        //         // Math.sin và Math.cos giúp các vầng sáng "thở" (phình ra thu vào hoặc di chuyển nhẹ)
-        //         let tx = cfg.x + Math.sin(time * cfg.speed) * 100;
-        //         let ty = cfg.y + Math.cos(time * cfg.speed * 0.8) * 100;
-        //         let tz = cfg.z + Math.sin(time * cfg.speed * 1.2) * 50;
-
-        //         // Xoay tọa độ theo góc quay của Camera (rotX, rotY)
-        //         let pos = rotate3D(tx, ty, tz);
-
-        //         renderList.push({
-        //             type: 'aura',
-        //             color: cfg.color,
-        //             x: pos.x,
-        //             y: pos.y,
-        //             z: pos.z,
-        //             radius: cfg.radius 
-        //         });
-        //     });
-        // }
-        function drawDynamicAura(time, renderList) {
-            //             const auraConfigs = [
-            // { color: "255, 140, 0", x: 0, y: 0, z: 0, speed: 0.3, radius: 3200 },                // 2. Màu ĐỎ HỒNG: Nằm bên TRÁI (x: -500) và DƯỚI (y: 500)
-            // { color: "255, 80, 140", x: -500, y: 500, z: -300, speed: 0.5, radius: 2800 },
-            //                 { color: "180, 0, 255", x: 900, y: 900, z: -300, speed: 0.4, radius: 2000 }
-            //             ];
-            const auraConfigs = [
-
-                // { color: "255, 140, 0", x: 0, y: -900, z: 0, speed: 0.3, radius: 3200 },
-
-                { color: "255, 140, 0", x: -1200, y: 300, z: -300, speed: 0.5, radius: 3200 },
-
-                { color: "180, 0, 255", x: 1200, y: 300, z: -300, speed: 0.4, radius: 3200 }
-
-            ];
-            auraConfigs.forEach(cfg => {
-                let tx = cfg.x + Math.sin(time * cfg.speed) * 150;
-                let ty = cfg.y + Math.cos(time * cfg.speed * 0.7) * 150;
-                let tz = cfg.z + Math.sin(time * cfg.speed * 1.1) * 100;
-
-                let pos = rotate3D(tx, ty, tz);
-
-                renderList.push({
-                    type: 'aura',
-                    color: cfg.color,
-                    x: pos.x,
-                    y: pos.y,
-                    z: pos.z,
-                    radius: cfg.radius
-                });
-            });
-        }
         function animate() {
             let time = performance.now() * 0.0004;
-            ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h); 
 
-            updateShootingStar();
-            drawShootingStar();
+            if (!shootingStar.active && Math.random() < 0.02) {
+                shootingStar.active = true; shootingStar.x = -400; shootingStar.y = rand(50, h * 0.7);
+                shootingStar.len = rand(200, 400); shootingStar.speed = rand(40, 60); shootingStar.opacity = 1;
+            } else if (shootingStar.active) {
+                shootingStar.x += shootingStar.speed; shootingStar.opacity -= 0.008;
+                if (shootingStar.x > w + 400 || shootingStar.opacity <= 0) shootingStar.active = false;
+                
+                ctx.save(); ctx.globalCompositeOperation = "lighter";
+                const grad = ctx.createLinearGradient(shootingStar.x, shootingStar.y, shootingStar.x - shootingStar.len, shootingStar.y);
+                grad.addColorStop(0, `rgba(255, 255, 255, ${shootingStar.opacity})`);
+                grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+                ctx.strokeStyle = grad; ctx.lineWidth = 2; ctx.beginPath();
+                ctx.moveTo(shootingStar.x, shootingStar.y); ctx.lineTo(shootingStar.x - shootingStar.len, shootingStar.y);
+                ctx.stroke(); ctx.restore();
+            }
 
-            const renderList = [];
+            let cosRX = Math.cos(rotX), sinRX = Math.sin(rotX);
+            let cosRY = Math.cos(rotY), sinRY = Math.sin(rotY);
+            let rCount = 0;
 
-            drawDynamicAura(time, renderList);
+            const auraData = [
+                { cache: caches.auraOrange, tx: -1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 3200 },
+                { cache: caches.auraPurple, tx: 1200 + Math.sin(time*0.4)*150, ty: 300 + Math.cos(time*0.2)*150, tz: -300 + Math.sin(time*0.4)*100, radius: 3200 }
+            ];
+            for(let a of auraData) {
+                let y1 = a.ty * cosRX - a.tz * sinRX, z1 = a.ty * sinRX + a.tz * cosRX;
+                let r = renderPool[rCount++];
+                r.type = 5; r.x = a.tx * cosRY + z1 * sinRY; r.y = y1; r.z = -a.tx * sinRY + z1 * cosRY;
+                r.cache = a.cache; r.size = a.radius;
+            }
 
-            renderList.push({ type: 'planet', ...rotate3D(0, 0, 0) });
+            let rp = renderPool[rCount++];
+            rp.type = 3; rp.x = 0; rp.y = 0; rp.z = 0;
 
-            RINGS.forEach((ring) => {
-                const repeatCount = Math.floor(ring.radius / 15);
-                const fullText = ring.text.repeat(repeatCount);
-                for (let i = 0; i < fullText.length; i++) {
-                    const charAngle = (time * ring.speed) + (i * (Math.PI * 2 / fullText.length));
-                    let x, y, z;
-                    if (ring.tilt === "vertical") {
-                        x = 0; y = Math.cos(charAngle) * ring.radius; z = Math.sin(charAngle) * ring.radius;
-                    } else {
-                        x = Math.cos(charAngle) * ring.radius; z = Math.sin(charAngle) * ring.radius;
-                        y = Math.cos(charAngle) * ring.radius * ring.tilt;
-                    }
-                    renderList.push({
-                        type: 'text', char: fullText[i], color: ring.color, ...rotate3D(x, y, z)
-                    });
+            for (let i = 0; i < RINGS.length; i++) {
+                let ring = RINGS[i];
+                let repeatCount = Math.floor(ring.radius / 15);
+                let fullText = ring.text.repeat(repeatCount);
+                for (let j = 0; j < fullText.length; j++) {
+                    let cA = (time * ring.speed) + (j * (Math.PI * 2 / fullText.length));
+                    let tx = (ring.tilt === "vertical") ? 0 : Math.cos(cA) * ring.radius;
+                    let tz = Math.sin(cA) * ring.radius;
+                    let ty = (ring.tilt === "vertical") ? Math.cos(cA) * ring.radius : tx * ring.tilt;
+                    
+                    let y1 = ty * cosRX - tz * sinRX, z1 = ty * sinRX + tz * cosRX;
+                    let r = renderPool[rCount++];
+                    r.type = 4; r.x = tx * cosRY + z1 * sinRY; r.y = y1; r.z = -tx * sinRY + z1 * cosRY;
+                    r.charKey = fullText[j] + ring.color;
                 }
-            });
+            }
 
-            particles.forEach(p => {
-                const curA = p.angle + time + (time * p.speed * 80);
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                let curA = p.angle + time + (time * p.speed * 80);
                 let px = p.radius * Math.cos(curA), pz = p.radius * Math.sin(curA), py = p.yOffset;
-                let y1 = py * Math.cos(PARTICLE_TILT_X) - pz * Math.sin(PARTICLE_TILT_X);
-                let z1 = py * Math.sin(PARTICLE_TILT_X) + pz * Math.cos(PARTICLE_TILT_X);
-                let x2 = px * Math.cos(PARTICLE_TILT_Z) - y1 * Math.sin(PARTICLE_TILT_Z);
-                let y2 = px * Math.sin(PARTICLE_TILT_Z) + y1 * Math.cos(PARTICLE_TILT_Z);
-                renderList.push({ type: 'particle', original: p, ...rotate3D(x2, y2, z1) });
-            });
+                
+                let py1 = py * cPTX - pz * sPTX, pz1 = py * sPTX + pz * cPTX;
+                let tx = px * cPTZ - py1 * sPTZ, ty = px * sPTZ + py1 * cPTZ;
+                let y1 = ty * cosRX - pz1 * sinRX, z1 = ty * sinRX + pz1 * cosRX;
+                
+                let r = renderPool[rCount++];
+                r.type = 2; r.x = tx * cosRY + z1 * sinRY; r.y = y1; r.z = -tx * sinRY + z1 * cosRY;
+                r.size = p.size; r.imgIdx = p.imgIndex;
+            }
 
-            bgStars.forEach(s => renderList.push({ type: 'star', ...rotate3D(s.x, s.y, s.z), size: s.size, color: s.color }));
+            for (let i = 0; i < bgStars.length; i++) {
+                let s = bgStars[i];
+                let y1 = s.y * cosRX - s.z * sinRX, z1 = s.y * sinRX + s.z * cosRX;
+                let r = renderPool[rCount++];
+                r.type = 1; r.x = s.x * cosRY + z1 * sinRY; r.y = y1; r.z = -s.x * sinRY + z1 * cosRY;
+                r.size = s.size;
+            }
 
-            renderList.sort((a, b) => b.z - a.z);
+            let activeRender = renderPool.slice(0, rCount).sort((a, b) => b.z - a.z);
+            let currentBlend = "source-over";
 
-            renderList.forEach(item => {
-                const p = project(item);
-                if (p.s <= 0) return;
+            for (let i = 0; i < rCount; i++) {
+                let item = activeRender[i];
+                let scale = (PERSPECTIVE / (PERSPECTIVE + item.z)) * zoom;
+                if (scale <= 0) continue;
 
-                if (item.type === 'star') {
-                    ctx.fillStyle = item.color;
+                let px = cx + item.x * scale;
+                let py = cy + item.y * scale;
+
+                if (item.type === 1) {
+                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "source-over"; currentBlend = "source-over"; }
+                    let sSize = item.size * scale;
+                    ctx.fillStyle = "#ffffff";
                     ctx.globalAlpha = Math.min(1, Math.max(0.1, (item.z + 3000) / 5000));
-                    const s = item.size * p.s;
-                    ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
-                    ctx.globalAlpha = 1;
-                    // }
-                } else if (item.type === 'planet') {
-
-                    const pr = PLANET_RADIUS * p.s;
-
-                    ctx.save();
-                    ctx.globalCompositeOperation = "lighter";
-
-                    const glow = ctx.createRadialGradient(
-                        p.x, p.y, pr * 0.2,
-                        p.x, p.y, pr * 3
-                    );
-
-                    glow.addColorStop(0, "rgba(255,255,220,0.9)");
-                    glow.addColorStop(0.2, "rgba(255,180,0,0.8)");
-                    glow.addColorStop(0.5, "rgba(255,120,0,0.35)");
-                    glow.addColorStop(1, "rgba(255,80,0,0)");
-
-                    ctx.fillStyle = glow;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, pr * 3, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.restore();
-
-                    const sun = ctx.createRadialGradient(
-                        p.x - pr * 0.3,
-                        p.y - pr * 0.3,
-                        pr * 0.1,
-                        p.x,
-                        p.y,
-                        pr
-                    );
-
-                    sun.addColorStop(0, "#fff7cc");
-                    sun.addColorStop(0.3, "#ffcc33");
-                    sun.addColorStop(0.7, "#ff8800");
-                    sun.addColorStop(1, "#ff5500");
-
-                    ctx.fillStyle = sun;
-
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, pr, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (item.type === 'particle') {
-                    if (p.s > IMAGE_SHOW_SCALE) {
-                        const img = images[item.original.imgIndex];
-                        if (img && img.complete) {
-                            const isize = item.original.size * p.s * 8;
-                            ctx.drawImage(img, p.x - isize / 2, p.y - isize / 2, isize, isize);
+                    ctx.fillRect(px - sSize/2, py - sSize/2, sSize, sSize);
+                } 
+                else if (item.type === 2) {
+                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "source-over"; currentBlend = "source-over"; }
+                    if (scale > IMAGE_SHOW_SCALE) {
+                        let img = images[item.imgIdx];
+                        if (img && img.complete && img.naturalWidth > 0) {
+                            let isize = item.size * scale * 8;
+                            ctx.globalAlpha = 1;
+                            ctx.drawImage(img, px - isize/2, py - isize/2, isize, isize);
                         }
                     } else {
-                        const sq = item.original.size * p.s;
-                        ctx.fillStyle = item.original.color;
+                        let sq = item.size * scale;
+                        ctx.fillStyle = "#FF8C00";
                         ctx.globalAlpha = Math.min(1, (item.z + 2000) / 3000);
-                        ctx.fillRect(p.x - sq / 2, p.y - sq / 2, sq, sq);
-                        ctx.globalAlpha = 1;
+                        ctx.fillRect(px - sq/2, py - sq/2, sq, sq);
                     }
-                } else if (item.type === 'text') {
-                    ctx.font = `bold ${30 * p.s}px Impact, Arial, sans-serif`;
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.shadowColor = item.color;
-                    ctx.shadowBlur = 10 * p.s;
-                    ctx.strokeStyle = item.color;
-                    ctx.lineWidth = 4 * p.s;
-                    ctx.lineJoin = "round";
-                    ctx.strokeText(item.char, p.x, p.y);
-                    ctx.shadowBlur = 0;
-                    ctx.fillStyle = "#ffffff";
-                    ctx.fillText(item.char, p.x, p.y);
-                } else if (item.type === 'aura') {
-                    const gradRadius = item.radius * p.s;
-                    if (gradRadius > 10) {
-                        ctx.save();
-                        // ctx.globalCompositeOperation = "screen";
-                        ctx.globalCompositeOperation = "lighter";
-                        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, gradRadius);
-                        // g.addColorStop(0, `rgba(${item.color}, 0.3)`);
-                        // g.addColorStop(0.5, `rgba(${item.color}, 0.1)`);
-                        // g.addColorStop(1, "rgba(0,0,0,0)");
-                        g.addColorStop(0, `rgba(${item.color}, 0.6)`);
-                        g.addColorStop(0.25, `rgba(${item.color}, 0.4)`);
-                        g.addColorStop(0.6, `rgba(${item.color}, 0.2)`);
-                        g.addColorStop(1, "rgba(0,0,0,0)");
-                        ctx.fillStyle = g;
-                        ctx.fillRect(p.x - gradRadius, p.y - gradRadius, gradRadius * 2, gradRadius * 2);
-                        ctx.restore();
+                } 
+                else if (item.type === 3 && caches.planet) {
+                    if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
+                    ctx.globalAlpha = 1;
+                    let pr = PLANET_RADIUS * scale * 3.5; 
+                    ctx.drawImage(caches.planet, px - pr, py - pr, pr * 2, pr * 2);
+                }
+                else if (item.type === 4) {
+                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "source-over"; currentBlend = "source-over"; }
+                    ctx.globalAlpha = 1;
+                    let txtImg = caches.text[item.charKey];
+                    if (txtImg) {
+                        let ts = 30 * scale; 
+                        ctx.drawImage(txtImg, px - ts, py - ts, ts * 2, ts * 2);
                     }
                 }
-            });
-
+                else if (item.type === 5 && item.cache) {
+                    if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
+                    ctx.globalAlpha = 1;
+                    let gradRadius = item.size * scale;
+                    if (gradRadius > 10) {
+                        ctx.drawImage(item.cache, px - gradRadius, py - gradRadius, gradRadius * 2, gradRadius * 2);
+                    }
+                }
+            }
+            
+            ctx.globalAlpha = 1; 
             requestAnimationFrame(animate);
         }
-        animate();
+
+        // Bắt đầu quá trình tải
+        preloadImages();
     </script>
-
 </body>
-
 </html>
