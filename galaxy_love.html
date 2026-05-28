@@ -60,12 +60,14 @@
         /* ===== 1. CẤU HÌNH & NHẬN DIỆN THIẾT BỊ ===== */
         const isMobile = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent);
         
-        const STAR_COUNT = isMobile ? 250 : 600;
-        const PARTICLE_COUNT = isMobile ? 400 : 1200;
+        // const STAR_COUNT = isMobile ? 250 : 600;
+        // const PARTICLE_COUNT = isMobile ? 400 : 1200;
+        const STAR_COUNT = 600;
+        const PARTICLE_COUNT = 1200;
         const IMAGE_SHOW_SCALE = 0.8;
         
         let w, h, cx, cy;
-        let zoom = 0.25, initialZoom = zoom;
+        let zoom = window.innerWidth < 768 ? 0.25 : 0.35, initialZoom = zoom;
         const PERSPECTIVE = 2000;
         let rotX = 1.8, rotY = 0;
 
