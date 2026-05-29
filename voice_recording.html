@@ -54,9 +54,19 @@
         .status {
             color: #57606f;
             font-size: 0.95rem;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             height: 20px;
             font-weight: 500;
+        }
+
+        /* Đồng hồ hiển thị thời gian ghi âm */
+        #recordingTime {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            display: none; /* Ẩn khi chưa ghi âm */
         }
 
         /* Biểu đồ cuộn */
@@ -201,11 +211,21 @@
         #waveform {
             width: 100%;
             height: 80px;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             border-radius: 8px;
             background-color: rgba(0,0,0,0.02);
-            /* Thay đổi con trỏ chuột khi lướt qua để biết có thể tương tác */
             cursor: pointer; 
+        }
+
+        /* Thời gian nghe lại (vd: 00:05 / 01:20) */
+        #playbackTime {
+            text-align: right;
+            font-size: 0.85rem;
+            color: #57606f;
+            font-weight: 600;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 15px;
+            padding-right: 5px;
         }
 
         /* -------------------------------------------
@@ -215,21 +235,19 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            background: #eef4f8; /* Màu nền xanh nhạt y như hình */
+            background: #eef4f8; 
             padding: 20px 25px;
             border-radius: 16px;
         }
 
-        /* Dòng trên cùng: Nút Phát, Tốc độ, Âm lượng */
         .top-row {
             display: flex;
             justify-content: center;
-            align-items: flex-end; /* Căn đáy để nút Play cân bằng với các Dropdown có nhãn phía trên */
+            align-items: flex-end; 
             gap: 20px;
             flex-wrap: wrap;
         }
 
-        /* Dòng dưới: Nút Tải Về */
         .bottom-row {
             display: flex;
             justify-content: center;
@@ -240,7 +258,7 @@
             color: white;
             padding: 10px 24px;
             margin: 0;
-            height: 42px; /* Đảm bảo chiều cao đồng đều */
+            height: 42px; 
         }
         
         #playPauseBtn:hover {
@@ -274,13 +292,13 @@
 
         .control-group input[type="range"] {
             cursor: pointer;
-            accent-color: var(--success); /* Tô màu xanh dương chuẩn */
-            background: transparent; /* Fix triệt để viền đen */
+            accent-color: var(--success); 
+            background: transparent; 
             border: none;
             padding: 0;
             margin: 0;
             width: 130px;
-            height: 30px; /* Khớp chiều cao với ô select */
+            height: 30px; 
             outline: none;
         }
 
@@ -310,6 +328,7 @@
     <div class="recorder-container">
         <h1>Máy Ghi Âm</h1>
         <div class="status" id="statusText">Sẵn sàng ghi âm</div>
+        <div id="recordingTime">00:00</div>
 
         <canvas id="liveCanvas" class="live-visualizer" width="400" height="60"></canvas>
         <canvas id="oscilloscopeCanvas" class="live-visualizer" width="400" height="50"></canvas>
@@ -330,6 +349,7 @@
         <div class="audio-preview" id="previewContainer">
             <p>Nghe lại đoạn vừa ghi:</p>
             <div id="waveform"></div>
+            <div id="playbackTime">00:00 / 00:00</div>
             
             <div class="playback-controls">
                 
@@ -380,6 +400,10 @@
         let analyser;
         let animationId;
 
+        /* --- BIẾN CHO TÍNH NĂNG ĐẾM THỜI GIAN --- */
+        let recordingInterval;
+        let recordingSeconds = 0;
+
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const statusText = document.getElementById('statusText');
@@ -393,7 +417,11 @@
         const speedSelect = document.getElementById('speedSelect');
         const volumeSlider = document.getElementById('volumeSlider');
         const downloadBtn = document.getElementById('downloadBtn');
-        const waveformEl = document.getElementById('waveform'); // Bổ sung tham chiếu tới khung sóng âm
+        const waveformEl = document.getElementById('waveform'); 
+        
+        // Truy xuất phần tử thời gian
+        const recordingTimeEl = document.getElementById('recordingTime');
+        const playbackTimeEl = document.getElementById('playbackTime');
 
         const barWidth = 4;
         const gap = 2;
@@ -415,28 +443,45 @@
             dragToSeek: true 
         });
 
+        /* --- HÀM ĐỊNH DẠNG THỜI GIAN (GIÂY -> MM:SS) --- */
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "00:00";
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+        }
+
+        /* --- CẬP NHẬT THỜI GIAN NGHE LẠI --- */
+        // Khi tải xong nhạc
+        wavesurfer.on('ready', () => {
+            const total = wavesurfer.getDuration();
+            playbackTimeEl.innerText = `00:00 / ${formatTime(total)}`;
+        });
+
+        // Khi đang chạy hoặc kéo thanh trượt
+        wavesurfer.on('timeupdate', (currentTime) => {
+            const total = wavesurfer.getDuration();
+            playbackTimeEl.innerText = `${formatTime(currentTime)} / ${formatTime(total)}`;
+        });
+
         /* --- XỬ LÝ LOGIC KÉO THẢ (DRAG) ĐỂ KHÔNG BỊ GIẬT --- */
         let isPlayingBeforeDrag = false;
 
-        // Sự kiện khi người dùng vừa bấm chuột XUỐNG khu vực sóng âm để bắt đầu kéo
         waveformEl.addEventListener('pointerdown', () => {
             if (wavesurfer.isPlaying()) {
                 isPlayingBeforeDrag = true;
-                wavesurfer.pause(); // Tạm dừng tức thì để cố định thanh kéo
+                wavesurfer.pause(); 
             } else {
                 isPlayingBeforeDrag = false;
             }
         });
 
-        // Sự kiện khi người dùng NHẢ chuột ra (bắt sự kiện trên toàn window để đề phòng bạn kéo chuột ra ngoài khung hiển thị)
         window.addEventListener('pointerup', () => {
-            // Kiểm tra nếu trước khi kéo nó đang chạy thì giờ nhả chuột ra cho chạy tiếp
             if (isPlayingBeforeDrag) {
                 wavesurfer.play();
-                isPlayingBeforeDrag = false; // Đặt lại cờ sau khi phát
+                isPlayingBeforeDrag = false; 
             }
         });
-        /* ---------------------------------------------------- */
 
         wavesurfer.on('finish', () => wavesurfer.stop());
         playPauseBtn.addEventListener('click', () => wavesurfer.playPause());
@@ -494,7 +539,7 @@
                 x += barWidth + gap;
             }
 
-            /* --- 2. VẼ ĐƯỜNG THẲNG DAO ĐỘNG (OSCILLOSCOPE) - ĐÃ FIX --- */
+            /* --- 2. VẼ ĐƯỜNG THẲNG DAO ĐỘNG (OSCILLOSCOPE) --- */
             oscCtx.clearRect(0, 0, oscCanvas.width, oscCanvas.height);
             oscCtx.lineWidth = 2.5;
             oscCtx.strokeStyle = '#ff4757';
@@ -506,8 +551,6 @@
             let oscX = 0;
 
             for (let i = 0; i < bufferLength; i++) {
-                // Fix Tọa Độ: (dataArray[i] - 128) mang giá trị âm hoặc dương.
-                // Trừ nó ra khỏi chiều cao trung tâm (height/2) để đẩy đỉnh sóng DƯƠNG nổi LÊN TRÊN.
                 let v = (dataArray[i] - 128) / 128.0; 
                 let y = (oscCanvas.height / 2) - (v * (oscCanvas.height / 2));
 
@@ -569,11 +612,21 @@
 
                 mediaRecorder.start();
                 
-                statusText.innerText = "Đang ghi âm... nói đi nào!";
+                statusText.innerText = "Đang ghi âm...";
                 statusText.style.color = "#ff4757";
                 startBtn.classList.add('recording-pulse');
                 startBtn.style.pointerEvents = 'none'; 
                 stopBtn.disabled = false;
+
+                // Khởi động đồng hồ đếm thời gian
+                recordingSeconds = 0;
+                recordingTimeEl.style.display = 'block';
+                recordingTimeEl.innerText = "00:00";
+                clearInterval(recordingInterval);
+                recordingInterval = setInterval(() => {
+                    recordingSeconds++;
+                    recordingTimeEl.innerText = formatTime(recordingSeconds);
+                }, 1000);
 
             } catch (err) {
                 console.error("Lỗi truy cập Micro:", err);
@@ -587,6 +640,10 @@
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();
                 
+                // Dừng đồng hồ đếm thời gian ghi âm
+                clearInterval(recordingInterval);
+                recordingTimeEl.style.display = 'none';
+
                 cancelAnimationFrame(animationId);
                 liveCanvas.classList.remove('active');
                 oscCanvas.classList.remove('active');
