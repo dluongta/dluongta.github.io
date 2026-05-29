@@ -202,6 +202,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             if (items.length === 0) {
+                // Vòng xám nền
                 ctx.beginPath();
                 ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
                 ctx.fillStyle = "#e0e0e0";
@@ -209,6 +210,17 @@
                 ctx.lineWidth = 2;
                 ctx.strokeStyle = "#ccc";
                 ctx.stroke();
+
+                // Hình tròn trắng trung tâm (khi chưa có dữ liệu)
+                ctx.beginPath();
+                ctx.arc(radius, radius, radius * 0.15, 0, 2 * Math.PI);
+                ctx.fillStyle = "#ffffff";
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#cccccc";
+                ctx.stroke();
+
+                // Text hiển thị
                 ctx.fillStyle = "#666";
                 ctx.font = "20px Arial";
                 ctx.textAlign = "center";
@@ -218,6 +230,7 @@
 
             arc = 2 * Math.PI / items.length;
 
+            // Vẽ các mảnh của vòng quay
             for (let i = 0; i < items.length; i++) {
                 let angle = startAngle + i * arc;
 
@@ -250,6 +263,15 @@
                 ctx.fillText(text, 0, 5);
                 ctx.restore();
             }
+
+            // THÊM: Hình tròn trắng ở trung tâm vòng quay (sau khi đã vẽ các mảnh)
+            ctx.beginPath();
+            ctx.arc(radius, radius, radius * 0.15, 0, 2 * Math.PI);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#eeeeee"; // Tạo đường viền nhạt để tách biệt đẹp mắt
+            ctx.stroke();
         }
 
         function spin() {
