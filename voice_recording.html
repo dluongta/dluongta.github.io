@@ -51,7 +51,7 @@
             font-weight: 600;
         }
 
-        /* Đã fix lỗi đè chữ: Bỏ height: 20px, cho phép tự động giãn theo nội dung */
+        /* Chống đè chữ: Bỏ height cố định, dùng min-height và line-height */
         .status {
             color: #57606f;
             font-size: 0.95rem;
@@ -99,7 +99,7 @@
             justify-content: center;
             gap: 20px;
             margin-bottom: 20px;
-            margin-top: 10px; /* Thêm khoảng cách an toàn với phía trên */
+            margin-top: 10px; 
         }
 
         button {
@@ -221,7 +221,7 @@
             cursor: pointer; 
         }
 
-        /* Thời gian nghe lại (vd: 00:05 / 01:20) */
+        /* Thời gian nghe lại */
         #playbackTime {
             text-align: right;
             font-size: 0.85rem;
@@ -232,9 +232,7 @@
             padding-right: 5px;
         }
 
-        /* -------------------------------------------
-           BỘ CÔNG CỤ NGHE LẠI (PLAYBACK CONTROLS)
-        ------------------------------------------- */
+        /* Bộ công cụ điều khiển */
         .playback-controls {
             display: flex;
             flex-direction: column;
@@ -355,6 +353,7 @@
         <div class="audio-preview" id="previewContainer">
             <p>Nghe lại đoạn vừa ghi:</p>
             <div id="waveform"></div>
+            
             <div id="playbackTime">00:00 / 00:00</div>
             
             <div class="playback-controls">
@@ -434,6 +433,7 @@
         let volumeHistory = []; 
         let frameCounter = 0;
 
+        // CẤU HÌNH WAVESURFER - Tăng cursorWidth lên 6 để dễ nắm kéo
         const wavesurfer = WaveSurfer.create({
             container: '#waveform',
             waveColor: '#ced6e0',
@@ -442,13 +442,13 @@
             barGap: 2,                
             barRadius: 3,             
             height: 80,
-            cursorWidth: 2,
+            cursorWidth: 6, // <-- Chỉnh độ rộng thanh đen tại đây
             cursorColor: '#2f3542',
             interact: true, 
             dragToSeek: true 
         });
 
-        /* --- HÀM ĐỊNH DẠNG THỜI GIAN (GIÂY -> MM:SS) --- */
+        /* --- HÀM ĐỊNH DẠNG THỜI GIAN --- */
         function formatTime(seconds) {
             if (isNaN(seconds)) return "00:00";
             const m = Math.floor(seconds / 60);
