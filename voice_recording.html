@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ứng Dụng Ghi Âm Trực Tuyến</title>
-    <!-- <script src="https://unpkg.com/wavesurfer.js@7"></script> -->
     <script src="wavesurfer.min.js"></script>
     <style>
         :root {
@@ -205,6 +204,8 @@
             margin-bottom: 20px;
             border-radius: 8px;
             background-color: rgba(0,0,0,0.02);
+            /* Thay đổi con trỏ chuột khi lướt qua để biết có thể tương tác */
+            cursor: pointer; 
         }
 
         /* -------------------------------------------
@@ -392,6 +393,7 @@
         const speedSelect = document.getElementById('speedSelect');
         const volumeSlider = document.getElementById('volumeSlider');
         const downloadBtn = document.getElementById('downloadBtn');
+        const waveformEl = document.getElementById('waveform'); // Bổ sung tham chiếu tới khung sóng âm
 
         const barWidth = 4;
         const gap = 2;
@@ -408,8 +410,33 @@
             barRadius: 3,             
             height: 80,
             cursorWidth: 2,
-            cursorColor: '#2f3542'
+            cursorColor: '#2f3542',
+            interact: true, 
+            dragToSeek: true 
         });
+
+        /* --- XỬ LÝ LOGIC KÉO THẢ (DRAG) ĐỂ KHÔNG BỊ GIẬT --- */
+        let isPlayingBeforeDrag = false;
+
+        // Sự kiện khi người dùng vừa bấm chuột XUỐNG khu vực sóng âm để bắt đầu kéo
+        waveformEl.addEventListener('pointerdown', () => {
+            if (wavesurfer.isPlaying()) {
+                isPlayingBeforeDrag = true;
+                wavesurfer.pause(); // Tạm dừng tức thì để cố định thanh kéo
+            } else {
+                isPlayingBeforeDrag = false;
+            }
+        });
+
+        // Sự kiện khi người dùng NHẢ chuột ra (bắt sự kiện trên toàn window để đề phòng bạn kéo chuột ra ngoài khung hiển thị)
+        window.addEventListener('pointerup', () => {
+            // Kiểm tra nếu trước khi kéo nó đang chạy thì giờ nhả chuột ra cho chạy tiếp
+            if (isPlayingBeforeDrag) {
+                wavesurfer.play();
+                isPlayingBeforeDrag = false; // Đặt lại cờ sau khi phát
+            }
+        });
+        /* ---------------------------------------------------- */
 
         wavesurfer.on('finish', () => wavesurfer.stop());
         playPauseBtn.addEventListener('click', () => wavesurfer.playPause());
