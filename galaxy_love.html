@@ -318,8 +318,8 @@
             let rCount = 0;
 
             const auraData = [
-                { cache: caches.auraOrange, tx: -1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 2800 },
-                { cache: caches.auraPurple, tx: 1200 + Math.sin(time*0.4)*150, ty: 300 + Math.cos(time*0.2)*150, tz: -300 + Math.sin(time*0.4)*100, radius: 2800 }
+                { cache: caches.auraOrange, tx: -1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 3200 },
+                { cache: caches.auraPurple, tx: 1200 + Math.sin(time*0.4)*150, ty: 300 + Math.cos(time*0.2)*150, tz: -300 + Math.sin(time*0.4)*100, radius: 3200 }
             ];
             for(let a of auraData) {
                 let y1 = a.ty * cosRX - a.tz * sinRX, z1 = a.ty * sinRX + a.tz * cosRX;
