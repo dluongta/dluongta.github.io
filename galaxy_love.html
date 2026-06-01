@@ -70,10 +70,11 @@
         const PARTICLE_COUNT = 1200;
         const IMAGE_SHOW_SCALE = 0.8;
         const PERSPECTIVE = 2000;
-        const PLANET_RADIUS = 110;
+        const PLANET_RADIUS = 180;
 
         let w, h, cx, cy;
         let zoom = isMobile ? 0.25 : 0.35;
+
         let initialZoom = zoom;
         let rotX = 1.8, rotY = 0;
 
@@ -99,7 +100,7 @@
         }
 
         function initCaches() {
-            caches.planet = createCacheCanvas(400, (ctxCache, center) => {
+            caches.planet = createCacheCanvas(1000, (ctxCache, center) => {
                 const pr = 60;
                 ctxCache.globalCompositeOperation = "lighter";
                 const glow = ctxCache.createRadialGradient(center, center, pr * 0.2, center, center, pr * 3);
@@ -117,27 +118,24 @@
                 ctxCache.beginPath(); ctxCache.arc(center, center, pr, 0, Math.PI * 2); ctxCache.fill();
             });
 
-            // const buildAura = (colorRGB) => createCacheCanvas(400, (ctxCache, center) => {
-            //     const g = ctxCache.createRadialGradient(center, center, 0, center, center, center);
-            //     g.addColorStop(0, `rgba(${colorRGB}, 0.5)`);
-            //     g.addColorStop(0.3, `rgba(${colorRGB}, 0.25)`);
-            //     g.addColorStop(0.7, `rgba(${colorRGB}, 0.08)`);
-            //     g.addColorStop(1, "rgba(0,0,0,0)");
-            //     ctxCache.fillStyle = g;
-            //     ctxCache.beginPath(); ctxCache.arc(center, center, center, 0, Math.PI*2); ctxCache.fill();
-            // });
             const buildAura = (colorRGB) => createCacheCanvas(400, (ctxCache, center) => {
-    const g = ctxCache.createRadialGradient(center, center, 0, center, center, center);
-    g.addColorStop(0, `rgba(${colorRGB}, 0.95)`);
-    g.addColorStop(0.4, `rgba(${colorRGB}, 0.6)`);
-    g.addColorStop(0.8, `rgba(${colorRGB}, 0.2)`);
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    ctxCache.fillStyle = g;
-    ctxCache.beginPath(); ctxCache.arc(center, center, center, 0, Math.PI*2); ctxCache.fill();
-});
+                const g = ctxCache.createRadialGradient(center, center, 0, center, center, center);
+                // g.addColorStop(0, `rgba(${colorRGB}, 0.5)`);
+                // g.addColorStop(0.3, `rgba(${colorRGB}, 0.25)`);
+                // g.addColorStop(0.7, `rgba(${colorRGB}, 0.08)`);
+                // g.addColorStop(1, "rgba(0,0,0,0)");
+                g.addColorStop(0, `rgba(${colorRGB}, 1.0)`);
+                g.addColorStop(0.2, `rgba(${colorRGB}, 0.8)`);
+                g.addColorStop(0.5, `rgba(${colorRGB}, 0.4)`);
+                g.addColorStop(0.8, `rgba(${colorRGB}, 0.15)`);
+                g.addColorStop(1, `rgba(${colorRGB}, 0)`);
+                // g.addColorStop(1, "rgba(0,0,0,0)");
+                ctxCache.fillStyle = g;
+                ctxCache.beginPath(); ctxCache.arc(center, center, center, 0, Math.PI*2); ctxCache.fill();
+            });
             caches.auraOrange = buildAura("255, 140, 0");
-            caches.auraPurple = buildAura("180, 0, 255");
-
+            // caches.auraPurple = buildAura("180, 0, 255");
+            caches.auraPurple = buildAura("255, 100, 255");
             RINGS.forEach(ring => {
                 const uniqueChars = [...new Set(ring.text)];
                 uniqueChars.forEach(char => {
@@ -320,8 +318,8 @@
             let rCount = 0;
 
             const auraData = [
-                { cache: caches.auraOrange, tx: -1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 3200 },
-                { cache: caches.auraPurple, tx: 1200 + Math.sin(time*0.4)*150, ty: 300 + Math.cos(time*0.2)*150, tz: -300 + Math.sin(time*0.4)*100, radius: 3200 }
+                { cache: caches.auraOrange, tx: -1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 2800 },
+                { cache: caches.auraPurple, tx: 1200 + Math.sin(time*0.4)*150, ty: 300 + Math.cos(time*0.2)*150, tz: -300 + Math.sin(time*0.4)*100, radius: 2800 }
             ];
             for(let a of auraData) {
                 let y1 = a.ty * cosRX - a.tz * sinRX, z1 = a.ty * sinRX + a.tz * cosRX;
@@ -410,7 +408,7 @@
                 else if (item.type === 3 && caches.planet) {
                     if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
                     ctx.globalAlpha = 1;
-                    let pr = PLANET_RADIUS * scale * 3.5; 
+                    let pr = PLANET_RADIUS * scale * 6; 
                     ctx.drawImage(caches.planet, px - pr, py - pr, pr * 2, pr * 2);
                 }
                 else if (item.type === 4) {
