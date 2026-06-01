@@ -117,15 +117,24 @@
                 ctxCache.beginPath(); ctxCache.arc(center, center, pr, 0, Math.PI * 2); ctxCache.fill();
             });
 
+            // const buildAura = (colorRGB) => createCacheCanvas(400, (ctxCache, center) => {
+            //     const g = ctxCache.createRadialGradient(center, center, 0, center, center, center);
+            //     g.addColorStop(0, `rgba(${colorRGB}, 0.5)`);
+            //     g.addColorStop(0.3, `rgba(${colorRGB}, 0.25)`);
+            //     g.addColorStop(0.7, `rgba(${colorRGB}, 0.08)`);
+            //     g.addColorStop(1, "rgba(0,0,0,0)");
+            //     ctxCache.fillStyle = g;
+            //     ctxCache.beginPath(); ctxCache.arc(center, center, center, 0, Math.PI*2); ctxCache.fill();
+            // });
             const buildAura = (colorRGB) => createCacheCanvas(400, (ctxCache, center) => {
-                const g = ctxCache.createRadialGradient(center, center, 0, center, center, center);
-                g.addColorStop(0, `rgba(${colorRGB}, 0.5)`);
-                g.addColorStop(0.3, `rgba(${colorRGB}, 0.25)`);
-                g.addColorStop(0.7, `rgba(${colorRGB}, 0.08)`);
-                g.addColorStop(1, "rgba(0,0,0,0)");
-                ctxCache.fillStyle = g;
-                ctxCache.beginPath(); ctxCache.arc(center, center, center, 0, Math.PI*2); ctxCache.fill();
-            });
+    const g = ctxCache.createRadialGradient(center, center, 0, center, center, center);
+    g.addColorStop(0, `rgba(${colorRGB}, 0.95)`);
+    g.addColorStop(0.4, `rgba(${colorRGB}, 0.6)`);
+    g.addColorStop(0.8, `rgba(${colorRGB}, 0.2)`);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctxCache.fillStyle = g;
+    ctxCache.beginPath(); ctxCache.arc(center, center, center, 0, Math.PI*2); ctxCache.fill();
+});
             caches.auraOrange = buildAura("255, 140, 0");
             caches.auraPurple = buildAura("180, 0, 255");
 
