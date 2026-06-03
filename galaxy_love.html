@@ -421,7 +421,8 @@
                     }
                 }
                 else if (item.type === 5 && item.cache) {
-                    if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
+                    // if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
+                    if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "source-over";ctx.globalAlpha = 0.3; currentBlend = "lighter"; }
                     ctx.globalAlpha = 1;
                     let gradRadius = item.size * scale;
                     if (gradRadius > 10) {
