@@ -73,7 +73,7 @@
         const PLANET_RADIUS = 180;
 
         let w, h, cx, cy;
-        let zoom = isMobile ? 0.35 : 0.35;
+        let zoom = isMobile ? 0.30 : 0.35;
 
         let initialZoom = zoom;
         let rotX = 1.8, rotY = 0;
@@ -318,8 +318,8 @@
             let rCount = 0;
 
             const auraData = [
-                { cache: caches.auraOrange, tx: -1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 3200 },
-                { cache: caches.auraPurple, tx: 1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 3200 }
+                { cache: caches.auraOrange, tx: -1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 2500 },
+                { cache: caches.auraPurple, tx: 1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 2500 }
             ];
             for(let a of auraData) {
                 let y1 = a.ty * cosRX - a.tz * sinRX, z1 = a.ty * sinRX + a.tz * cosRX;
@@ -389,7 +389,7 @@
                     ctx.fillRect(px - sSize/2, py - sSize/2, sSize, sSize);
                 } 
                 else if (item.type === 2) {
-                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "source-over"; currentBlend = "source-over"; }
+                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
                     if (scale > IMAGE_SHOW_SCALE) {
                         let img = images[item.imgIdx];
                         if (img && img.width > 0) {
@@ -412,7 +412,7 @@
                     ctx.drawImage(caches.planet, px - pr, py - pr, pr * 2, pr * 2);
                 }
                 else if (item.type === 4) {
-                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "source-over"; currentBlend = "source-over"; }
+                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
                     ctx.globalAlpha = 1;
                     let txtImg = caches.text[item.charKey];
                     if (txtImg) {
@@ -421,8 +421,8 @@
                     }
                 }
                 else if (item.type === 5 && item.cache) {
-                    // if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
-                    if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "source-over";ctx.globalAlpha = 0.3; currentBlend = "lighter"; }
+                    if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
+                    // if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "source-over";ctx.globalAlpha = 0.3; currentBlend = "lighter"; }
                     ctx.globalAlpha = 1;
                     let gradRadius = item.size * scale;
                     if (gradRadius > 10) {
