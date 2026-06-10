@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,7 +32,7 @@
         }
 
         .recorder-container {
-            background: rgba(255, 255, 255, 0.85); 
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -56,7 +57,7 @@
             color: #57606f;
             font-size: 0.95rem;
             margin-bottom: 15px;
-            min-height: 24px; 
+            min-height: 24px;
             font-weight: 500;
             line-height: 1.5;
             padding: 0 10px;
@@ -69,7 +70,7 @@
             color: var(--primary);
             margin-bottom: 20px;
             font-family: 'Courier New', Courier, monospace;
-            display: none; 
+            display: none;
         }
 
         /* Biểu đồ cuộn */
@@ -79,14 +80,14 @@
             margin-bottom: 10px;
             border-radius: 10px;
             background-color: rgba(0, 0, 0, 0.03);
-            display: none; 
+            display: none;
         }
 
         /* Biểu đồ đường thẳng dao động */
         #oscilloscopeCanvas {
             height: 50px;
             margin-bottom: 30px;
-            background-color: transparent; 
+            background-color: transparent;
         }
 
         .live-visualizer.active {
@@ -99,7 +100,7 @@
             justify-content: center;
             gap: 20px;
             margin-bottom: 20px;
-            margin-top: 10px; 
+            margin-top: 10px;
         }
 
         button {
@@ -113,7 +114,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         button:active {
@@ -167,8 +168,8 @@
             position: absolute;
             width: 10px;
             height: 10px;
-            background-color: #fff; 
-            border-radius: 50%; 
+            background-color: #fff;
+            border-radius: 50%;
             z-index: 1;
             opacity: 0.8;
             pointer-events: none;
@@ -180,12 +181,19 @@
 
         .recording-pulse .icon-wrapper::after {
             animation: circleWave 1.4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
-            animation-delay: 0.7s; 
+            animation-delay: 0.7s;
         }
 
         @keyframes circleWave {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(4.5); opacity: 0; }
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(4.5);
+                opacity: 0;
+            }
         }
 
         /* Khu vực hiển thị khi nghe lại */
@@ -217,8 +225,8 @@
             height: 80px;
             margin-bottom: 5px;
             border-radius: 8px;
-            background-color: rgba(0,0,0,0.02);
-            cursor: pointer; 
+            background-color: rgba(0, 0, 0, 0.02);
+            cursor: pointer;
         }
 
         /* Thời gian nghe lại */
@@ -237,7 +245,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            background: #eef4f8; 
+            background: #eef4f8;
             padding: 20px 25px;
             border-radius: 16px;
         }
@@ -245,7 +253,7 @@
         .top-row {
             display: flex;
             justify-content: center;
-            align-items: flex-end; 
+            align-items: flex-end;
             gap: 20px;
             flex-wrap: wrap;
         }
@@ -260,9 +268,9 @@
             color: white;
             padding: 10px 24px;
             margin: 0;
-            height: 42px; 
+            height: 42px;
         }
-        
+
         #playPauseBtn:hover {
             background-color: #1a252f;
         }
@@ -294,13 +302,13 @@
 
         .control-group input[type="range"] {
             cursor: pointer;
-            accent-color: var(--success); 
-            background: transparent; 
+            accent-color: var(--success);
+            background: transparent;
             border: none;
             padding: 0;
             margin: 0;
             width: 130px;
-            height: 30px; 
+            height: 30px;
             outline: none;
         }
 
@@ -323,15 +331,41 @@
             background-color: var(--success-hover);
             transform: scale(0.98);
         }
+
+        .waveform-tooltip {
+            position: absolute;
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            pointer-events: none;
+            transform: translate(-50%, -130%);
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .waveform-hover-line {
+            position: absolute;
+            width: 2px;
+            background: #1e90ff;
+            pointer-events: none;
+            display: none;
+            z-index: 999;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="recorder-container">
         <h1>Máy Ghi Âm</h1>
-        
+
         <div class="status" id="statusText">Sẵn sàng ghi âm</div>
-        
+
         <div id="recordingTime">00:00</div>
 
         <canvas id="liveCanvas" class="live-visualizer" width="400" height="60"></canvas>
@@ -340,12 +374,16 @@
         <div class="controls">
             <button id="startBtn">
                 <span class="icon-wrapper">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8"/></svg>
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <circle cx="8" cy="8" r="8" />
+                    </svg>
                 </span>
                 Bắt đầu
             </button>
             <button id="stopBtn" disabled>
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><rect width="12" height="12" x="2" y="2" rx="1"/></svg>
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <rect width="12" height="12" x="2" y="2" rx="1" />
+                </svg>
                 Kết thúc
             </button>
         </div>
@@ -353,15 +391,16 @@
         <div class="audio-preview" id="previewContainer">
             <p>Nghe lại đoạn vừa ghi:</p>
             <div id="waveform"></div>
-            
+
             <div id="playbackTime">00:00 / 00:00</div>
-            
+
             <div class="playback-controls">
-                
+
                 <div class="top-row">
                     <button id="playPauseBtn">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                            <path
+                                d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                         </svg>
                         Phát/Dừng
                     </button>
@@ -386,8 +425,10 @@
                 <div class="bottom-row">
                     <a id="downloadBtn" class="download-btn" download="recording.mp3">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                            <path
+                                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                            <path
+                                d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
                         </svg>
                         Tải về
                     </a>
@@ -417,37 +458,85 @@
         const canvasCtx = liveCanvas.getContext('2d');
         const oscCanvas = document.getElementById('oscilloscopeCanvas');
         const oscCtx = oscCanvas.getContext('2d');
-        
+
         const playPauseBtn = document.getElementById('playPauseBtn');
         const speedSelect = document.getElementById('speedSelect');
         const volumeSlider = document.getElementById('volumeSlider');
         const downloadBtn = document.getElementById('downloadBtn');
-        const waveformEl = document.getElementById('waveform'); 
-        
+        const waveformEl = document.getElementById('waveform');
+        const waveformTooltip = document.createElement('div');
+        waveformTooltip.className = 'waveform-tooltip';
+        document.body.appendChild(waveformTooltip);
         const recordingTimeEl = document.getElementById('recordingTime');
         const playbackTimeEl = document.getElementById('playbackTime');
 
         const barWidth = 4;
         const gap = 2;
         const maxBars = Math.floor(liveCanvas.width / (barWidth + gap));
-        let volumeHistory = []; 
+        let volumeHistory = [];
         let frameCounter = 0;
 
         // CẤU HÌNH WAVESURFER - Tăng cursorWidth lên 6 để dễ nắm kéo
         const wavesurfer = WaveSurfer.create({
             container: '#waveform',
             waveColor: '#ced6e0',
-            progressColor: '#ff4757', 
-            barWidth: 3,              
-            barGap: 2,                
-            barRadius: 3,             
+            progressColor: '#ff4757',
+            barWidth: 3,
+            barGap: 2,
+            barRadius: 3,
             height: 80,
-            cursorWidth: 4, 
+            cursorWidth: 4,
             cursorColor: '#1e90ff',
-            interact: true, 
-            dragToSeek: true 
+            interact: true,
+            dragToSeek: true
+        });
+        waveformEl.addEventListener('mousemove', (e) => {
+
+            const duration = wavesurfer.getDuration();
+
+            if (!duration) return;
+
+            const rect = waveformEl.getBoundingClientRect();
+
+            const x = e.clientX - rect.left;
+
+            const percent = Math.max(0, Math.min(1, x / rect.width));
+
+            const hoverTime = percent * duration;
+
+            waveformTooltip.textContent =
+                `${formatTime(hoverTime)} / ${formatTime(duration)}`;
+
+            waveformTooltip.style.left = `${e.pageX}px`;
+            waveformTooltip.style.top = `${e.pageY}px`;
+            waveformTooltip.style.opacity = '1';
         });
 
+        waveformEl.addEventListener('mouseleave', () => {
+            waveformTooltip.style.opacity = '0';
+        });
+        const hoverLine = document.createElement('div');
+        hoverLine.className = 'waveform-hover-line';
+        document.body.appendChild(hoverLine);
+
+        waveformEl.addEventListener('mousemove', (e) => {
+
+            const duration = wavesurfer.getDuration();
+            if (!duration) return;
+
+            const rect = waveformEl.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+
+            hoverLine.style.display = 'block';
+            hoverLine.style.left = `${e.clientX}px`;
+            hoverLine.style.top = `${rect.top}px`;
+            hoverLine.style.height = `${rect.height}px`;
+
+        });
+
+        waveformEl.addEventListener('mouseleave', () => {
+            hoverLine.style.display = 'none';
+        });
         /* --- HÀM ĐỊNH DẠNG THỜI GIAN --- */
         function formatTime(seconds) {
             if (isNaN(seconds)) return "00:00";
@@ -473,7 +562,7 @@
         waveformEl.addEventListener('pointerdown', () => {
             if (wavesurfer.isPlaying()) {
                 isPlayingBeforeDrag = true;
-                wavesurfer.pause(); 
+                wavesurfer.pause();
             } else {
                 isPlayingBeforeDrag = false;
             }
@@ -482,7 +571,7 @@
         window.addEventListener('pointerup', () => {
             if (isPlayingBeforeDrag) {
                 wavesurfer.play();
-                isPlayingBeforeDrag = false; 
+                isPlayingBeforeDrag = false;
             }
         });
         /* -------------------------------------- */
@@ -514,12 +603,12 @@
             frameCounter++;
             if (frameCounter >= 2) {
                 frameCounter = 0;
-                let normalized = currentMax / 50; 
-                if (normalized > 1) normalized = 1; 
-                if (normalized < 0.05) normalized = 0; 
+                let normalized = currentMax / 50;
+                if (normalized > 1) normalized = 1;
+                if (normalized < 0.05) normalized = 0;
 
                 let h = normalized * liveCanvas.height * 0.85;
-                if (h < 3) h = 3; 
+                if (h < 3) h = 3;
 
                 volumeHistory.push(h);
                 if (volumeHistory.length > maxBars) volumeHistory.shift();
@@ -528,9 +617,9 @@
             canvasCtx.clearRect(0, 0, liveCanvas.width, liveCanvas.height);
             let x = 0;
             for (let i = 0; i < maxBars; i++) {
-                let h = volumeHistory[i] || 3; 
-                const y = (liveCanvas.height / 2) - (h / 2); 
-                
+                let h = volumeHistory[i] || 3;
+                const y = (liveCanvas.height / 2) - (h / 2);
+
                 canvasCtx.fillStyle = '#01a6f3';
                 if (canvasCtx.roundRect) {
                     canvasCtx.beginPath();
@@ -553,7 +642,7 @@
             let oscX = 0;
 
             for (let i = 0; i < bufferLength; i++) {
-                let v = (dataArray[i] - 128) / 128.0; 
+                let v = (dataArray[i] - 128) / 128.0;
                 let y = (oscCanvas.height / 2) - (v * (oscCanvas.height / 2));
 
                 if (i === 0) {
@@ -563,31 +652,31 @@
                 }
                 oscX += sliceWidth;
             }
-            
+
             oscCtx.lineTo(oscCanvas.width, oscCanvas.height / 2);
             oscCtx.stroke();
         }
 
         // BẮT ĐẦU GHI ÂM
         startBtn.addEventListener('click', async () => {
-            audioChunks = []; 
-            previewContainer.classList.remove('show'); 
-            wavesurfer.empty(); 
-            
+            audioChunks = [];
+            previewContainer.classList.remove('show');
+            wavesurfer.empty();
+
             volumeSlider.value = 1;
             speedSelect.value = "1";
             wavesurfer.setVolume(1);
             wavesurfer.setPlaybackRate(1);
 
-            volumeHistory = new Array(maxBars).fill(3); 
-            
+            volumeHistory = new Array(maxBars).fill(3);
+
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                
+
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048; 
-                
+                analyser.fftSize = 2048;
+
                 const source = audioCtx.createMediaStreamSource(currentStream);
                 source.connect(analyser);
 
@@ -601,23 +690,23 @@
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
                     const audioUrl = URL.createObjectURL(audioBlob);
-                    
+
                     wavesurfer.load(audioUrl);
                     downloadBtn.href = audioUrl;
 
                     previewContainer.classList.add('show');
-                    
+
                     if (currentStream) {
                         currentStream.getTracks().forEach(track => track.stop());
                     }
                 };
 
                 mediaRecorder.start();
-                
+
                 statusText.innerText = "Đang ghi âm...";
                 statusText.style.color = "#ff4757";
                 startBtn.classList.add('recording-pulse');
-                startBtn.style.pointerEvents = 'none'; 
+                startBtn.style.pointerEvents = 'none';
                 stopBtn.disabled = false;
 
                 // Khởi động đồng hồ đếm thời gian
@@ -641,7 +730,7 @@
         stopBtn.addEventListener('click', () => {
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();
-                
+
                 // Dừng đồng hồ
                 clearInterval(recordingInterval);
                 recordingTimeEl.style.display = 'none';
@@ -649,11 +738,11 @@
                 cancelAnimationFrame(animationId);
                 liveCanvas.classList.remove('active');
                 oscCanvas.classList.remove('active');
-                if(audioCtx && audioCtx.state !== 'closed') audioCtx.close();
+                if (audioCtx && audioCtx.state !== 'closed') audioCtx.close();
 
                 statusText.innerText = "Đã ghi xong! Bạn có thể tùy chỉnh và tải về bên dưới.";
                 statusText.style.color = "#01a6f3";
-                
+
                 startBtn.classList.remove('recording-pulse');
                 startBtn.style.pointerEvents = 'auto';
                 stopBtn.disabled = true;
@@ -661,4 +750,5 @@
         });
     </script>
 </body>
+
 </html>
