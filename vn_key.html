@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình Gõ Tiếng Việt Online</title>
+    
+    <script src="https://cdn.jsdelivr.net/gh/mikeitpro/VNKeys-JS@main/vnkeys.js"></script>
+
+    <style>
+        /* ===== CSS Styling Thật Đẹp ===== */
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-gradient: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            --surface: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .editor-container {
+            background-color: var(--surface);
+            width: 100%;
+            max-width: 850px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            padding: 35px;
+            transition: transform 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: var(--text-main);
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 15px;
+        }
+
+        /* Thanh công cụ chọn kiểu gõ */
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .radio-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: color 0.2s;
+        }
+
+        .radio-group:hover {
+            color: var(--primary-color);
+        }
+
+        input[type="radio"] {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        input[type="radio"]:checked {
+            border-color: var(--primary-color);
+        }
+
+        input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        /* Khu vực nhập liệu */
+        .textarea-wrapper {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            height: 350px;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            color: var(--text-main);
+            line-height: 1.6;
+            resize: vertical;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.3s ease;
+            background-color: #fcfcfc;
+        }
+
+        textarea:focus {
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        textarea::placeholder {
+            color: #94a3b8;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .editor-container {
+                padding: 20px;
+            }
+            .toolbar {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="editor-container">
+        <div class="header">
+            <h1>📝 Trình Gõ Văn Bản Online</h1>
+            <p>Không cần Unikey/EVKey - Tự động nhận diện và gõ tiếng Việt trơn tru.</p>
+        </div>
+        
+        <div class="toolbar">
+            <label class="radio-group">
+                <input type="radio" name="vnkeys_method" value="telex" checked onclick="changeInputMethod(this.value)"> 
+                <span>TELEX</span>
+            </label>
+            <label class="radio-group">
+                <input type="radio" name="vnkeys_method" value="vni" onclick="changeInputMethod(this.value)"> 
+                <span>VNI</span>
+            </label>
+            <label class="radio-group">
+                <input type="radio" name="vnkeys_method" value="viqr" onclick="changeInputMethod(this.value)"> 
+                <span>VIQR</span>
+            </label>
+            <label class="radio-group">
+                <input type="radio" name="vnkeys_method" value="off" onclick="changeInputMethod(this.value)"> 
+                <span>Tắt (Tiếng Anh)</span>
+            </label>
+        </div>
+
+        <div class="textarea-wrapper">
+            <textarea id="myEditor" placeholder="Bắt đầu gõ nội dung của bạn tại đây..."></textarea>
+        </div>
+        
+        <div class="footer">
+            Bảo mật 100% - Mọi dữ liệu chỉ nằm trên trình duyệt của bạn.
+        </div>
+    </div>
+
+    <script>
+        // Hàm thay đổi kiểu gõ khi click vào Radio Button
+        function changeInputMethod(method) {
+            if (typeof VNKeys !== 'undefined') {
+                VNKeys.setMethod(method);
+            } else {
+                console.warn("Thư viện bộ gõ chưa được tải hoàn tất.");
+            }
+        }
+
+        // Kích hoạt mặc định kiểu gõ TELEX khi trang web vừa tải xong
+        window.addEventListener('load', function() {
+            if (typeof VNKeys !== 'undefined') {
+                VNKeys.setMethod('telex');
+                document.getElementById('myEditor').focus();
+            }
+        });
+    </script>
+
+</body>
+</html>
