@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trình Gõ Tiếng Việt Online</title>
     
-    <script src="https://cdn.jsdelivr.net/gh/mikeitpro/VNKeys-JS@main/vnkeys.js"></script>
-    <script src="vnkeys.js"></script>
+    <script src="https://mudim.net/mudim.js"></script>
     
-        
     <style>
         /* ===== CSS Styling Thật Đẹp ===== */
         :root {
@@ -171,24 +169,24 @@
     <div class="editor-container">
         <div class="header">
             <h1>Trình Gõ Văn Bản Tiếng Việt Online</h1>
-            <p>Tự động nhận diện và gõ tiếng Việt Online.</p>
+            <p>Tự động nhận diện và gõ tiếng Việt Online không cần phần mềm.</p>
         </div>
         
         <div class="toolbar">
             <label class="radio-group">
-                <input type="radio" name="vnkeys_method" value="telex" checked onclick="changeInputMethod(this.value)"> 
+                <input type="radio" name="vn_method" value="2" checked onclick="changeInputMethod(this.value)"> 
                 <span>TELEX</span>
             </label>
             <label class="radio-group">
-                <input type="radio" name="vnkeys_method" value="vni" onclick="changeInputMethod(this.value)"> 
+                <input type="radio" name="vn_method" value="1" onclick="changeInputMethod(this.value)"> 
                 <span>VNI</span>
             </label>
             <label class="radio-group">
-                <input type="radio" name="vnkeys_method" value="viqr" onclick="changeInputMethod(this.value)"> 
+                <input type="radio" name="vn_method" value="3" onclick="changeInputMethod(this.value)"> 
                 <span>VIQR</span>
             </label>
             <label class="radio-group">
-                <input type="radio" name="vnkeys_method" value="off" onclick="changeInputMethod(this.value)"> 
+                <input type="radio" name="vn_method" value="0" onclick="changeInputMethod(this.value)"> 
                 <span>Tắt (Tiếng Anh)</span>
             </label>
         </div>
@@ -204,18 +202,19 @@
 
     <script>
         // Hàm thay đổi kiểu gõ khi click vào Radio Button
-        function changeInputMethod(method) {
-            if (typeof VNKeys !== 'undefined') {
-                VNKeys.setMethod(method);
+        function changeInputMethod(methodValue) {
+            if (typeof Mudim !== 'undefined') {
+                // Mudim sử dụng các mã số: 0 (Tắt), 1 (VNI), 2 (Telex), 3 (Viqr)
+                Mudim.SetMethod(parseInt(methodValue));
             } else {
-                console.warn("Thư viện bộ gõ chưa được tải hoàn tất.");
+                console.warn("Thư viện Mudim chưa được tải hoàn tất.");
             }
         }
 
-        // Kích hoạt mặc định kiểu gõ TELEX khi trang web vừa tải xong
+        // Kích hoạt mặc định kiểu gõ TELEX (mã số 2) khi trang web tải xong
         window.addEventListener('load', function() {
-            if (typeof VNKeys !== 'undefined') {
-                VNKeys.setMethod('telex');
+            if (typeof Mudim !== 'undefined') {
+                Mudim.SetMethod(2);
                 document.getElementById('myEditor').focus();
             }
         });
