@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietnamese Telex Input</title>
+
+    <style>
+        :root {
+            --bg: #020617;
+            --card: rgba(15, 23, 42, .7);
+            --border: rgba(255, 255, 255, .08);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --primary: #3b82f6;
+            --secondary: #06b6d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Inter, Segoe UI, sans-serif;
+            background:
+                radial-gradient(circle at top left, #2563eb55 0%, transparent 35%),
+                radial-gradient(circle at bottom right, #06b6d455 0%, transparent 35%),
+                var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            backdrop-filter: blur(30px);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0px;
+            overflow: hidden;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, .45),
+                inset 0 1px 0 rgba(255, 255, 255, .05);
+        }
+
+        .header {
+            padding: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            color: var(--muted);
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .guide {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+        }
+
+        .guide h3 {
+            color: #38bdf8;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+
+        .guide p {
+            line-height: 2.2;
+            color: #cbd5e1;
+        }
+
+        /* .guide h3{
+    color:#38bdf8;
+    margin-bottom:14px;
+    font-size:18px;
+    position:relative;
+    padding-left:14px;
+}
+
+.guide h3::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:4px;
+    width:4px;
+    height:20px;
+    border-radius:999px;
+    background:#38bdf8;
+} */
+
+
+
+        kbd {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-width: 48px;
+            height: 34px;
+
+            margin: 4px;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(180deg,
+                    #1e293b,
+                    #0f172a);
+
+            border: 1px solid rgba(255, 255, 255, .1);
+
+            color: #38bdf8;
+
+            font-size: 14px;
+            font-weight: 700;
+
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, .08),
+                0 4px 12px rgba(0, 0, 0, .3);
+
+            transition: .2s;
+
+
+        }
+
+        /* kbd:hover {
+            transform: translateY(-2px);
+        } */
+
+        textarea {
+            width: 100%;
+            height: 500px;
+
+            border: none;
+            outline: none;
+            resize: none;
+
+            background: #020617;
+
+            color: white;
+
+            padding: 30px;
+
+            font-size: 24px;
+            line-height: 1.9;
+
+            transition: .25s;
+
+
+        }
+
+        textarea::placeholder {
+            color: #64748b;
+        }
+
+        textarea:focus {
+            box-shadow:
+                inset 0 0 0 2px #3b82f6,
+                0 0 30px rgba(59, 130, 246, .2);
+        }
+
+        .footer {
+            padding: 22px;
+
+
+            text-align: center;
+
+            color: #94a3b8;
+
+            border-top: 1px solid var(--border);
+
+            background:
+                linear-gradient(180deg,
+                    transparent,
+                    rgba(255, 255, 255, .02));
+
+
+        }
+
+        .footer strong {
+            color: #38bdf8;
+        }
+
+        @media(max-width:768px) {
+
+
+            body {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            textarea {
+                height: 350px;
+                font-size: 20px;
+                padding: 20px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="card">
+
+            <div class="header">
+                <h1>🇻🇳 Vietnamese Telex Input</h1>
+
+                <div class="desc">
+                    Bộ gõ tiếng Việt trực tuyến hỗ trợ TELEX
+                </div>
+
+                <div class="guide">
+
+                    <h3>Hướng dẫn TELEX</h3>
+
+                    <p>
+                        <kbd>aa</kbd> → â
+                        <kbd>aw</kbd> → ă
+                        <kbd>ee</kbd> → ê
+                        <kbd>oo</kbd> → ô
+                        <kbd>ow</kbd> → ơ
+                        <kbd>uw</kbd> → ư
+                        <kbd>dd</kbd> → đ
+                    </p>
+
+                    <br>
+
+                    <p>
+                        <kbd>s</kbd> → sắc
+                        <kbd>f</kbd> → huyền
+                        <kbd>r</kbd> → hỏi
+                        <kbd>x</kbd> → ngã
+                        <kbd>j</kbd> → nặng
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+        <textarea id="editor" placeholder="Nhập tiếng Việt bằng TELEX..."></textarea>
+
+        <div class="footer">
+            Website gõ Tiếng Việt này được tạo bởi <strong>DLUONGTA</strong>
+        </div>
+    </div>
+    </div>
+
+    <script>
+
+        const editor = document.getElementById("editor");
+
+        const toneMarks = {
+            s: "\u0301",
+            f: "\u0300",
+            r: "\u0309",
+            x: "\u0303",
+            j: "\u0323"
+        };
+
+        const telexReplace = {
+            "aa": "â",
+            "aw": "ă",
+            "ee": "ê",
+            "oo": "ô",
+            "ow": "ơ",
+            "uw": "ư",
+            "dd": "đ",
+
+            "AA": "Â",
+            "AW": "Ă",
+            "EE": "Ê",
+            "OO": "Ô",
+            "OW": "Ơ",
+            "UW": "Ư",
+            "DD": "Đ"
+        };
+
+        const vowels =
+            "aeiouyăâêôơưAEIOUYĂÂÊÔƠƯ";
+
+        function isVowel(ch) {
+            return vowels.includes(ch);
+        }
+
+        function findTonePosition(word) {
+
+            const chars = [...word];
+
+            const vowelPos = [];
+
+            chars.forEach((c, i) => {
+                if (isVowel(c)) {
+                    vowelPos.push(i);
+                }
+            });
+
+            if (vowelPos.length === 0)
+                return -1;
+
+            if (vowelPos.length === 1)
+                return vowelPos[0];
+
+            const lower = word.toLowerCase();
+
+            if (lower.includes("uyê"))
+                return lower.indexOf("ê");
+
+            if (lower.includes("ươ"))
+                return lower.indexOf("ơ");
+
+            if (lower.includes("uô"))
+                return lower.indexOf("ô");
+
+            if (lower.includes("iê"))
+                return lower.indexOf("ê");
+
+            if (vowelPos.length === 2) {
+
+                const pair =
+                    chars[vowelPos[0]].toLowerCase() +
+                    chars[vowelPos[1]].toLowerCase();
+
+                if (
+                    pair === "oa" ||
+                    pair === "oe" ||
+                    pair === "uy"
+                ) {
+                    return vowelPos[1];
+                }
+
+                return vowelPos[0];
+            }
+
+            return vowelPos[1];
+        }
+
+        function addTone(word, tone) {
+
+            const pos = findTonePosition(word);
+
+            if (pos === -1)
+                return word;
+
+            const chars = [...word];
+
+            chars[pos] =
+                (chars[pos] + tone)
+                    .normalize("NFC");
+
+            return chars.join("");
+        }
+
+        function processTelex(text) {
+
+            for (const key in telexReplace) {
+
+                text = text.replace(
+                    new RegExp(key, "g"),
+                    telexReplace[key]
+                );
+
+            }
+
+            text = text.replace(
+                /([^\s]+)([sfrxj])/gi,
+                (_, word, tone) => {
+
+                    return addTone(
+                        word,
+                        toneMarks[tone.toLowerCase()]
+                    );
+
+                }
+            );
+
+            return text;
+        }
+
+        editor.addEventListener("input", () => {
+
+            const cursor = editor.selectionStart;
+
+            let value = editor.value;
+
+            value = processTelex(value);
+
+            editor.value = value;
+
+            editor.setSelectionRange(
+                cursor,
+                cursor
+            );
+
+        });
+
+        editor.focus();
+
+    </script>
+
+</body>
+
+</html>
