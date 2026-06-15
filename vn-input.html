@@ -216,6 +216,31 @@
             }
 
         }
+        .copy-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            font-family: inherit;
+        }
+
+        .copy-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
     </style>
 </head>
 
@@ -260,7 +285,7 @@
         </div>
 
         <textarea id="editor" placeholder="Nhập tiếng Việt bằng TELEX..."></textarea>
-
+        <button id="copyBtn" class="copy-btn">📋 Copy văn bản</button>
         <div class="footer">
             Website gõ tiếng Việt này được tạo bởi <strong>DLUONGTA</strong>
         </div>
@@ -416,6 +441,35 @@
         });
 
         editor.focus();
+        
+        const copyBtn = document.getElementById("copyBtn");
+
+        copyBtn.addEventListener("click", async () => {
+            const textToCopy = editor.value;
+            
+            // Nếu không có chữ nào thì không làm gì cả
+            if (!textToCopy) return;
+
+            try {
+                // Sử dụng Clipboard API hiện đại để copy
+                await navigator.clipboard.writeText(textToCopy);
+                
+                // Đổi trạng thái nút để báo hiệu thành công
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = "Đã copy thành công!";
+                copyBtn.style.background = "#10b981"; // Chuyển sang màu xanh lá
+                
+                // Trả lại trạng thái cũ sau 2 giây
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.style.background = "";
+                }, 2000);
+                
+            } catch (err) {
+                console.error("Lỗi khi copy: ", err);
+                alert("Không thể copy văn bản. Trình duyệt của bạn có thể không hỗ trợ!");
+            }
+        });
 
     </script>
 
