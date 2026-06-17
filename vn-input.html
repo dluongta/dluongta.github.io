@@ -551,8 +551,8 @@
                 
                 // Đổi trạng thái nút để báo hiệu thành công
                 const originalText = copyBtn.innerHTML;
-                copyBtn.innerHTML = "Đã copy thành công!";
-                copyBtn.style.background = "#10b981"; // Chuyển sang màu xanh lá
+                copyBtn.innerHTML = "✓ Đã copy thành công!";
+                copyBtn.style.background = "#10b981"; 
                 
                 // Trả lại trạng thái cũ sau 2 giây
                 setTimeout(() => {
@@ -569,19 +569,19 @@
 
         if (!editor.value) return;
     
-        if (confirm("Bạn có muốn xóa toàn bộ văn bản không?")) {
+        editor.value = "";
+        editor.focus();
     
-            editor.value = "";
-            editor.focus();
+        const originalText = resetBtn.innerHTML;
     
-            const originalText = resetBtn.innerHTML;
+        resetBtn.innerHTML = "✓ Đã xóa";
+        resetBtn.style.background = "#10b981";
     
-            resetBtn.innerHTML = "Đã xóa";
+        setTimeout(() => {
+            resetBtn.innerHTML = originalText;
+            resetBtn.style.background = "";
+        }, 1500);
     
-            setTimeout(() => {
-                resetBtn.innerHTML = originalText;
-            }, 1500);
-        }
     });
 
     </script>
