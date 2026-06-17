@@ -242,61 +242,92 @@
             box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
         }
         .button-group {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin: 20px;
-}
-
-.copy-btn,
-.reset-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all .2s ease;
-    font-family: inherit;
-}
-
-.copy-btn {
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, .4);
-}
-
-.copy-btn:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
-}
-
-.reset-btn {
-    background: #ef4444;
-    color: white;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, .4);
-}
-
-.reset-btn:hover {
-    background: #dc2626;
-    transform: translateY(-2px);
-}
-
-@media(max-width:768px) {
-
-    .button-group {
-        flex-direction: row;
-        gap: 10px;
-        margin: 15px;
-    }
-
-    .copy-btn,
-    .reset-btn {
-        flex: 1;
-        padding: 14px;
-        font-size: 15px;
-    }
-}
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px;
+        }
+        
+        .copy-btn,
+        .reset-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s ease;
+            font-family: inherit;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+        
+            margin: 24px auto;
+            width: fit    -content;
+        }
+        
+        .copy-btn,
+        .reset-btn {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        
+            min-width: 180px;
+            height: 52px;
+        
+            padding: 0 24px;
+        
+            border: none;
+            border-radius: 10px;
+        
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+        
+            cursor: pointer;
+            transition: .25s;
+        }
+        
+        .copy-btn {
+            background: #3b82f6;
+            box-shadow: 0 4px 15px rgba(59,130,246,.35);
+        }
+        
+        .copy-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .reset-btn {
+            background: #ef4444;
+            box-shadow: 0 4px 15px rgba(239,68,68,.35);
+        }
+        
+        .reset-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width:768px){
+        
+            .button-group{
+                width:100%;
+                padding:0 15px;
+                gap:10px;
+            }
+        
+            .copy-btn,
+            .reset-btn{
+                flex:1;
+                min-width:0;
+                height:50px;
+                font-size:15px;
+            }
+        }
     </style>
 </head>
 
@@ -349,7 +380,8 @@
             <button id="copyBtn" class="copy-btn">
                 Copy văn bản
             </button>
-</div>        <div class="footer">
+        </div>
+        <div class="footer">
             Website gõ tiếng Việt này được tạo bởi <strong>DLUONGTA</strong>
         </div>
     </div>
