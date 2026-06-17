@@ -241,6 +241,62 @@
             transform: translateY(0);
             box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
         }
+        .button-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 20px;
+}
+
+.copy-btn,
+.reset-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+    font-family: inherit;
+}
+
+.copy-btn {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, .4);
+}
+
+.copy-btn:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+}
+
+.reset-btn {
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, .4);
+}
+
+.reset-btn:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+@media(max-width:768px) {
+
+    .button-group {
+        flex-direction: row;
+        gap: 10px;
+        margin: 15px;
+    }
+
+    .copy-btn,
+    .reset-btn {
+        flex: 1;
+        padding: 14px;
+        font-size: 15px;
+    }
+}
     </style>
 </head>
 
@@ -285,8 +341,15 @@
         </div>
 
         <textarea id="editor" placeholder="Nhập tiếng Việt bằng TELEX..."></textarea>
-        <button id="copyBtn" class="copy-btn">📋 Copy văn bản</button>
-        <div class="footer">
+        <div class="button-group">
+            <button id="resetBtn" class="reset-btn">
+                Xóa hết
+            </button>
+        
+            <button id="copyBtn" class="copy-btn">
+                Copy văn bản
+            </button>
+</div>        <div class="footer">
             Website gõ tiếng Việt này được tạo bởi <strong>DLUONGTA</strong>
         </div>
     </div>
@@ -443,7 +506,7 @@
         editor.focus();
         
         const copyBtn = document.getElementById("copyBtn");
-
+        const resetBtn = document.getElementById("resetBtn");
         copyBtn.addEventListener("click", async () => {
             const textToCopy = editor.value;
             
@@ -470,6 +533,24 @@
                 alert("Không thể copy văn bản. Trình duyệt của bạn có thể không hỗ trợ!");
             }
         });
+        resetBtn.addEventListener("click", () => {
+
+        if (!editor.value) return;
+    
+        if (confirm("Bạn có muốn xóa toàn bộ văn bản không?")) {
+    
+            editor.value = "";
+            editor.focus();
+    
+            const originalText = resetBtn.innerHTML;
+    
+            resetBtn.innerHTML = "Đã xóa";
+    
+            setTimeout(() => {
+                resetBtn.innerHTML = originalText;
+            }, 1500);
+        }
+    });
 
     </script>
 
