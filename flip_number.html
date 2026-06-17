@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flip Number</title>
     <style>
+        /* Khai báo các biến CSS để dễ dàng thay đổi kích thước theo thiết bị */
+        :root {
+            --flap-w: 40px;
+            --flap-h: 60px;
+            --font-s: 36px;
+            --gap-x: 4px;
+        }
+
         body {
             background-color: #0d1117;
             color: #c9d1d9;
@@ -14,40 +22,70 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: hidden; 
         }
 
         #board {
             display: flex;
             flex-direction: column;
             gap: 15px;
+            width: 100%;
+            max-width: fit-content;
         }
 
         .row {
             display: flex;
+            flex-direction: row;
             align-items: center;
             gap: 20px;
         }
 
         .word-group, .number-group {
             display: flex;
-            gap: 4px;
+            gap: var(--gap-x);
+            justify-content: center;
         }
 
-        /* Khối cơ bản cho từng ô chữ/số */
+        /* Responsive cho thiết bị di động (màn hình nhỏ hơn 768px) */
+        @media (max-width: 768px) {
+            :root {
+                --flap-w: 26px;
+                --flap-h: 40px;
+                --font-s: 24px;
+                --gap-x: 2px;
+            }
+            
+            #board {
+                gap: 25px;
+            }
+
+            .row {
+                flex-direction: column; 
+                gap: 8px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #21262d; 
+            }
+
+            .row:last-child {
+                border-bottom: none;
+            }
+        }
+
+        /* ---------------- CSS Cấu trúc ô lật (Vuông vức 100%) ---------------- */
+        
         .split-flap {
             position: relative;
-            width: 40px;
-            height: 60px;
-            border-radius: 4px;
-            font-size: 36px;
+            width: var(--flap-w);
+            height: var(--flap-h);
+            font-size: var(--font-s);
             font-weight: bold;
-            perspective: 1000px; /* Tạo hiệu ứng 3D khi lật */
+            perspective: 1000px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
             background-color: #161b22;
         }
 
-        /* Nửa trên và nửa dưới chung */
         .half {
             position: absolute;
             width: 100%;
@@ -61,48 +99,38 @@
 
         .half span {
             position: absolute;
-            height: 60px;
-            line-height: 60px;
+            height: var(--flap-h);
+            line-height: var(--flap-h);
         }
 
-        /* Nửa trên */
         .top {
             top: 0;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-            border-bottom: 1px solid #000; /* Khoảng cách nhỏ giữa 2 nửa */
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
+            border-bottom: 1px solid #000;
         }
 
         .top span { top: 0; }
 
-        /* Nửa dưới */
         .bottom {
             bottom: 0;
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
-            border-top: 1px solid #0d1117; /* Khoảng cách nhỏ giữa 2 nửa */
-            border-bottom-left-radius: 4px;
-            border-bottom-right-radius: 4px;
+            border-top: 1px solid #0d1117;
         }
 
         .bottom span { bottom: 0; }
 
-        /* Các miếng lật animation */
+        /* Animation (lật trên rơi xuống, sau đó lật dưới đập xuống) */
         .flap-top, .flap-bottom {
             z-index: 10;
         }
 
         .flap-top {
             transform-origin: bottom;
-            animation: flipDown 0.25s ease-in forwards;
+            animation: flipDown 0.25s linear forwards;
         }
 
         .flap-bottom {
             transform-origin: top;
             transform: rotateX(90deg);
-            animation: flipUp 0.25s ease-out 0.25s forwards;
+            animation: flipUp 0.25s linear 0.25s forwards;
         }
 
         @keyframes flipDown {
@@ -126,11 +154,11 @@
         const words = ["USER", "SERVICE", "DEPLOYMENT", "REQUEST", "LOG"];
         const board = document.getElementById("board");
         
-        // Quản lý trạng thái các bộ đếm số cho 5 dòng
-        const counters = [995, 850, 100, 9995, 0]; 
-        const numberElements = []; // Lưu trữ các DOM elements của số để update
+        // Trạng thái các bộ đếm số
+        const counters = [895, 850, 100, 9895, 0]; 
+        const numberElements = [];
 
-        // Hàm tạo HTML cho 1 ô (Split-flap)
+        // Tạo phần tử HTML cho 1 ô (Split-flap)
         function createFlap(char, isStatic = false) {
             const flap = document.createElement('div');
             flap.className = `split-flap ${isStatic ? 'static-text' : ''}`;
@@ -143,13 +171,13 @@
             return flap;
         }
 
-        // Khởi tạo bảng
+        // Khởi tạo toàn bộ bảng
         function initBoard() {
             words.forEach((word, rowIndex) => {
                 const rowDiv = document.createElement('div');
                 rowDiv.className = 'row';
 
-                // 1. Render nhóm chữ cố định
+                // Nhóm chữ tĩnh
                 const wordGroup = document.createElement('div');
                 wordGroup.className = 'word-group';
                 for (let char of word) {
@@ -157,7 +185,7 @@
                 }
                 rowDiv.appendChild(wordGroup);
 
-                // 2. Render nhóm số có thể lật (định dạng 6 chữ số)
+                // Nhóm số động
                 const numberGroup = document.createElement('div');
                 numberGroup.className = 'number-group';
                 
@@ -175,43 +203,50 @@
             });
         }
 
-        // Hàm xử lý lật cho 1 ô số
+        // Xử lý logic lật đồng bộ
         function triggerFlip(flapDOM, oldChar, newChar) {
             if (oldChar === newChar) return;
 
             flapDOM.dataset.char = newChar;
 
-            // Tạo tấm thẻ lật xuống
+            // Lấy 2 thẻ nền tĩnh
+            const topSpan = flapDOM.querySelector('.top span');
+            const bottomSpan = flapDOM.querySelector('.bottom span');
+
+            // 1. CẬP NHẬT NGAY tấm nền nửa trên thành số MỚI.
+            // Khi thẻ animation ở trên lật rơi xuống, nó sẽ dần để lộ số mới này ra.
+            topSpan.innerText = newChar;
+
+            // Tấm nền nửa dưới vẫn giữ số CŨ, sẽ bị che lấp đi khi thẻ animation nửa dưới đập xuống.
+
+            // 2. Tạo các thẻ animation
             const flapTop = document.createElement('div');
             flapTop.className = 'half top flap-top';
-            flapTop.innerHTML = `<span>${oldChar}</span>`;
+            flapTop.innerHTML = `<span>${oldChar}</span>`; // Lật số cũ đi
 
             const flapBottom = document.createElement('div');
             flapBottom.className = 'half bottom flap-bottom';
-            flapBottom.innerHTML = `<span>${newChar}</span>`;
+            flapBottom.innerHTML = `<span>${newChar}</span>`; // Đập số mới xuống
 
             flapDOM.appendChild(flapTop);
             flapDOM.appendChild(flapBottom);
 
-            // Cập nhật thẻ gốc bên dưới sau khi lật (0.5s animation tổng cộng)
+            // 3. Sau khi animation kết thúc (500ms), dọn dẹp và cập nhật nốt nửa dưới
             setTimeout(() => {
-                flapDOM.querySelector('.top span').innerText = newChar;
-                flapDOM.querySelector('.bottom span').innerText = newChar;
-                
-                // Dọn dẹp DOM elements animation
+                bottomSpan.innerText = newChar; // Giờ cả 2 nửa đều là số mới
                 flapTop.remove();
                 flapBottom.remove();
             }, 500);
         }
 
-        // Vòng lặp cập nhật số mỗi 0.5 giây
+        // Vòng lặp đếm số mỗi 0.5 giây
         function updateCounters() {
             for (let i = 0; i < counters.length; i++) {
                 const oldStr = counters[i].toString().padStart(6, '0');
-                counters[i]++; // Tăng 1 đơn vị
+                counters[i]++; 
                 const newStr = counters[i].toString().padStart(6, '0');
 
-                // So sánh từng chữ số, nếu khác nhau thì kích hoạt hiệu ứng lật
+                // So sánh từng chữ số để quyết định lật ô nào
                 for (let j = 0; j < 6; j++) {
                     if (oldStr[j] !== newStr[j]) {
                         triggerFlip(numberElements[i][j], oldStr[j], newStr[j]);
@@ -220,9 +255,9 @@
             }
         }
 
-        // Chạy chương trình
+        // Bắt đầu chạy
         initBoard();
-        setInterval(updateCounters, 500); // 500ms = 0.5s như yêu cầu
+        setInterval(updateCounters, 500);
     </script>
 </body>
 </html>
