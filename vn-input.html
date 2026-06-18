@@ -453,14 +453,14 @@
             text = text.replace(new RegExp(key, "g"), telexRestore[key]);
         }
 
-        // Bước 2: Thay thế tổ hợp Telex bằng thuật toán đếm chuỗi lặp tối ưu mới
+        // Bước 2: Thay thế tổ hợp Telex với thuật toán băm nhỏ chuỗi lặp mới cho Mobile
         for (const key in telexReplace) {
             const char1 = key[0];
             const char2 = key[1];
             const isDouble = (char1 === char2); 
             
             if (isDouble) {
-                // Tìm tất cả các cụm chứa chữ cái lặp lại, chấp nhận có hoặc không có \u200C xen giữa
+                // Quét tất cả cụm chữ cái lặp lại (bất kể có dính \u200C hay không)
                 const regex = new RegExp(`(?:${char1}\\u200C*){2,}`, "g");
                 
                 text = text.replace(regex, (match) => {
@@ -471,9 +471,9 @@
                         return telexReplace[key]; 
                     }
                     
-                    // SỬA CHÍNH Ở ĐÂY: Nếu gõ từ 3 chữ cái trở lên (aaa, aaaa...), 
-                    // trả về chuỗi sạch kèm theo 1 ký tự tàng hình ở CUỐI để khóa cứng bàn phím Samsung lại
-                    return cleanMatch + "\u200C"; 
+                    // NÂNG CẤP CHIẾN THUẬT: Nếu chuỗi lặp từ 3 chữ trở lên (aaa, aaaa, aaaaa...)
+                    // Ta chèn ký tự tàng hình vào GIỮA TỪNG KÝ TỰ một để phá vỡ hoàn toàn cơ chế gộp của Samsung
+                    return cleanMatch.split("").join("\u200C") + "\u200C"; 
                 });
             } else {
                 const regex = new RegExp(key, "g");
@@ -518,14 +518,14 @@
             let isNativeCancel = false;
             
             if (lastOutputWord && currentWord.length >= 2) {
-                // Loại bỏ ký tự tàng hình ở cuối từ cũ (nếu có) trước khi so sánh logic mobile
-                const cleanLastOutput = lastOutputWord.replace(/\u200C$/, "");
+                // Loại bỏ tất cả ký tự tàng hình trước khi so sánh logic hủy dấu tự động của mobile
+                const cleanLastOutput = lastOutputWord.replace(/\u200C/g, "");
                 const prevLastChar = cleanLastOutput.slice(-1); 
-                const currentLastTwo = currentWord.slice(-2);  
+                const currentLastTwo = currentWord.replace(/\u200C/g, "").slice(-2);  
                 
                 if (decomposedMap[prevLastChar] && decomposedMap[prevLastChar].toLowerCase() === currentLastTwo.toLowerCase()) {
                     const prefixOutput = cleanLastOutput.slice(0, -1);
-                    const prefixCurrent = currentWord.slice(0, -2);
+                    const prefixCurrent = currentWord.replace(/\u200C/g, "").slice(0, -2);
                     if (prefixOutput === prefixCurrent) {
                         isNativeCancel = true;
                     }
@@ -533,7 +533,9 @@
             }
 
             if (isNativeCancel) {
-                processedWord = currentWord.slice(0, -1) + "\u200C" + currentWord.slice(-1);
+                // Bàn phím tự hủy dấu -> Ép rải ký tự tàng hình toàn bộ chuỗi
+                const cleanCurrent = currentWord.replace(/\u200C/g, "");
+                processedWord = cleanCurrent.split("").join("\u200C") + "\u200C";
             } else {
                 processedWord = processTelex(currentWord);
             }
