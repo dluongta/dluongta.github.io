@@ -386,204 +386,165 @@
     </div>
     </div>
 
-    <script>
+   <script>
+    const editor = document.getElementById("editor");
 
-        const editor = document.getElementById("editor");
+    // Bảng mã dấu thanh
+    const toneMarks = {
+        s: "\u0301",
+        f: "\u0300",
+        r: "\u0309",
+        x: "\u0303",
+        j: "\u0323"
+    };
 
-        const toneMarks = {
-            s: "\u0301",
-            f: "\u0300",
-            r: "\u0309",
-            x: "\u0303",
-            j: "\u0323"
-        };
+    // Bảng quy tắc gộp Telex
+    const telexReplace = {
+        "aa": "â", "aw": "ă", "ee": "ê", "oo": "ô", "ow": "ơ", "uw": "ư", "dd": "đ",
+        "AA": "Â", "AW": "Ă", "EE": "Ê", "OO": "Ô", "OW": "Ơ", "UW": "Ư", "DD": "Đ"
+    };
 
-        const telexReplace = {
-            "aa": "â",
-            "aw": "ă",
-            "ee": "ê",
-            "oo": "ô",
-            "ow": "ơ",
-            "uw": "ư",
-            "dd": "đ",
+    // Bảng quy tắc phục hồi (Hủy Telex khi gõ lần 3 bằng ký tự tàng hình \u200C)
+    const telexRestore = {
+        "âa": "a\u200Ca", "Âa": "A\u200Ca", "ÂA": "A\u200CA", "âA": "a\u200CA",
+        "ăw": "a\u200Cw", "Ăw": "A\u200Cw", "ĂW": "A\u200CW", "ăW": "a\u200CW",
+        "êe": "e\u200Ce", "Êe": "E\u200Ce", "ÊE": "E\u200CE", "êE": "e\u200CE",
+        "ôo": "o\u200Co", "Ôo": "O\u200Co", "ÔO": "O\u200CO", "ôO": "o\u200CO",
+        "ơw": "o\u200Cw", "Ơw": "O\u200Cw", "ƠW": "O\u200CW", "ơW": "o\u200CW",
+        "ưw": "u\u200Cw", "Ưw": "U\u200Cw", "ƯW": "U\u200CW", "ưW": "u\u200CW",
+        "đd": "d\u200Cd", "Đd": "D\u200Cd", "ĐD": "D\u200CD", "đD": "d\u200CD"
+    };
 
-            "AA": "Â",
-            "AW": "Ă",
-            "EE": "Ê",
-            "OO": "Ô",
-            "OW": "Ơ",
-            "UW": "Ư",
-            "DD": "Đ"
-        };
+    const vowels = "aeiouyăâêôơưAEIOUYĂÂÊÔƠƯ";
 
-        const vowels =
-            "aeiouyăâêôơưAEIOUYĂÂÊÔƠƯ";
+    function isVowel(ch) {
+        return vowels.includes(ch);
+    }
 
-        function isVowel(ch) {
-            return vowels.includes(ch);
-        }
+    function findTonePosition(word) {
+        const chars = [...word];
+        const vowelPos = [];
 
-        function findTonePosition(word) {
-
-            const chars = [...word];
-
-            const vowelPos = [];
-
-            chars.forEach((c, i) => {
-                if (isVowel(c)) {
-                    vowelPos.push(i);
-                }
-            });
-
-            if (vowelPos.length === 0)
-                return -1;
-
-            if (vowelPos.length === 1)
-                return vowelPos[0];
-
-            const lower = word.toLowerCase();
-
-            if (lower.includes("uyê"))
-                return lower.indexOf("ê");
-
-            if (lower.includes("ươ"))
-                return lower.indexOf("ơ");
-
-            if (lower.includes("uô"))
-                return lower.indexOf("ô");
-
-            if (lower.includes("iê"))
-                return lower.indexOf("ê");
-
-            if (vowelPos.length === 2) {
-
-                const pair =
-                    chars[vowelPos[0]].toLowerCase() +
-                    chars[vowelPos[1]].toLowerCase();
-
-                if (
-                    pair === "oa" ||
-                    pair === "oe" ||
-                    pair === "uy"
-                ) {
-                    return vowelPos[1];
-                }
-
-                return vowelPos[0];
+        chars.forEach((c, i) => {
+            if (isVowel(c)) {
+                vowelPos.push(i);
             }
-
-            return vowelPos[1];
-        }
-
-        function addTone(word, tone) {
-
-            const pos = findTonePosition(word);
-
-            if (pos === -1)
-                return word;
-
-            const chars = [...word];
-
-            chars[pos] =
-                (chars[pos] + tone)
-                    .normalize("NFC");
-
-            return chars.join("");
-        }
-
-        function processTelex(text) {
-
-            for (const key in telexReplace) {
-
-                text = text.replace(
-                    new RegExp(key, "g"),
-                    telexReplace[key]
-                );
-
-            }
-
-            text = text.replace(
-                /([^\s]+)([sfrxj])/gi,
-                (_, word, tone) => {
-
-                    return addTone(
-                        word,
-                        toneMarks[tone.toLowerCase()]
-                    );
-
-                }
-            );
-
-            return text;
-        }
-
-        editor.addEventListener("input", () => {
-
-            const cursor = editor.selectionStart;
-
-            let value = editor.value;
-
-            value = processTelex(value);
-
-            editor.value = value;
-
-            editor.setSelectionRange(
-                cursor,
-                cursor
-            );
-
         });
 
-        editor.focus();
+        if (vowelPos.length === 0) return -1;
+        if (vowelPos.length === 1) return vowelPos[0];
+
+        const lower = word.toLowerCase();
+
+        if (lower.includes("uyê")) return lower.indexOf("ê");
+        if (lower.includes("ươ")) return lower.indexOf("ơ");
+        if (lower.includes("uô")) return lower.indexOf("ô");
+        if (lower.includes("iê")) return lower.indexOf("ê");
+
+        if (vowelPos.length === 2) {
+            const pair = chars[vowelPos[0]].toLowerCase() + chars[vowelPos[1]].toLowerCase();
+            if (pair === "oa" || pair === "oe" || pair === "uy") {
+                return vowelPos[1];
+            }
+            return vowelPos[0];
+        }
+
+        return vowelPos[1];
+    }
+
+    function addTone(word, tone) {
+        const pos = findTonePosition(word);
+        if (pos === -1) return word;
+
+        const chars = [...word];
+        chars[pos] = (chars[pos] + tone).normalize("NFC");
+        return chars.join("");
+    }
+
+    function processTelex(text) {
+        // Bước 1: Phục hồi chữ cái nếu người dùng gõ đúp lần 3 (ví dụ: â + a -> a\u200Ca)
+        for (const key in telexRestore) {
+            text = text.replace(new RegExp(key, "g"), telexRestore[key]);
+        }
+
+        // Bước 2: Thay thế tổ hợp phím Telex thành ký tự có dấu (ví dụ: aa -> â)
+        for (const key in telexReplace) {
+            text = text.replace(new RegExp(key, "g"), telexReplace[key]);
+        }
+
+        // Bước 3: Đặt dấu thanh (sắc, huyền, hỏi, ngã, nặng)
+        text = text.replace(/([^\s]+)([sfrxj])/gi, (_, word, tone) => {
+            return addTone(word, toneMarks[tone.toLowerCase()]);
+        });
+
+        // Bước 4: Dọn dẹp ký tự tàng hình
+        text = text.replace(/\u200C/g, "");
+
+        return text;
+    }
+
+    // Xử lý sự kiện khi nhập liệu
+    editor.addEventListener("input", () => {
+        const cursor = editor.selectionStart;
+        const oldLength = editor.value.length; // Lưu độ dài cũ
         
-        const copyBtn = document.getElementById("copyBtn");
-        const resetBtn = document.getElementById("resetBtn");
-        copyBtn.addEventListener("click", async () => {
-            const textToCopy = editor.value;
-            
-            // Nếu không có chữ nào thì không làm gì cả
-            if (!textToCopy) return;
+        let value = editor.value;
+        value = processTelex(value);
+        editor.value = value;
 
-            try {
-                // Sử dụng Clipboard API hiện đại để copy
-                await navigator.clipboard.writeText(textToCopy);
-                
-                // Đổi trạng thái nút để báo hiệu thành công
-                const originalText = copyBtn.innerHTML;
-                copyBtn.innerHTML = "Đã copy thành công!";
-                copyBtn.style.background = "#10b981"; 
-                
-                // Trả lại trạng thái cũ sau 2 giây
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalText;
-                    copyBtn.style.background = "";
-                }, 2000);
-                
-            } catch (err) {
-                console.error("Lỗi khi copy: ", err);
-                alert("Không thể copy văn bản. Trình duyệt của bạn có thể không hỗ trợ!");
-            }
-        });
-        resetBtn.addEventListener("click", () => {
+        // Tính toán lại vị trí con trỏ chuột cho chính xác khi độ dài chuỗi thay đổi
+        const newLength = editor.value.length;
+        const newCursor = cursor + (newLength - oldLength);
 
-        if (!editor.value) return;
+        editor.setSelectionRange(newCursor, newCursor);
+    });
+
+    // Tự động focus vào ô text khi load trang
+    editor.focus();
     
+    // Xử lý các nút chức năng
+    const copyBtn = document.getElementById("copyBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    copyBtn.addEventListener("click", async () => {
+        const textToCopy = editor.value;
+        
+        if (!textToCopy) return;
+
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = "Đã copy thành công!";
+            copyBtn.style.background = "#10b981"; 
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.style.background = "";
+            }, 2000);
+            
+        } catch (err) {
+            console.error("Lỗi khi copy: ", err);
+            alert("Không thể copy văn bản. Trình duyệt của bạn có thể không hỗ trợ!");
+        }
+    });
+
+    resetBtn.addEventListener("click", () => {
+        if (!editor.value) return;
+
         editor.value = "";
         // editor.focus();
-    
+
         const originalText = resetBtn.innerHTML;
-    
         resetBtn.innerHTML = "Đã xóa";
         resetBtn.style.background = "#10b981";
-    
+
         setTimeout(() => {
             resetBtn.innerHTML = originalText;
             resetBtn.style.background = "";
         }, 1500);
-    
     });
-
-    </script>
+</script>
 
 </body>
 
