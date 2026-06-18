@@ -386,10 +386,9 @@
     </div>
     </div>
 
-   <script>
+<script>
     const editor = document.getElementById("editor");
 
-    // Bảng mã dấu thanh
     const toneMarks = {
         s: "\u0301",
         f: "\u0300",
@@ -398,13 +397,12 @@
         j: "\u0323"
     };
 
-    // Bảng quy tắc gộp Telex
     const telexReplace = {
         "aa": "â", "aw": "ă", "ee": "ê", "oo": "ô", "ow": "ơ", "uw": "ư", "dd": "đ",
         "AA": "Â", "AW": "Ă", "EE": "Ê", "OO": "Ô", "OW": "Ơ", "UW": "Ư", "DD": "Đ"
     };
 
-    // Bảng quy tắc phục hồi (Hủy Telex khi gõ lần 3 bằng ký tự tàng hình \u200C)
+    // Phục hồi khi gõ lần 3
     const telexRestore = {
         "âa": "a\u200Ca", "Âa": "A\u200Ca", "ÂA": "A\u200CA", "âA": "a\u200CA",
         "ăw": "a\u200Cw", "Ăw": "A\u200Cw", "ĂW": "A\u200CW", "ăW": "a\u200CW",
@@ -462,17 +460,31 @@
     }
 
     function processTelex(text) {
-        // Bước 1: Phục hồi chữ cái nếu người dùng gõ đúp lần 3 (ví dụ: â + a -> a\u200Ca)
+        // Bước 1: Phục hồi chữ nếu gõ đúp lần 3 (â + a -> a\u200Ca)
         for (const key in telexRestore) {
             text = text.replace(new RegExp(key, "g"), telexRestore[key]);
         }
 
-        // Bước 2: Thay thế tổ hợp phím Telex thành ký tự có dấu (ví dụ: aa -> â)
+        // Bước 2: Thay thế tổ hợp Telex (THÔNG MINH HƠN)
         for (const key in telexReplace) {
-            text = text.replace(new RegExp(key, "g"), telexReplace[key]);
+            const char1 = key[0];
+            const char2 = key[1];
+            const regex = new RegExp(key, "g");
+            
+            text = text.replace(regex, (match, offset, str) => {
+                const prev = str[offset - 1];
+                const next = str[offset + key.length];
+                
+                // NẾU TÌM THẤY 'aa' MÀ BỊ KẸP BỞI CHỮ 'a' NỮA -> BỎ QUA KHÔNG THAY THẾ
+                if (prev === char1 || next === char2) {
+                    return match; 
+                }
+                
+                return telexReplace[key];
+            });
         }
 
-        // Bước 3: Đặt dấu thanh (sắc, huyền, hỏi, ngã, nặng)
+        // Bước 3: Đặt dấu thanh
         text = text.replace(/([^\s]+)([sfrxj])/gi, (_, word, tone) => {
             return addTone(word, toneMarks[tone.toLowerCase()]);
         });
@@ -483,32 +495,30 @@
         return text;
     }
 
-    // Xử lý sự kiện khi nhập liệu
+    // Sự kiện nhập liệu
     editor.addEventListener("input", () => {
         const cursor = editor.selectionStart;
-        const oldLength = editor.value.length; // Lưu độ dài cũ
+        const oldLength = editor.value.length;
         
         let value = editor.value;
         value = processTelex(value);
         editor.value = value;
 
-        // Tính toán lại vị trí con trỏ chuột cho chính xác khi độ dài chuỗi thay đổi
+        // Tính toán giữ nguyên vị trí con trỏ
         const newLength = editor.value.length;
         const newCursor = cursor + (newLength - oldLength);
 
         editor.setSelectionRange(newCursor, newCursor);
     });
 
-    // Tự động focus vào ô text khi load trang
     editor.focus();
     
-    // Xử lý các nút chức năng
+    // Nút Copy và Xóa
     const copyBtn = document.getElementById("copyBtn");
     const resetBtn = document.getElementById("resetBtn");
 
     copyBtn.addEventListener("click", async () => {
         const textToCopy = editor.value;
-        
         if (!textToCopy) return;
 
         try {
