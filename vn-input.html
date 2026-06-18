@@ -467,24 +467,28 @@
             text = text.replace(new RegExp(key, "g"), telexRestore[key]);
         }
 
-        // Bước 2: Thay thế tổ hợp Telex
+        // Bước 2: Thay thế tổ hợp Telex (LOGIC ĐÃ ĐƯỢC LÀM LẠI HOÀN TOÀN)
         for (const key in telexReplace) {
             const char1 = key[0];
             const char2 = key[1];
-            const isDouble = (char1 === char2); // Kiểm tra xem tổ hợp có phải là 2 chữ giống nhau không (aa, ee, oo, dd)
-            const regex = new RegExp(key, "g");
+            const isDouble = (char1 === char2); 
             
-            text = text.replace(regex, (match, offset, str) => {
-                const prev = str[offset - 1];
-                const next = str[offset + key.length];
+            if (isDouble) {
+                // Biểu thức bắt chuỗi có từ 2 chữ cái giống nhau liên tiếp trở lên (vd: aa, aaa, aaaaa)
+                const regex = new RegExp(`${char1}{2,}`, "g");
                 
-                // Nếu là phím đôi (aa) và bị kẹp bởi chính chữ đó (aaa) -> Bỏ qua không gộp thành â
-                if (isDouble && (prev === char1 || next === char2)) {
+                text = text.replace(regex, (match) => {
+                    // CHỈ thay thế thành ký tự có dấu (â, ê, ô, đ) nếu chuỗi đó có ĐÚNG 2 chữ cái
+                    if (match === key) {
+                        return telexReplace[key];
+                    }
+                    // Nếu chuỗi dài hơn 2 (aaa, aaaa, aaaaa...) thì giữ nguyên xì, không gộp nữa
                     return match; 
-                }
-                
-                return telexReplace[key];
-            });
+                });
+            } else {
+                const regex = new RegExp(key, "g");
+                text = text.replace(regex, telexReplace[key]);
+            }
         }
 
         // Bước 3: Đặt dấu thanh
@@ -500,7 +504,7 @@
 
     // Sự kiện nhập liệu
     editor.addEventListener("input", (e) => {
-        // NGĂN CHẶN: Không xử lý nếu text này do người dùng Dán (Paste) hoặc Kéo thả vào
+        // Ngăn chặn: Không xử lý nếu text này do người dùng Dán (Paste) hoặc Kéo thả vào
         if (e.inputType === "insertFromPaste" || e.inputType === "insertFromDrop") {
             return; 
         }
@@ -508,8 +512,7 @@
         const cursor = editor.selectionStart;
         const text = editor.value;
 
-        // CHỈ XỬ LÝ TỪ HIỆN TẠI ĐANG GÕ
-        // Tìm vị trí bắt đầu của từ hiện tại (dựa vào khoảng trắng hoặc dấu câu)
+        // Chỉ xử lý từ hiện tại đang gõ
         let start = cursor - 1;
         const separators = /[\s\n.,;!?()[\]{}"'<>]/;
 
@@ -518,7 +521,6 @@
         }
         start++; 
 
-        // Chia văn bản thành 3 phần: Phần trước từ đang gõ | Từ đang gõ | Phần sau
         const beforeWord = text.substring(0, start);
         const currentWord = text.substring(start, cursor);
         const afterWord = text.substring(cursor);
@@ -528,11 +530,10 @@
             const processedWord = processTelex(currentWord);
             const newLength = processedWord.length;
 
-            // Chỉ cập nhật Editor nếu từ hiện tại thực sự bị biến đổi (để tối ưu hiệu suất)
             if (currentWord !== processedWord) {
                 editor.value = beforeWord + processedWord + afterWord;
                 
-                // Cập nhật lại vị trí con trỏ chuột cho mượt
+                // Cập nhật lại vị trí con trỏ chuột
                 const newCursor = cursor + (newLength - oldLength);
                 editor.setSelectionRange(newCursor, newCursor);
             }
