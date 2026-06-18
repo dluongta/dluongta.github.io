@@ -408,7 +408,6 @@
         "đd": "d\u200Cd", "Đd": "D\u200Cd", "ĐD": "D\u200CD", "đD": "d\u200CD"
     };
 
-    // Bảng theo dõi phân tách chữ khi bàn phím mobile hủy dấu
     const decomposedMap = {
         "â": "aa", "ă": "aw", "ê": "ee", "ô": "oo", "ơ": "ow", "ư": "uw", "đ": "dd",
         "Â": "AA", "Ă": "AW", "Ê": "EE", "Ô": "OO", "Ơ": "OW", "Ư": "UW", "Đ": "DD"
@@ -449,32 +448,32 @@
     }
 
     function processTelex(text) {
+        // Bước 1: Áp dụng bảng phục hồi khi gõ lần 3
         for (const key in telexRestore) {
             text = text.replace(new RegExp(key, "g"), telexRestore[key]);
         }
 
+        // Bước 2: Thay thế tổ hợp Telex bằng thuật toán đếm chuỗi lặp tối ưu mới
         for (const key in telexReplace) {
             const char1 = key[0];
             const char2 = key[1];
             const isDouble = (char1 === char2); 
             
             if (isDouble) {
-                // SỬA Ở ĐÂY: Gom tất cả các chữ giống nhau đứng cạnh nhau (hoặc bị cách bởi ký tự tàng hình)
+                // Tìm tất cả các cụm chứa chữ cái lặp lại, chấp nhận có hoặc không có \u200C xen giữa
                 const regex = new RegExp(`(?:${char1}\\u200C*){2,}`, "g");
                 
                 text = text.replace(regex, (match) => {
-                    const cleanMatch = match.replace(/\u200C/g, ""); // Thử lột sạch tàng hình để đếm chữ
+                    const cleanMatch = match.replace(/\u200C/g, ""); 
                     
                     if (cleanMatch === key) {
-                        // Nếu đúng là có 2 chữ (aa) và đang bị tàng hình xen giữa -> giữ nguyên không gộp
                         if (match.includes("\u200C")) return match; 
-                        
-                        // Nếu là 2 chữ sạch (aa) -> biến thành â
                         return telexReplace[key]; 
                     }
                     
-                    // Nếu lớn hơn 2 chữ (aaa, aaaa...) -> Trả về chuỗi sạch bong không có ký tự tàng hình
-                    return cleanMatch; 
+                    // SỬA CHÍNH Ở ĐÂY: Nếu gõ từ 3 chữ cái trở lên (aaa, aaaa...), 
+                    // trả về chuỗi sạch kèm theo 1 ký tự tàng hình ở CUỐI để khóa cứng bàn phím Samsung lại
+                    return cleanMatch + "\u200C"; 
                 });
             } else {
                 const regex = new RegExp(key, "g");
@@ -482,6 +481,7 @@
             }
         }
 
+        // Bước 3: Đặt dấu thanh
         text = text.replace(/([^\s]+)([sfrxj])/gi, (_, word, tone) => {
             return addTone(word, toneMarks[tone.toLowerCase()]);
         });
@@ -518,11 +518,13 @@
             let isNativeCancel = false;
             
             if (lastOutputWord && currentWord.length >= 2) {
-                const prevLastChar = lastOutputWord.slice(-1); 
+                // Loại bỏ ký tự tàng hình ở cuối từ cũ (nếu có) trước khi so sánh logic mobile
+                const cleanLastOutput = lastOutputWord.replace(/\u200C$/, "");
+                const prevLastChar = cleanLastOutput.slice(-1); 
                 const currentLastTwo = currentWord.slice(-2);  
                 
                 if (decomposedMap[prevLastChar] && decomposedMap[prevLastChar].toLowerCase() === currentLastTwo.toLowerCase()) {
-                    const prefixOutput = lastOutputWord.slice(0, -1);
+                    const prefixOutput = cleanLastOutput.slice(0, -1);
                     const prefixCurrent = currentWord.slice(0, -2);
                     if (prefixOutput === prefixCurrent) {
                         isNativeCancel = true;
@@ -531,7 +533,6 @@
             }
 
             if (isNativeCancel) {
-                // Bàn phím tự hủy dấu -> Chèn tàng hình để khóa
                 processedWord = currentWord.slice(0, -1) + "\u200C" + currentWord.slice(-1);
             } else {
                 processedWord = processTelex(currentWord);
@@ -556,7 +557,6 @@
     const resetBtn = document.getElementById("resetBtn");
 
     copyBtn.addEventListener("click", async () => {
-        // Luôn dọn sạch tàng hình khi copy để văn bản hoàn toàn "sạch"
         const textToCopy = editor.value.replace(/\u200C/g, "");
         if (!textToCopy) return;
 
