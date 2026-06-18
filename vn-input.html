@@ -389,6 +389,7 @@
 <script>
     const editor = document.getElementById("editor");
 
+    // Bảng mã dấu thanh
     const toneMarks = {
         s: "\u0301",
         f: "\u0300",
@@ -397,12 +398,13 @@
         j: "\u0323"
     };
 
+    // Bảng quy tắc gộp Telex
     const telexReplace = {
         "aa": "â", "aw": "ă", "ee": "ê", "oo": "ô", "ow": "ơ", "uw": "ư", "dd": "đ",
         "AA": "Â", "AW": "Ă", "EE": "Ê", "OO": "Ô", "OW": "Ơ", "UW": "Ư", "DD": "Đ"
     };
 
-    // Phục hồi khi gõ lần 3
+    // Bảng quy tắc phục hồi (Hủy Telex khi gõ đúp lần 3 bằng ký tự tàng hình \u200C)
     const telexRestore = {
         "âa": "a\u200Ca", "Âa": "A\u200Ca", "ÂA": "A\u200CA", "âA": "a\u200CA",
         "ăw": "a\u200Cw", "Ăw": "A\u200Cw", "ĂW": "A\u200CW", "ăW": "a\u200CW",
@@ -465,18 +467,19 @@
             text = text.replace(new RegExp(key, "g"), telexRestore[key]);
         }
 
-        // Bước 2: Thay thế tổ hợp Telex (THÔNG MINH HƠN)
+        // Bước 2: Thay thế tổ hợp Telex
         for (const key in telexReplace) {
             const char1 = key[0];
             const char2 = key[1];
+            const isDouble = (char1 === char2); // Kiểm tra xem tổ hợp có phải là 2 chữ giống nhau không (aa, ee, oo, dd)
             const regex = new RegExp(key, "g");
             
             text = text.replace(regex, (match, offset, str) => {
                 const prev = str[offset - 1];
                 const next = str[offset + key.length];
                 
-                // NẾU TÌM THẤY 'aa' MÀ BỊ KẸP BỞI CHỮ 'a' NỮA -> BỎ QUA KHÔNG THAY THẾ
-                if (prev === char1 || next === char2) {
+                // Nếu là phím đôi (aa) và bị kẹp bởi chính chữ đó (aaa) -> Bỏ qua không gộp thành â
+                if (isDouble && (prev === char1 || next === char2)) {
                     return match; 
                 }
                 
@@ -496,24 +499,49 @@
     }
 
     // Sự kiện nhập liệu
-    editor.addEventListener("input", () => {
+    editor.addEventListener("input", (e) => {
+        // NGĂN CHẶN: Không xử lý nếu text này do người dùng Dán (Paste) hoặc Kéo thả vào
+        if (e.inputType === "insertFromPaste" || e.inputType === "insertFromDrop") {
+            return; 
+        }
+
         const cursor = editor.selectionStart;
-        const oldLength = editor.value.length;
-        
-        let value = editor.value;
-        value = processTelex(value);
-        editor.value = value;
+        const text = editor.value;
 
-        // Tính toán giữ nguyên vị trí con trỏ
-        const newLength = editor.value.length;
-        const newCursor = cursor + (newLength - oldLength);
+        // CHỈ XỬ LÝ TỪ HIỆN TẠI ĐANG GÕ
+        // Tìm vị trí bắt đầu của từ hiện tại (dựa vào khoảng trắng hoặc dấu câu)
+        let start = cursor - 1;
+        const separators = /[\s\n.,;!?()[\]{}"'<>]/;
 
-        editor.setSelectionRange(newCursor, newCursor);
+        while (start >= 0 && !separators.test(text[start])) {
+            start--;
+        }
+        start++; 
+
+        // Chia văn bản thành 3 phần: Phần trước từ đang gõ | Từ đang gõ | Phần sau
+        const beforeWord = text.substring(0, start);
+        const currentWord = text.substring(start, cursor);
+        const afterWord = text.substring(cursor);
+
+        if (currentWord.length > 0) {
+            const oldLength = currentWord.length;
+            const processedWord = processTelex(currentWord);
+            const newLength = processedWord.length;
+
+            // Chỉ cập nhật Editor nếu từ hiện tại thực sự bị biến đổi (để tối ưu hiệu suất)
+            if (currentWord !== processedWord) {
+                editor.value = beforeWord + processedWord + afterWord;
+                
+                // Cập nhật lại vị trí con trỏ chuột cho mượt
+                const newCursor = cursor + (newLength - oldLength);
+                editor.setSelectionRange(newCursor, newCursor);
+            }
+        }
     });
 
     editor.focus();
     
-    // Nút Copy và Xóa
+    // Xử lý các nút chức năng
     const copyBtn = document.getElementById("copyBtn");
     const resetBtn = document.getElementById("resetBtn");
 
@@ -555,7 +583,6 @@
         }, 1500);
     });
 </script>
-
 </body>
 
 </html>
