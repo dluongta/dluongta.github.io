@@ -389,15 +389,22 @@
 <script>
     const editor = document.getElementById("editor");
 
+    // Bảng mã dấu thanh
     const toneMarks = {
-        s: "\u0301", f: "\u0300", r: "\u0309", x: "\u0303", j: "\u0323"
+        s: "\u0301",
+        f: "\u0300",
+        r: "\u0309",
+        x: "\u0303",
+        j: "\u0323"
     };
 
+    // Bảng quy tắc gộp Telex
     const telexReplace = {
         "aa": "â", "aw": "ă", "ee": "ê", "oo": "ô", "ow": "ơ", "uw": "ư", "dd": "đ",
         "AA": "Â", "AW": "Ă", "EE": "Ê", "OO": "Ô", "OW": "Ơ", "UW": "Ư", "DD": "Đ"
     };
 
+    // Bảng quy tắc phục hồi (Hủy Telex khi gõ đúp lần 3 bằng ký tự tàng hình \u200C)
     const telexRestore = {
         "âa": "a\u200Ca", "Âa": "A\u200Ca", "ÂA": "A\u200CA", "âA": "a\u200CA",
         "ăw": "a\u200Cw", "Ăw": "A\u200Cw", "ĂW": "A\u200CW", "ăW": "a\u200CW",
@@ -408,25 +415,27 @@
         "đd": "d\u200Cd", "Đd": "D\u200Cd", "ĐD": "D\u200CD", "đD": "d\u200CD"
     };
 
-    // Bảng theo dõi phân tách chữ khi bàn phím mobile hủy dấu
-    const decomposedMap = {
-        "â": "aa", "ă": "aw", "ê": "ee", "ô": "oo", "ơ": "ow", "ư": "uw", "đ": "dd",
-        "Â": "AA", "Ă": "AW", "Ê": "EE", "Ô": "OO", "Ơ": "OW", "Ư": "UW", "Đ": "DD"
-    };
-
     const vowels = "aeiouyăâêôơưAEIOUYĂÂÊÔƠƯ";
 
-    function isVowel(ch) { return vowels.includes(ch); }
+    function isVowel(ch) {
+        return vowels.includes(ch);
+    }
 
     function findTonePosition(word) {
         const chars = [...word];
         const vowelPos = [];
-        chars.forEach((c, i) => { if (isVowel(c)) vowelPos.push(i); });
-        
+
+        chars.forEach((c, i) => {
+            if (isVowel(c)) {
+                vowelPos.push(i);
+            }
+        });
+
         if (vowelPos.length === 0) return -1;
         if (vowelPos.length === 1) return vowelPos[0];
 
         const lower = word.toLowerCase();
+
         if (lower.includes("uyê")) return lower.indexOf("ê");
         if (lower.includes("ươ")) return lower.indexOf("ơ");
         if (lower.includes("uô")) return lower.indexOf("ô");
@@ -434,36 +443,46 @@
 
         if (vowelPos.length === 2) {
             const pair = chars[vowelPos[0]].toLowerCase() + chars[vowelPos[1]].toLowerCase();
-            if (pair === "oa" || pair === "oe" || pair === "uy") return vowelPos[1];
+            if (pair === "oa" || pair === "oe" || pair === "uy") {
+                return vowelPos[1];
+            }
             return vowelPos[0];
         }
+
         return vowelPos[1];
     }
 
     function addTone(word, tone) {
         const pos = findTonePosition(word);
         if (pos === -1) return word;
+
         const chars = [...word];
         chars[pos] = (chars[pos] + tone).normalize("NFC");
         return chars.join("");
     }
 
     function processTelex(text) {
-        // Bước 1: Phục hồi chữ nếu gõ đúp lần 3 trên bàn phím tiếng Anh (â + a -> a\u200Ca)
+        // Bước 1: Phục hồi chữ nếu gõ đúp lần 3 (â + a -> a\u200Ca)
         for (const key in telexRestore) {
             text = text.replace(new RegExp(key, "g"), telexRestore[key]);
         }
 
-        // Bước 2: Thay thế tổ hợp Telex
+        // Bước 2: Thay thế tổ hợp Telex (LOGIC ĐÃ ĐƯỢC LÀM LẠI HOÀN TOÀN)
         for (const key in telexReplace) {
             const char1 = key[0];
             const char2 = key[1];
             const isDouble = (char1 === char2); 
             
             if (isDouble) {
+                // Biểu thức bắt chuỗi có từ 2 chữ cái giống nhau liên tiếp trở lên (vd: aa, aaa, aaaaa)
                 const regex = new RegExp(`${char1}{2,}`, "g");
+                
                 text = text.replace(regex, (match) => {
-                    if (match === key) return telexReplace[key];
+                    // CHỈ thay thế thành ký tự có dấu (â, ê, ô, đ) nếu chuỗi đó có ĐÚNG 2 chữ cái
+                    if (match === key) {
+                        return telexReplace[key];
+                    }
+                    // Nếu chuỗi dài hơn 2 (aaa, aaaa, aaaaa...) thì giữ nguyên xì, không gộp nữa
                     return match; 
                 });
             } else {
@@ -477,13 +496,15 @@
             return addTone(word, toneMarks[tone.toLowerCase()]);
         });
 
-        // LƯU Ý: Đã xóa Bước dọn dẹp ký tự \u200C ở đây để giữ trạng thái "khóa dấu"
+        // Bước 4: Dọn dẹp ký tự tàng hình
+        text = text.replace(/\u200C/g, "");
+
         return text;
     }
 
-    let lastOutputWord = ""; // Biến nhớ trạng thái từ trước đó
-
+    // Sự kiện nhập liệu
     editor.addEventListener("input", (e) => {
+        // Ngăn chặn: Không xử lý nếu text này do người dùng Dán (Paste) hoặc Kéo thả vào
         if (e.inputType === "insertFromPaste" || e.inputType === "insertFromDrop") {
             return; 
         }
@@ -491,6 +512,7 @@
         const cursor = editor.selectionStart;
         const text = editor.value;
 
+        // Chỉ xử lý từ hiện tại đang gõ
         let start = cursor - 1;
         const separators = /[\s\n.,;!?()[\]{}"'<>]/;
 
@@ -505,56 +527,27 @@
 
         if (currentWord.length > 0) {
             const oldLength = currentWord.length;
-            let processedWord = currentWord;
-
-            // --- KIỂM TRA XUNG ĐỘT BÀN PHÍM MOBILE ---
-            let isNativeCancel = false;
-            // Nếu từ hiện tại lớn hơn 2 ký tự và đã có chữ được xử lý trước đó
-            if (lastOutputWord && currentWord.length >= 2) {
-                const prevLastChar = lastOutputWord.slice(-1); // Ví dụ chữ 'â'
-                const currentLastTwo = currentWord.slice(-2);  // Ví dụ chữ 'aa'
-                
-                // Nếu 'â' bị tách thành 'aa'
-                if (decomposedMap[prevLastChar] && decomposedMap[prevLastChar].toLowerCase() === currentLastTwo.toLowerCase()) {
-                    const prefixOutput = lastOutputWord.slice(0, -1);
-                    const prefixCurrent = currentWord.slice(0, -2);
-                    // Đảm bảo phần đầu của từ không đổi
-                    if (prefixOutput === prefixCurrent) {
-                        isNativeCancel = true;
-                    }
-                }
-            }
-
-            if (isNativeCancel) {
-                // Bàn phím điện thoại vừa tự hủy dấu! 
-                // Ta chèn ký tự tàng hình \u200C vào giữa để cấm code tự động gộp lại thành 'â'
-                processedWord = currentWord.slice(0, -1) + "\u200C" + currentWord.slice(-1);
-            } else {
-                processedWord = processTelex(currentWord);
-            }
+            const processedWord = processTelex(currentWord);
+            const newLength = processedWord.length;
 
             if (currentWord !== processedWord) {
                 editor.value = beforeWord + processedWord + afterWord;
                 
-                const newCursor = cursor + (processedWord.length - oldLength);
+                // Cập nhật lại vị trí con trỏ chuột
+                const newCursor = cursor + (newLength - oldLength);
                 editor.setSelectionRange(newCursor, newCursor);
             }
-
-            // Ghi nhớ lại từ cuối cùng để lần sau so sánh tiếp
-            lastOutputWord = processedWord;
-        } else {
-            lastOutputWord = ""; // Reset khi qua từ mới
         }
     });
 
     editor.focus();
     
+    // Xử lý các nút chức năng
     const copyBtn = document.getElementById("copyBtn");
     const resetBtn = document.getElementById("resetBtn");
 
     copyBtn.addEventListener("click", async () => {
-        // Dọn dẹp sạch sẽ các ký tự tàng hình trước khi copy
-        const textToCopy = editor.value.replace(/\u200C/g, "");
+        const textToCopy = editor.value;
         if (!textToCopy) return;
 
         try {
@@ -579,7 +572,6 @@
         if (!editor.value) return;
 
         editor.value = "";
-        lastOutputWord = ""; // Reset biến nhớ
         // editor.focus();
 
         const originalText = resetBtn.innerHTML;
