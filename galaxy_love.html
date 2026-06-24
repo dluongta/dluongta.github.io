@@ -189,7 +189,7 @@
             const promises = imageSources.map(src => {
                 return new Promise((resolve) => {
                     const img = new Image();
-                    img.crossOrigin = "Anonymous";
+                    img.crossOrigin = "DLUONGTA";
                     img.onload = () => {
                         try {
                             const offCanvas = document.createElement('canvas');
@@ -299,7 +299,7 @@
 
             if (!shootingStar.active && Math.random() < 0.01) {
                 shootingStar.active = true; shootingStar.x = -400; shootingStar.y = rand(50, h * 0.7);
-                shootingStar.len = rand(150, 300); shootingStar.speed = rand(20, 40); shootingStar.opacity = 1;
+                shootingStar.len = rand(250, 400); shootingStar.speed = rand(25, 40); shootingStar.opacity = 1;
             } else if (shootingStar.active) {
                 shootingStar.x += shootingStar.speed; shootingStar.opacity -= 0.003;
                 if (shootingStar.x > w + 400 || shootingStar.opacity <= 0) shootingStar.active = false;
