@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VN Telex Input</title>
+
+    <style>
+        :root {
+            --bg: #020617;
+            --card: rgba(15, 23, 42, .7);
+            --border: rgba(255, 255, 255, .08);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --primary: #3b82f6;
+            --secondary: #06b6d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh; 
+            font-family: Inter, Segoe UI, sans-serif;
+            background:
+                radial-gradient(circle at top left, #2563eb55 0%, transparent 35%),
+                radial-gradient(circle at bottom right, #06b6d455 0%, transparent 35%),
+                var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+        
+
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            backdrop-filter: blur(30px);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0px;
+            overflow: hidden;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, .45),
+                inset 0 1px 0 rgba(255, 255, 255, .05);
+        }
+
+        .header {
+            padding: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            color: var(--muted);
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .guide {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+        }
+
+        .guide h3 {
+            color: #38bdf8;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+
+        .guide p {
+            line-height: 2.2;
+            color: #cbd5e1;
+        }
+
+
+        kbd {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-width: 48px;
+            height: 34px;
+
+            margin: 4px;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(180deg,
+                    #1e293b,
+                    #0f172a);
+
+            border: 1px solid rgba(255, 255, 255, .1);
+
+            color: #38bdf8;
+
+            font-size: 14px;
+            font-weight: 700;
+
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, .08),
+                0 4px 12px rgba(0, 0, 0, .3);
+
+            transition: .2s;
+
+
+        }
+
+
+        textarea {
+            width: 100%;
+            height: 500px;
+
+            border: none;
+            outline: none;
+            resize: none;
+
+            background: #020617;
+
+            color: white;
+
+            padding: 30px;
+
+            font-size: 24px;
+            line-height: 1.9;
+
+            transition: .25s;
+        }
+
+        textarea::placeholder {
+            color: #64748b;
+        }
+
+        textarea:focus {
+            box-shadow:
+                inset 0 0 0 2px #3b82f6,
+                0 0 30px rgba(59, 130, 246, .2);
+        }
+
+        .footer {
+            padding: 22px;
+
+
+            text-align: center;
+
+            color: #94a3b8;
+
+            border-top: 1px solid var(--border);
+
+            background:
+                linear-gradient(180deg,
+                    transparent,
+                    rgba(255, 255, 255, .02));
+
+        }
+
+        .footer strong {
+            color: #38bdf8;
+        }
+
+        @media(max-width:768px) {
+
+            body {
+                padding: 15px;
+                font-family: "Times New Roman", serif!important;
+            `    align-items: flex-start;
+                 padding-top: 0px!important;
+                 margin-top: 0px!important;
+            }
+            
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                position: fixed;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            textarea {
+                height: 350px;
+                font-family: "Times New Roman", serif;
+                font-size: 20px;
+                padding: 20px;
+                line-height: 2;
+                font-weight: 500;
+            }
+
+            .header {
+                padding: 20px;
+            }
+            .footer {
+                padding: 20px;
+                line-height: 1.6;
+            }
+
+        }
+        .copy-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            font-family: inherit;
+        }
+
+        .copy-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px;
+        }
+        
+        .copy-btn,
+        .reset-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s ease;
+            font-family: inherit;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+        
+            margin: 24px auto;
+            width: fit    -content;
+        }
+        
+        .copy-btn,
+        .reset-btn {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        
+            min-width: 180px;
+            height: 52px;
+        
+            padding: 0 24px;
+        
+            border: none;
+            border-radius: 10px;
+        
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+        
+            cursor: pointer;
+            transition: .25s;
+        }
+        
+        .copy-btn {
+            background: #3b82f6;
+            box-shadow: 0 4px 15px rgba(59,130,246,.35);
+        }
+        
+        .copy-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .reset-btn {
+            background: #ef4444;
+            box-shadow: 0 4px 15px rgba(239,68,68,.35);
+        }
+        
+        .reset-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width:768px){
+        
+            .button-group{
+                width:100%;
+                padding:0 15px;
+                gap:10px;
+            }
+        
+            .copy-btn,
+            .reset-btn{
+                flex:1;
+                min-width:0;
+                height:50px;
+                font-size:15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="card">
+
+            <div class="header">
+                <h1>🇻🇳 VN Telex Input</h1>
+
+                <div class="desc">
+                    Bộ gõ tiếng Việt trực tuyến hỗ trợ TELEX
+                </div>
+
+                <!-- <div class="guide">
+
+                    <h3>Hướng dẫn TELEX</h3>
+
+                    <p>
+                        <kbd>aa</kbd> → â
+                        <kbd>aw</kbd> → ă
+                        <kbd>ee</kbd> → ê
+                        <kbd>oo</kbd> → ô
+                        <kbd>ow</kbd> → ơ
+                        <kbd>uw</kbd> → ư
+                        <kbd>dd</kbd> → đ
+                    </p>
+
+                    <br>
+
+                    <p>
+                        <kbd>s</kbd> → sắc
+                        <kbd>f</kbd> → huyền
+                        <kbd>r</kbd> → hỏi
+                        <kbd>x</kbd> → ngã
+                        <kbd>j</kbd> → nặng
+                    </p>
+
+                </div> -->
+            </div>
+        </div>
+
+        <textarea id="editor" placeholder="Nhập tiếng Việt bằng TELEX..."></textarea>
+        <div class="button-group">      
+            <button id="copyBtn" class="copy-btn">
+                Copy văn bản
+            </button>
+            <button id="resetBtn" class="reset-btn">
+                Xóa hết
+            </button>
+        </div>
+        <div class="footer">
+            Website gõ tiếng Việt này được tạo bởi <strong>DLUONGTA</strong>
+        </div>
+    </div>
+    </div>
+
+<script>
+    const editor = document.getElementById("editor");
+
+    const toneMarks = {
+        s: "\u0301", f: "\u0300", r: "\u0309", x: "\u0303", j: "\u0323"
+    };
+
+    const telexReplace = {
+        "aa": "â", "aw": "ă", "ee": "ê", "oo": "ô", "ow": "ơ", "uw": "ư", "dd": "đ",
+        "AA": "Â", "AW": "Ă", "EE": "Ê", "OO": "Ô", "OW": "Ơ", "UW": "Ư", "DD": "Đ"
+    };
+
+    const telexRestore = {
+        "âa": "a\u200Ca", "Âa": "A\u200Ca", "ÂA": "A\u200CA", "âA": "a\u200CA",
+        "ăw": "a\u200Cw", "Ăw": "A\u200Cw", "ĂW": "A\u200CW", "ăW": "a\u200CW",
+        "êe": "e\u200Ce", "Êe": "E\u200Ce", "ÊE": "E\u200CE", "êE": "e\u200CE",
+        "ôo": "o\u200Co", "Ôo": "O\u200Co", "ÔO": "O\u200CO", "ôO": "o\u200CO",
+        "ơw": "o\u200Cw", "Ơw": "O\u200Cw", "ƠW": "O\u200CW", "ơW": "o\u200CW",
+        "ưw": "u\u200Cw", "Ưw": "U\u200Cw", "ƯW": "U\u200CW", "ưW": "u\u200CW",
+        "đd": "d\u200Cd", "Đd": "D\u200Cd", "ĐD": "D\u200CD", "đD": "d\u200CD"
+    };
+
+    const decomposedMap = {
+        "â": "aa", "ă": "aw", "ê": "ee", "ô": "oo", "ơ": "ow", "ư": "uw", "đ": "dd",
+        "Â": "AA", "Ă": "AW", "Ê": "EE", "Ô": "OO", "Ơ": "OW", "Ư": "UW", "Đ": "DD"
+    };
+
+    const vowels = "aeiouyăâêôơưAEIOUYĂÂÊÔƠƯ";
+
+    function isVowel(ch) { return vowels.includes(ch); }
+
+    function findTonePosition(word) {
+        const chars = [...word];
+        const vowelPos = [];
+        chars.forEach((c, i) => { if (isVowel(c)) vowelPos.push(i); });
+        
+        if (vowelPos.length === 0) return -1;
+        if (vowelPos.length === 1) return vowelPos[0];
+
+        const lower = word.toLowerCase();
+        if (lower.includes("uyê")) return lower.indexOf("ê");
+        if (lower.includes("ươ")) return lower.indexOf("ơ");
+        if (lower.includes("uô")) return lower.indexOf("ô");
+        if (lower.includes("iê")) return lower.indexOf("ê");
+
+        if (vowelPos.length === 2) {
+            const pair = chars[vowelPos[0]].toLowerCase() + chars[vowelPos[1]].toLowerCase();
+            if (pair === "oa" || pair === "oe" || pair === "uy") return vowelPos[1];
+            return vowelPos[0];
+        }
+        return vowelPos[1];
+    }
+
+    function addTone(word, tone) {
+        const pos = findTonePosition(word);
+        if (pos === -1) return word;
+        const chars = [...word];
+        chars[pos] = (chars[pos] + tone).normalize("NFC");
+        return chars.join("");
+    }
+
+    function processTelex(text) {
+        // Bước 1: Áp dụng bảng phục hồi khi gõ lần 3
+        for (const key in telexRestore) {
+            text = text.replace(new RegExp(key, "g"), telexRestore[key]);
+        }
+
+        // Bước 2: Thay thế tổ hợp Telex với thuật toán băm nhỏ chuỗi lặp mới cho Mobile
+        for (const key in telexReplace) {
+            const char1 = key[0];
+            const char2 = key[1];
+            const isDouble = (char1 === char2); 
+            
+            if (isDouble) {
+                // Quét tất cả cụm chữ cái lặp lại (bất kể có dính \u200C hay không)
+                const regex = new RegExp(`(?:${char1}\\u200C*){2,}`, "g");
+                
+                text = text.replace(regex, (match) => {
+                    const cleanMatch = match.replace(/\u200C/g, ""); 
+                    
+                    if (cleanMatch === key) {
+                        if (match.includes("\u200C")) return match; 
+                        return telexReplace[key]; 
+                    }
+                    
+                    // NÂNG CẤP CHIẾN THUẬT: Nếu chuỗi lặp từ 3 chữ trở lên (aaa, aaaa, aaaaa...)
+                    // Ta chèn ký tự tàng hình vào GIỮA TỪNG KÝ TỰ một để phá vỡ hoàn toàn cơ chế gộp của Samsung
+                    return cleanMatch.split("").join("\u200C") + "\u200C"; 
+                });
+            } else {
+                const regex = new RegExp(key, "g");
+                text = text.replace(regex, telexReplace[key]);
+            }
+        }
+
+        // Bước 3: Đặt dấu thanh
+        text = text.replace(/([^\s]+)([sfrxj])/gi, (_, word, tone) => {
+            return addTone(word, toneMarks[tone.toLowerCase()]);
+        });
+
+        return text;
+    }
+
+    let lastOutputWord = ""; 
+
+    editor.addEventListener("input", (e) => {
+        if (e.inputType === "insertFromPaste" || e.inputType === "insertFromDrop") {
+            return; 
+        }
+
+        const cursor = editor.selectionStart;
+        const text = editor.value;
+
+        let start = cursor - 1;
+        const separators = /[\s\n.,;!?()[\]{}"'<>]/;
+
+        while (start >= 0 && !separators.test(text[start])) {
+            start--;
+        }
+        start++; 
+
+        const beforeWord = text.substring(0, start);
+        const currentWord = text.substring(start, cursor);
+        const afterWord = text.substring(cursor);
+
+        if (currentWord.length > 0) {
+            const oldLength = currentWord.length;
+            let processedWord = currentWord;
+
+            let isNativeCancel = false;
+            
+            if (lastOutputWord && currentWord.length >= 2) {
+                // Loại bỏ tất cả ký tự tàng hình trước khi so sánh logic hủy dấu tự động của mobile
+                const cleanLastOutput = lastOutputWord.replace(/\u200C/g, "");
+                const prevLastChar = cleanLastOutput.slice(-1); 
+                const currentLastTwo = currentWord.replace(/\u200C/g, "").slice(-2);  
+                
+                if (decomposedMap[prevLastChar] && decomposedMap[prevLastChar].toLowerCase() === currentLastTwo.toLowerCase()) {
+                    const prefixOutput = cleanLastOutput.slice(0, -1);
+                    const prefixCurrent = currentWord.replace(/\u200C/g, "").slice(0, -2);
+                    if (prefixOutput === prefixCurrent) {
+                        isNativeCancel = true;
+                    }
+                }
+            }
+
+            if (isNativeCancel) {
+                // Bàn phím tự hủy dấu -> Ép rải ký tự tàng hình toàn bộ chuỗi
+                const cleanCurrent = currentWord.replace(/\u200C/g, "");
+                processedWord = cleanCurrent.split("").join("\u200C") + "\u200C";
+            } else {
+                processedWord = processTelex(currentWord);
+            }
+
+            if (currentWord !== processedWord) {
+                editor.value = beforeWord + processedWord + afterWord;
+                
+                const newCursor = cursor + (processedWord.length - oldLength);
+                editor.setSelectionRange(newCursor, newCursor);
+            }
+
+            lastOutputWord = processedWord;
+        } else {
+            lastOutputWord = ""; 
+        }
+    });
+
+    editor.focus();
+    
+    const copyBtn = document.getElementById("copyBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    copyBtn.addEventListener("click", async () => {
+        const textToCopy = editor.value.replace(/\u200C/g, "");
+        if (!textToCopy) return;
+
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = "Đã copy thành công!";
+            copyBtn.style.background = "#10b981"; 
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.style.background = "";
+            }, 2000);
+            
+        } catch (err) {
+            console.error("Lỗi khi copy: ", err);
+            alert("Không thể copy văn bản. Trình duyệt của bạn có thể không hỗ trợ!");
+        }
+    });
+
+    resetBtn.addEventListener("click", () => {
+        if (!editor.value) return;
+
+        editor.value = "";
+        lastOutputWord = ""; 
+        // editor.focus();
+
+        const originalText = resetBtn.innerHTML;
+        resetBtn.innerHTML = "Đã xóa";
+        resetBtn.style.background = "#10b981";
+
+        setTimeout(() => {
+            resetBtn.innerHTML = originalText;
+            resetBtn.style.background = "";
+        }, 1500);
+    });
+</script>
+</body>
+
+</html>
