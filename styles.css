@@ -129,6 +129,7 @@
     padding: 30px 20px;
     text-align: center;
     margin-top: 40px;
+    min-height: 145px;
   }
 
   .footer-brand {
@@ -186,5 +187,7 @@
 
     .footer {
       margin-top: 40px;
+      min-height: 145px;
+      padding: 30px 20px;
     }
   }
