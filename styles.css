@@ -37,11 +37,13 @@
     display: table;
     clear: both;
   }
+
   .center {
     display: table;
     margin: 0 auto
   }
-  .text-center{
+
+  .text-center {
     text-align: center;
   }
 
@@ -65,14 +67,14 @@
   }
 
   .footer-brand {
-    color: inherit;          
-    text-decoration: none;   
-    font-weight: bold;       
+    color: inherit;
+    text-decoration: none;
+    font-weight: bold;
   }
 
   .footer-brand:hover {
-    color: #000;          
-    text-decoration: none;   
+    color: #000;
+    text-decoration: none;
   }
 
   .footer-custom {
@@ -80,109 +82,109 @@
     color: #000;
   }
 
-/* ==========================
+  /* ==========================
    MAIN CONTENT
 ========================== */
 
-h2.text-center {
+  h2.text-center {
     text-align: center;
-    margin: 30px 0 30px;
+    margin-top: 20px;
+    margin-bottom: 20px;
     font-size: 32px;
     font-weight: bold;
-}
+  }
 
 
-.text-center {
+  .text-center {
     text-align: center;
-}
+  }
 
 
-p.text-center {
+  p.text-center {
     margin: 20px 0;
     font-size: 18px;
     line-height: 1.6;
-}
+  }
 
-/* Link */
+  /* Link */
 
-p.text-center a {
+  p.text-center a {
     color: #0d6efd;
     text-decoration: underline;
     font-weight: 600;
     transition: .3s;
-}
+  }
 
-p.text-center a:hover {
+  p.text-center a:hover {
     color: #084298;
     text-decoration: underline;
-}
+  }
 
-/* ==========================
+  /* ==========================
    FOOTER
 ========================== */
 
-.footer {
+  .footer {
     background: #e2e2e2;
     padding: 30px 20px;
     text-align: center;
-    margin-top: 50px;
-}
+    margin-top: 40px;
+  }
 
-.footer-brand {
+  .footer-brand {
     color: inherit;
     text-decoration: none;
     font-weight: bold;
     font-size: 22px;
-}
+  }
 
-.footer-brand:hover {
+  .footer-brand:hover {
     color: #000;
-}
+  }
 
-.footer p {
+  .footer p {
     margin: 10px 0;
-}
+  }
 
-.footer-custom {
+  .footer-custom {
     background: #e2e2e2;
     color: #000;
-}
+  }
 
-/* ==========================
+  /* ==========================
    UTILITIES
 ========================== */
 
-.center {
+  .center {
     display: table;
     margin: 0 auto;
-}
+  }
 
-.row::after {
+  .row::after {
     content: "";
     display: table;
     clear: both;
-}
+  }
 
-/* ==========================
+  /* ==========================
    MOBILE
 ========================== */
 
-@media screen and (max-width:768px) {
-
-
+  @media screen and (max-width:768px) {
 
     h2.text-center {
-        margin: 40px 0 25px;
-        font-size: 28px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      font-size: 28px;
     }
 
     p.text-center {
-        margin: 18px 0;
-        padding: 0 15px;
-        font-size: 16px;
+      margin: 18px 0;
+      padding: 0 15px;
+      font-size: 16px;
     }
 
     .footer {
-        margin-top: 40px;
+      margin-top: 40px;
     }
-}
+  }
