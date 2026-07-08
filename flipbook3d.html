@@ -279,14 +279,6 @@
             z-index: -1;
         }
 
-        /* .loader-spinner {
-            width: 24px; height: 24px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--accent-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        } */
-
         @keyframes spin {
             0% {
                 transform: rotate(0deg);
@@ -390,9 +382,9 @@
         </div>
 
         <div class="btn-group">
-            <button onclick="zoomOut()" title="Phím -">−</button>
+            <button onclick="zoomOut()" title="Phím - hoặc mũi tên Xuống">−</button>
             <span id="zoom-level" style="font-size: 13px; min-width: 45px; text-align:center;">100%</span>
-            <button onclick="zoomIn()" title="Phím +">+</button>
+            <button onclick="zoomIn()" title="Phím + hoặc mũi tên Lên">+</button>
             <button onclick="resetView()">Reset</button>
         </div>
     </div>
@@ -429,8 +421,8 @@
         let isDragging = false;
         let startX, startY;
         let initialPinchDistance = 0, initialZoom = 1;
-        let isProcessingPage = false; // Flag chống trùng lặp xử lý cuộc gọi trang
-
+        let isProcessingPage = false;
+        
         function updateBookDimensions() {
             const viewport = document.getElementById('viewport');
             const vWidth = viewport.clientWidth;
@@ -834,8 +826,17 @@
             if (e.key === 'ArrowRight') nextPage();
             if (e.key === 'ArrowLeft') prevPage();
 
-            if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') zoomIn();
-            if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract') zoomOut();
+            // Thêm chức năng: phím Lên / phím + / = / NumpadAdd để Zoom In
+            if (e.key === 'ArrowUp' || e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') {
+                e.preventDefault(); // Ngăn trình duyệt cuộn trang
+                zoomIn();
+            }
+            
+            // Thêm chức năng: phím Xuống / phím - / _ / NumpadSubtract để Zoom Out
+            if (e.key === 'ArrowDown' || e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract') {
+                e.preventDefault(); // Ngăn trình duyệt cuộn trang
+                zoomOut();
+            }
         });
 
         init();
