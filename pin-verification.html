@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIN Verification</title>
     <style>
-        /* Đặt nền và font chữ tổng thể */
         body {
             display: flex;
             justify-content: center;
@@ -16,11 +15,10 @@
             margin: 0;
         }
 
-        /* Khung hộp thoại chính */
         .modal {
             background: #ffffff;
             width: 480px;
-            max-width: 95%; /* Responsive cho mobile */
+            max-width: 95%;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             padding: 40px 30px;
@@ -29,7 +27,6 @@
             box-sizing: border-box;
         }
 
-        /* Nút X đóng ở góc phải */
         .close-btn {
             position: absolute;
             top: 15px;
@@ -53,7 +50,6 @@
             background: #e4e6eb;
         }
 
-        /* Hình minh họa (Icon ổ khóa/mật khẩu) */
         .illustration {
             width: 140px;
             height: 46px;
@@ -67,6 +63,7 @@
             color: white;
             font-size: 28px;
             font-weight: bold;
+            margin-top: 20px;
         }
 
         .illustration .asterisk { color: #ffffff; text-shadow: 0px 1px 3px rgba(0,0,0,0.1); margin-top: 8px;}
@@ -86,7 +83,6 @@
             line-height: 1.5;
         }
 
-        /* Khu vực nhập PIN */
         .pin-container {
             display: flex;
             justify-content: center;
@@ -108,14 +104,12 @@
             caret-color: transparent; 
         }
 
-        /* ĐÃ SỬA: Loại bỏ box-shadow để không còn viền mờ nhạt bên ngoài */
         .pin-input:focus {
             border-color: #006aff;
             background-color: #ffffff;
             caret-color: #006aff; 
         }
 
-        /* Các nút điều khiển bổ sung */
         .action-buttons {
             display: flex;
             justify-content: center;
@@ -140,7 +134,6 @@
             background: #e4e6eb;
         }
 
-        /* Link ở dưới cùng */
         .link {
             color: #006aff;
             text-decoration: none;
@@ -153,7 +146,6 @@
             text-decoration: underline;
         }
 
-        /* Thông báo kết quả */
         .message-box {
             margin-top: 20px;
             font-size: 15px;
@@ -164,10 +156,13 @@
         .success { color: #2b9a3f; }
         .error { color: #e41e3f; }
 
-        /* Media Query Responsive cho màn hình điện thoại */
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
+            body {
+                overflow-y: hidden;
+            }
             .modal {
                 padding: 30px 15px;
+                margin-top: -25px;
             }
             .pin-container {
                 gap: 6px;
@@ -223,36 +218,28 @@
         const btnClearAll = document.getElementById('btnClearAll');
         const CORRECT_PIN = '123456';
 
-        // Tự động focus vào ô đầu tiên khi mở trang
         inputs[0].focus();
 
         inputs.forEach((input, index) => {
-            // YÊU CẦU: Ép buộc chỉ được focus vào ô trống đầu tiên (chặn click ô trái & phải)
             input.addEventListener('focus', (e) => {
-                // Tìm vị trí ô trống đầu tiên
                 let targetIndex = Array.from(inputs).findIndex(inp => inp.value === '');
                 
-                // Nếu tất cả đã điền đầy đủ, ép focus về ô cuối cùng
                 if (targetIndex === -1) {
                     targetIndex = inputs.length - 1;
                 }
 
-                // Nếu người dùng click vào ô không phải ô mục tiêu, ép focus lại
                 if (index !== targetIndex) {
                     inputs[targetIndex].focus();
                 }
             });
 
-            // Xử lý khi người dùng nhập dữ liệu
             input.addEventListener('input', (e) => {
                 clearMessage();
 
-                // Đảm bảo chỉ nhận 1 ký tự
                 if (e.target.value.length > 1) {
                     e.target.value = e.target.value.slice(0, 1);
                 }
 
-                // Chuyển focus sang ô tiếp theo nếu ô hiện tại có giá trị
                 if (e.target.value !== '') {
                     if (index < inputs.length - 1) {
                         inputs[index + 1].focus();
@@ -262,12 +249,10 @@
                 }
             });
 
-            // Xử lý khi người dùng bấm phím Backspace trên bàn phím cứng
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Backspace' && e.target.value === '') {
                     if (index > 0) {
                         inputs[index - 1].value = '';
-                        // Gọi focus về ô vừa bị xóa giá trị (nó sẽ trở thành targetIndex hợp lệ)
                         inputs[index - 1].focus();
                         clearMessage();
                     }
@@ -275,15 +260,12 @@
             });
         });
 
-        // Hàm xóa thông báo
         function clearMessage() {
             messageBox.textContent = '';
             messageBox.className = 'message-box';
         }
 
-        // Chức năng Nút "Xóa 1 ký tự"
         btnClearOne.addEventListener('click', () => {
-            // Tìm ô cuối cùng có chứa dữ liệu
             let lastFilledIndex = -1;
             for (let i = inputs.length - 1; i >= 0; i--) {
                 if (inputs[i].value !== '') {
@@ -301,21 +283,18 @@
             }
         });
 
-        // Chức năng Nút "Xóa tất cả"
         btnClearAll.addEventListener('click', () => {
             inputs.forEach(input => input.value = '');
             clearMessage();
             inputs[0].focus();
         });
 
-        // Hàm kiểm tra mã PIN
         function checkPIN() {
             let pin = '';
             inputs.forEach(input => {
                 pin += input.value;
             });
             
-            // Chỉ kiểm tra khi đã nhập đủ 6 số
             if (pin.length === 6) {
                 if (pin === CORRECT_PIN) {
                     messageBox.textContent = '✅ Verification successful!';
