@@ -103,26 +103,24 @@
         }
 
         .pin-input {
-    width: 48px;
-    height: 60px;
-    background-color: #f0f2f5;
-    border: 2px solid transparent;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 28px;
-    font-weight: bold;
-    outline: none;
-    transition: all 0.2s;
-    caret-color: transparent;
-    
-    /* THÊM DÒNG NÀY: Màu xám mặc định cho dấu '-' */
-    color: #686868; 
-}
+            width: 48px;
+            height: 60px;
+            background-color: #f0f2f5;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            outline: none;
+            transition: all 0.2s;
+            caret-color: transparent;
 
-/* THÊM ĐOẠN NÀY: Class dùng để đổi sang màu đen khi đã có số */
-.pin-input.filled {
-    color: #050505; 
-}
+            color: #686868;
+        }
+
+        .pin-input.filled {
+            color: #050505;
+        }
 
         .pin-input::selection {
             background: transparent;
@@ -234,141 +232,141 @@
 
     <script>
         const inputs = document.querySelectorAll('.pin-input');
-const messageBox = document.getElementById('messageBox');
-const btnClearOne = document.getElementById('btnClearOne');
-const btnClearAll = document.getElementById('btnClearAll');
-const CORRECT_PIN = '123456';
+        const messageBox = document.getElementById('messageBox');
+        const btnClearOne = document.getElementById('btnClearOne');
+        const btnClearAll = document.getElementById('btnClearAll');
+        const CORRECT_PIN = '123456';
 
-inputs[0].focus();
+        inputs[0].focus();
 
-inputs.forEach((input, index) => {
-    // Xử lý khi người dùng click hoặc focus vào ô
-    input.addEventListener('focus', (e) => {
-        let targetIndex = Array.from(inputs).findIndex(inp => !inp.dataset.realValue);
+        inputs.forEach((input, index) => {
+            // Xử lý khi người dùng click hoặc focus vào ô
+            input.addEventListener('focus', (e) => {
+                let targetIndex = Array.from(inputs).findIndex(inp => !inp.dataset.realValue);
 
-        if (targetIndex === -1) {
-            targetIndex = inputs.length - 1; // Nếu đã điền hết thì focus vào ô cuối
+                if (targetIndex === -1) {
+                    targetIndex = inputs.length - 1; // Nếu đã điền hết thì focus vào ô cuối
+                }
+
+                if (index !== targetIndex) {
+                    inputs[targetIndex].focus();
+                }
+            });
+
+            // Xử lý khi gõ phím vào ô
+            input.addEventListener('input', (e) => {
+                clearMessage();
+                let rawVal = e.target.value;
+
+                // Loại bỏ dấu '-' hoặc dấu '•' để lấy đúng số người dùng vừa gõ vào
+                let typedChar = rawVal.replace(/[-•]/g, '');
+
+                if (typedChar === '') {
+                    e.target.value = '-';
+                    input.dataset.realValue = '';
+                    input.classList.remove('filled'); // <--- Trở về màu xám
+                    return;
+                }
+
+                // Lưu lại số thật vừa gõ
+                input.dataset.realValue = typedChar.slice(-1);
+
+                // Fix cứng hiển thị thành dấu chấm tròn
+                e.target.value = '•';
+                input.classList.add('filled'); // <--- Đổi sang màu đen
+
+                // Chuyển sang ô tiếp theo
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                } else {
+                    checkPIN();
+                }
+            });
+
+            // Xử lý khi bấm phím Xoá (Backspace) trên bàn phím
+            input.addEventListener('keydown', (e) => {
+                if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                    e.preventDefault();
+                }
+
+                if (e.key === 'Backspace') {
+                    e.preventDefault();
+
+                    let hasValue = (input.dataset.realValue !== undefined && input.dataset.realValue !== '');
+
+                    if (hasValue) {
+                        // Xoá dữ liệu ô hiện tại, đưa về '-'
+                        input.value = '-';
+                        input.dataset.realValue = '';
+                        input.classList.remove('filled'); // <--- Trở về màu xám
+                        clearMessage();
+                    } else {
+                        // Nếu ô hiện tại đã là '-', lùi về ô trước đó và xoá nó
+                        if (index > 0) {
+                            inputs[index - 1].value = '-';
+                            inputs[index - 1].dataset.realValue = '';
+                            inputs[index - 1].classList.remove('filled'); // <--- Trở về màu xám
+                            inputs[index - 1].focus();
+                            clearMessage();
+                        }
+                    }
+                }
+            });
+        });
+
+        function clearMessage() {
+            messageBox.textContent = '';
+            messageBox.className = 'message-box';
         }
 
-        if (index !== targetIndex) {
-            inputs[targetIndex].focus();
-        }
-    });
+        // Xử lý nút Delete (Xoá 1 ô)
+        btnClearOne.addEventListener('click', () => {
+            let lastFilledIndex = -1;
+            for (let i = inputs.length - 1; i >= 0; i--) {
+                if (inputs[i].dataset.realValue) {
+                    lastFilledIndex = i;
+                    break;
+                }
+            }
 
-    // Xử lý khi gõ phím vào ô
-    input.addEventListener('input', (e) => {
-        clearMessage();
-        let rawVal = e.target.value;
+            if (lastFilledIndex !== -1) {
+                inputs[lastFilledIndex].value = '-';
+                inputs[lastFilledIndex].dataset.realValue = '';
+                inputs[lastFilledIndex].classList.remove('filled'); // <--- Trở về màu xám
+                inputs[lastFilledIndex].focus();
+                clearMessage();
+            } else {
+                inputs[0].focus();
+            }
+        });
 
-        // Loại bỏ dấu '-' hoặc dấu '•' để lấy đúng số người dùng vừa gõ vào
-        let typedChar = rawVal.replace(/[-•]/g, '');
-
-        if (typedChar === '') {
-            e.target.value = '-';
-            input.dataset.realValue = '';
-            input.classList.remove('filled'); // <--- Trở về màu xám
-            return;
-        }
-
-        // Lưu lại số thật vừa gõ
-        input.dataset.realValue = typedChar.slice(-1);
-
-        // Fix cứng hiển thị thành dấu chấm tròn
-        e.target.value = '•';
-        input.classList.add('filled'); // <--- Đổi sang màu đen
-
-        // Chuyển sang ô tiếp theo
-        if (index < inputs.length - 1) {
-            inputs[index + 1].focus();
-        } else {
-            checkPIN();
-        }
-    });
-
-    // Xử lý khi bấm phím Xoá (Backspace) trên bàn phím
-    input.addEventListener('keydown', (e) => {
-        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-            e.preventDefault();
-        }
-
-        if (e.key === 'Backspace') {
-            e.preventDefault(); 
-
-            let hasValue = (input.dataset.realValue !== undefined && input.dataset.realValue !== '');
-
-            if (hasValue) {
-                // Xoá dữ liệu ô hiện tại, đưa về '-'
+        // Xử lý nút Clear all (Xoá tất cả)
+        btnClearAll.addEventListener('click', () => {
+            inputs.forEach(input => {
                 input.value = '-';
                 input.dataset.realValue = '';
                 input.classList.remove('filled'); // <--- Trở về màu xám
-                clearMessage();
-            } else {
-                // Nếu ô hiện tại đã là '-', lùi về ô trước đó và xoá nó
-                if (index > 0) {
-                    inputs[index - 1].value = '-';
-                    inputs[index - 1].dataset.realValue = '';
-                    inputs[index - 1].classList.remove('filled'); // <--- Trở về màu xám
-                    inputs[index - 1].focus();
-                    clearMessage();
+            });
+            clearMessage();
+            inputs[0].focus();
+        });
+
+        function checkPIN() {
+            let pin = '';
+            inputs.forEach(input => {
+                pin += input.dataset.realValue || '';
+            });
+
+            if (pin.length === 6) {
+                if (pin === CORRECT_PIN) {
+                    messageBox.textContent = '✅ Verification successful!';
+                    messageBox.classList.add('success');
+                } else {
+                    messageBox.textContent = '❌ Incorrect PIN. Please try again!';
+                    messageBox.classList.add('error');
                 }
             }
         }
-    });
-});
-
-function clearMessage() {
-    messageBox.textContent = '';
-    messageBox.className = 'message-box';
-}
-
-// Xử lý nút Delete (Xoá 1 ô)
-btnClearOne.addEventListener('click', () => {
-    let lastFilledIndex = -1;
-    for (let i = inputs.length - 1; i >= 0; i--) {
-        if (inputs[i].dataset.realValue) {
-            lastFilledIndex = i;
-            break;
-        }
-    }
-
-    if (lastFilledIndex !== -1) {
-        inputs[lastFilledIndex].value = '-';
-        inputs[lastFilledIndex].dataset.realValue = '';
-        inputs[lastFilledIndex].classList.remove('filled'); // <--- Trở về màu xám
-        inputs[lastFilledIndex].focus();
-        clearMessage();
-    } else {
-        inputs[0].focus();
-    }
-});
-
-// Xử lý nút Clear all (Xoá tất cả)
-btnClearAll.addEventListener('click', () => {
-    inputs.forEach(input => {
-        input.value = '-';
-        input.dataset.realValue = '';
-        input.classList.remove('filled'); // <--- Trở về màu xám
-    });
-    clearMessage();
-    inputs[0].focus();
-});
-
-function checkPIN() {
-    let pin = '';
-    inputs.forEach(input => {
-        pin += input.dataset.realValue || '';
-    });
-
-    if (pin.length === 6) {
-        if (pin === CORRECT_PIN) {
-            messageBox.textContent = '✅ Verification successful!';
-            messageBox.classList.add('success');
-        } else {
-            messageBox.textContent = '❌ Incorrect PIN. Please try again!';
-            messageBox.classList.add('error');
-        }
-    }
-}
     </script>
 </body>
 
