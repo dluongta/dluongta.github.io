@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIN Verification</title>
+    <style>
+        /* Đặt nền và font chữ tổng thể */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #e9ebee;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+        }
+
+        /* Khung hộp thoại chính */
+        .modal {
+            background: #ffffff;
+            width: 480px;
+            max-width: 95%; /* Responsive cho mobile */
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Nút X đóng ở góc phải */
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            background: #f0f2f5;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: #606770;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #e4e6eb;
+        }
+
+        /* Hình minh họa (Icon ổ khóa/mật khẩu) */
+        .illustration {
+            width: 140px;
+            height: 46px;
+            background: linear-gradient(90deg, #e6f0ff, #d9e8ff);
+            border-radius: 25px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .illustration .asterisk { color: #ffffff; text-shadow: 0px 1px 3px rgba(0,0,0,0.1); margin-top: 8px;}
+        .illustration .blue-dot { width: 18px; height: 18px; background: #006aff; border-radius: 50%; margin-left: 5px; }
+
+        /* Tiêu đề và mô tả */
+        h2 {
+            font-size: 20px;
+            margin: 0 0 12px;
+            color: #050505;
+        }
+
+        p {
+            font-size: 15px;
+            color: #65676b;
+            margin: 0 0 20px;
+            line-height: 1.5;
+        }
+
+        /* Khu vực nhập OTP */
+        .otp-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .otp-input {
+            width: 48px;
+            height: 60px;
+            background-color: #f0f2f5;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            outline: none;
+            transition: all 0.2s;
+            caret-color: transparent; 
+        }
+
+        /* ĐÃ SỬA: Loại bỏ box-shadow để không còn viền mờ nhạt bên ngoài */
+        .otp-input:focus {
+            border-color: #006aff;
+            background-color: #ffffff;
+            caret-color: #006aff; 
+        }
+
+        /* Các nút điều khiển bổ sung */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .btn-action {
+            padding: 8px 16px;
+            background: #f0f2f5;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #050505;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #e4e6eb;
+        }
+
+        /* Link ở dưới cùng */
+        .link {
+            color: #006aff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            display: block;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        /* Thông báo kết quả */
+        .message-box {
+            margin-top: 20px;
+            font-size: 15px;
+            font-weight: 600;
+            min-height: 20px;
+        }
+
+        .success { color: #2b9a3f; }
+        .error { color: #e41e3f; }
+
+        /* Media Query Responsive cho màn hình điện thoại */
+        @media (max-width: 480px) {
+            .modal {
+                padding: 30px 15px;
+            }
+            .otp-container {
+                gap: 6px;
+            }
+            .otp-input {
+                width: 40px;
+                height: 50px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="modal">
+        <button class="close-btn">&times;</button>
+        
+        <div class="illustration">
+            <span class="asterisk">*</span>
+            <span class="asterisk">*</span>
+            <span class="asterisk">*</span>
+            <span class="asterisk">*</span>
+            <span class="asterisk">*</span>
+            <div class="blue-dot"></div>
+        </div>
+
+        <h2>Enter your PIN to restore your chats</h2>
+        <p>Some messages are missing. Enter your PIN to restore your chat history.</p>
+        
+        <div class="otp-container">
+            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
+            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
+            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
+            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
+            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
+            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-action" id="btnClearOne">⌫ Delete</button>
+            <button class="btn-action" id="btnClearAll">Clear all</button>
+        </div>
+        
+        <a href="#" class="link">Use a one-time code</a>
+        
+        <div id="messageBox" class="message-box"></div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('.otp-input');
+        const messageBox = document.getElementById('messageBox');
+        const btnClearOne = document.getElementById('btnClearOne');
+        const btnClearAll = document.getElementById('btnClearAll');
+        const CORRECT_OTP = '123456';
+
+        // Tự động focus vào ô đầu tiên khi mở trang
+        inputs[0].focus();
+
+        inputs.forEach((input, index) => {
+            // YÊU CẦU: Ép buộc chỉ được focus vào ô trống đầu tiên (chặn click ô trái & phải)
+            input.addEventListener('focus', (e) => {
+                // Tìm vị trí ô trống đầu tiên
+                let targetIndex = Array.from(inputs).findIndex(inp => inp.value === '');
+                
+                // Nếu tất cả đã điền đầy đủ, ép focus về ô cuối cùng
+                if (targetIndex === -1) {
+                    targetIndex = inputs.length - 1;
+                }
+
+                // Nếu người dùng click vào ô không phải ô mục tiêu, ép focus lại
+                if (index !== targetIndex) {
+                    inputs[targetIndex].focus();
+                }
+            });
+
+            // Xử lý khi người dùng nhập dữ liệu
+            input.addEventListener('input', (e) => {
+                clearMessage();
+
+                // Đảm bảo chỉ nhận 1 ký tự
+                if (e.target.value.length > 1) {
+                    e.target.value = e.target.value.slice(0, 1);
+                }
+
+                // Chuyển focus sang ô tiếp theo nếu ô hiện tại có giá trị
+                if (e.target.value !== '') {
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    } else {
+                        checkOTP();
+                    }
+                }
+            });
+
+            // Xử lý khi người dùng bấm phím Backspace trên bàn phím cứng
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value === '') {
+                    if (index > 0) {
+                        inputs[index - 1].value = '';
+                        // Gọi focus về ô vừa bị xóa giá trị (nó sẽ trở thành targetIndex hợp lệ)
+                        inputs[index - 1].focus();
+                        clearMessage();
+                    }
+                }
+            });
+        });
+
+        // Hàm xóa thông báo
+        function clearMessage() {
+            messageBox.textContent = '';
+            messageBox.className = 'message-box';
+        }
+
+        // Chức năng Nút "Xóa 1 ký tự"
+        btnClearOne.addEventListener('click', () => {
+            // Tìm ô cuối cùng có chứa dữ liệu
+            let lastFilledIndex = -1;
+            for (let i = inputs.length - 1; i >= 0; i--) {
+                if (inputs[i].value !== '') {
+                    lastFilledIndex = i;
+                    break;
+                }
+            }
+
+            if (lastFilledIndex !== -1) {
+                inputs[lastFilledIndex].value = '';
+                inputs[lastFilledIndex].focus();
+                clearMessage();
+            } else {
+                inputs[0].focus();
+            }
+        });
+
+        // Chức năng Nút "Xóa tất cả"
+        btnClearAll.addEventListener('click', () => {
+            inputs.forEach(input => input.value = '');
+            clearMessage();
+            inputs[0].focus();
+        });
+
+        // Hàm kiểm tra mã OTP
+        function checkOTP() {
+            let otp = '';
+            inputs.forEach(input => {
+                otp += input.value;
+            });
+            
+            // Chỉ kiểm tra khi đã nhập đủ 6 số
+            if (otp.length === 6) {
+                if (otp === CORRECT_OTP) {
+                    messageBox.textContent = '✅ Verification successful!';
+                    messageBox.classList.add('success');
+                } else {
+                    messageBox.textContent = '❌ Incorrect PIN. Please try again!';
+                    messageBox.classList.add('error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
