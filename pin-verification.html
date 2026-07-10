@@ -86,15 +86,15 @@
             line-height: 1.5;
         }
 
-        /* Khu vực nhập OTP */
-        .otp-container {
+        /* Khu vực nhập PIN */
+        .pin-container {
             display: flex;
             justify-content: center;
             gap: 12px;
             margin-bottom: 20px;
         }
 
-        .otp-input {
+        .pin-input {
             width: 48px;
             height: 60px;
             background-color: #f0f2f5;
@@ -109,7 +109,7 @@
         }
 
         /* ĐÃ SỬA: Loại bỏ box-shadow để không còn viền mờ nhạt bên ngoài */
-        .otp-input:focus {
+        .pin-input:focus {
             border-color: #006aff;
             background-color: #ffffff;
             caret-color: #006aff; 
@@ -168,10 +168,10 @@
             .modal {
                 padding: 30px 15px;
             }
-            .otp-container {
+            .pin-container {
                 gap: 6px;
             }
-            .otp-input {
+            .pin-input {
                 width: 40px;
                 height: 50px;
                 font-size: 24px;
@@ -196,13 +196,13 @@
         <h2>Enter your PIN to restore your chats</h2>
         <p>Some messages are missing. Enter your PIN to restore your chat history.</p>
         
-        <div class="otp-container">
-            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
-            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
-            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
-            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
-            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
-            <input type="password" class="otp-input" maxlength="1" autocomplete="off">
+        <div class="pin-container">
+            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
+            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
+            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
+            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
+            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
+            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
         </div>
 
         <div class="action-buttons">
@@ -216,11 +216,11 @@
     </div>
 
     <script>
-        const inputs = document.querySelectorAll('.otp-input');
+        const inputs = document.querySelectorAll('.pin-input');
         const messageBox = document.getElementById('messageBox');
         const btnClearOne = document.getElementById('btnClearOne');
         const btnClearAll = document.getElementById('btnClearAll');
-        const CORRECT_OTP = '123456';
+        const CORRECT_PIN = '123456';
 
         // Tự động focus vào ô đầu tiên khi mở trang
         inputs[0].focus();
@@ -256,7 +256,7 @@
                     if (index < inputs.length - 1) {
                         inputs[index + 1].focus();
                     } else {
-                        checkOTP();
+                        checkPIN();
                     }
                 }
             });
@@ -307,16 +307,16 @@
             inputs[0].focus();
         });
 
-        // Hàm kiểm tra mã OTP
-        function checkOTP() {
-            let otp = '';
+        // Hàm kiểm tra mã PIN
+        function checkPIN() {
+            let pin = '';
             inputs.forEach(input => {
-                otp += input.value;
+                pin += input.value;
             });
             
             // Chỉ kiểm tra khi đã nhập đủ 6 số
-            if (otp.length === 6) {
-                if (otp === CORRECT_OTP) {
+            if (pin.length === 6) {
+                if (pin === CORRECT_PIN) {
                     messageBox.textContent = '✅ Verification successful!';
                     messageBox.classList.add('success');
                 } else {
