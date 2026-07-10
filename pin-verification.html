@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,7 +26,7 @@
             text-align: center;
             position: relative;
             box-sizing: border-box;
-            margin-top: -20px;
+            margin-top: -10px;
         }
 
         .close-btn {
@@ -67,10 +68,20 @@
             margin-top: 20px;
         }
 
-        .illustration .asterisk { color: #ffffff; text-shadow: 0px 1px 3px rgba(0,0,0,0.1); margin-top: 8px;}
-        .illustration .blue-dot { width: 18px; height: 18px; background: #006aff; border-radius: 50%; margin-left: 5px; }
+        .illustration .asterisk {
+            color: #ffffff;
+            text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+            margin-top: 8px;
+        }
 
-        /* Tiêu đề và mô tả */
+        .illustration .blue-dot {
+            width: 18px;
+            height: 18px;
+            background: #006aff;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
         h2 {
             font-size: 20px;
             margin: 0 0 12px;
@@ -102,13 +113,19 @@
             font-weight: bold;
             outline: none;
             transition: all 0.2s;
-            caret-color: transparent; 
+            caret-color: transparent;
+        }
+
+        .pin-input::selection {
+            background: transparent;
         }
 
         .pin-input:focus {
             border-color: #006aff;
             background-color: #ffffff;
-            caret-color: #006aff; 
+            caret-color: transparent;
+            /* box-shadow: 0 0 0 3px rgba(0, 106, 255, 0.2); */
+            box-shadow: none;
         }
 
         .action-buttons {
@@ -135,18 +152,6 @@
             background: #e4e6eb;
         }
 
-        .link {
-            color: #006aff;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 15px;
-            display: block;
-        }
-
-        .link:hover {
-            text-decoration: underline;
-        }
-
         .message-box {
             margin-top: 20px;
             font-size: 15px;
@@ -154,20 +159,28 @@
             min-height: 20px;
         }
 
-        .success { color: #2b9a3f; }
-        .error { color: #e41e3f; }
+        .success {
+            color: #2b9a3f;
+        }
+
+        .error {
+            color: #e41e3f;
+        }
 
         @media (max-width: 768px) {
             body {
                 overflow-y: hidden;
             }
+
             .modal {
                 padding: 30px 15px;
-                margin-top: -100px;
+                margin-top: -90px;
             }
+
             .pin-container {
                 gap: 6px;
             }
+
             .pin-input {
                 width: 40px;
                 height: 50px;
@@ -176,11 +189,12 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="modal">
         <button class="close-btn">&times;</button>
-        
+
         <div class="illustration">
             <span class="asterisk">*</span>
             <span class="asterisk">*</span>
@@ -192,23 +206,21 @@
 
         <h2>Enter your PIN</h2>
         <p>Enter your PIN for verification.</p>
-        
+
         <div class="pin-container">
-            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
-            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
-            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
-            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
-            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
-            <input type="password" class="pin-input" maxlength="1" autocomplete="off">
+            <input type="text" class="pin-input" maxlength="2" autocomplete="off" value="-">
+            <input type="text" class="pin-input" maxlength="2" autocomplete="off" value="-">
+            <input type="text" class="pin-input" maxlength="2" autocomplete="off" value="-">
+            <input type="text" class="pin-input" maxlength="2" autocomplete="off" value="-">
+            <input type="text" class="pin-input" maxlength="2" autocomplete="off" value="-">
+            <input type="text" class="pin-input" maxlength="2" autocomplete="off" value="-">
         </div>
 
         <div class="action-buttons">
             <button class="btn-action" id="btnClearOne">Delete</button>
             <button class="btn-action" id="btnClearAll">Clear all</button>
         </div>
-        
-        <!-- <a href="#" class="link">Use a one-time code</a> -->
-        
+
         <div id="messageBox" class="message-box"></div>
     </div>
 
@@ -222,40 +234,74 @@
         inputs[0].focus();
 
         inputs.forEach((input, index) => {
+            // Xử lý khi người dùng click hoặc focus vào ô
             input.addEventListener('focus', (e) => {
-                let targetIndex = Array.from(inputs).findIndex(inp => inp.value === '');
-                
+                let targetIndex = Array.from(inputs).findIndex(inp => !inp.dataset.realValue);
+
                 if (targetIndex === -1) {
-                    targetIndex = inputs.length - 1;
+                    targetIndex = inputs.length - 1; // Nếu đã điền hết thì focus vào ô cuối
                 }
 
                 if (index !== targetIndex) {
                     inputs[targetIndex].focus();
                 }
+                // ĐÃ BỎ lệnh select() ở đây
             });
 
+            // Xử lý khi gõ phím vào ô
             input.addEventListener('input', (e) => {
                 clearMessage();
+                let rawVal = e.target.value;
 
-                if (e.target.value.length > 1) {
-                    e.target.value = e.target.value.slice(0, 1);
+                // Loại bỏ dấu '-' hoặc dấu '•' để lấy đúng số người dùng vừa gõ vào
+                let typedChar = rawVal.replace(/[-•]/g, '');
+
+                if (typedChar === '') {
+                    e.target.value = '-';
+                    input.dataset.realValue = '';
+                    return;
                 }
 
-                if (e.target.value !== '') {
-                    if (index < inputs.length - 1) {
-                        inputs[index + 1].focus();
-                    } else {
-                        checkPIN();
-                    }
+                // Lưu lại số thật vừa gõ (chỉ lấy 1 ký tự cuối đề phòng dán nhiều số)
+                input.dataset.realValue = typedChar.slice(-1);
+
+                // Fix cứng hiển thị thành dấu chấm tròn
+                e.target.value = '•';
+
+                // Chuyển sang ô tiếp theo
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                } else {
+                    checkPIN();
                 }
             });
 
+            // Xử lý khi bấm phím Xoá (Backspace) trên bàn phím
             input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && e.target.value === '') {
-                    if (index > 0) {
-                        inputs[index - 1].value = '';
-                        inputs[index - 1].focus();
+                // Chặn các phím mũi tên di chuyển con trỏ tàng hình gây nhiễu
+                if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                    e.preventDefault();
+                }
+
+                if (e.key === 'Backspace') {
+                    e.preventDefault(); // Ngăn hành vi xoá mặc định
+
+                    // Kiểm tra xem ô hiện tại có đang chứa số thực hay không
+                    let hasValue = (input.dataset.realValue !== undefined && input.dataset.realValue !== '');
+
+                    if (hasValue) {
+                        // Xoá dữ liệu ô hiện tại, đưa về '-'
+                        input.value = '-';
+                        input.dataset.realValue = '';
                         clearMessage();
+                    } else {
+                        // Nếu ô hiện tại đã là '-', lùi về ô trước đó và xoá nó
+                        if (index > 0) {
+                            inputs[index - 1].value = '-';
+                            inputs[index - 1].dataset.realValue = '';
+                            inputs[index - 1].focus();
+                            clearMessage();
+                        }
                     }
                 }
             });
@@ -266,17 +312,19 @@
             messageBox.className = 'message-box';
         }
 
+        // Xử lý nút Delete (Xoá 1 ô)
         btnClearOne.addEventListener('click', () => {
             let lastFilledIndex = -1;
             for (let i = inputs.length - 1; i >= 0; i--) {
-                if (inputs[i].value !== '') {
+                if (inputs[i].dataset.realValue) {
                     lastFilledIndex = i;
                     break;
                 }
             }
 
             if (lastFilledIndex !== -1) {
-                inputs[lastFilledIndex].value = '';
+                inputs[lastFilledIndex].value = '-';
+                inputs[lastFilledIndex].dataset.realValue = '';
                 inputs[lastFilledIndex].focus();
                 clearMessage();
             } else {
@@ -284,8 +332,12 @@
             }
         });
 
+        // Xử lý nút Clear all (Xoá tất cả)
         btnClearAll.addEventListener('click', () => {
-            inputs.forEach(input => input.value = '');
+            inputs.forEach(input => {
+                input.value = '-';
+                input.dataset.realValue = '';
+            });
             clearMessage();
             inputs[0].focus();
         });
@@ -293,9 +345,9 @@
         function checkPIN() {
             let pin = '';
             inputs.forEach(input => {
-                pin += input.value;
+                pin += input.dataset.realValue || '';
             });
-            
+
             if (pin.length === 6) {
                 if (pin === CORRECT_PIN) {
                     messageBox.textContent = '✅ Verification successful!';
@@ -308,4 +360,5 @@
         }
     </script>
 </body>
+
 </html>
