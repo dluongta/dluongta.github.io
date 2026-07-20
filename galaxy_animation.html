@@ -6,44 +6,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>3D Galaxy Animation - Dinh Luong Ta</title>
     <style>
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: #000; font-family: Arial, sans-serif;
-            touch-action: none; user-select: none; -webkit-user-select: none;
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         #canvas-container {
-            width: 100vw; height: 100vh; position: relative;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
         }
 
         canvas {
-            display: block; width: 100%; height: 100%;
+            display: block;
+            width: 100%;
+            height: 100%;
             cursor: grab;
         }
-        
+
         canvas:active {
             cursor: grabbing;
         }
 
         /* ===== Màn hình Loading ===== */
         #loading-screen {
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 9999;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
             transition: opacity 0.5s ease;
         }
 
         .spinner {
-            width: 40px; height: 40px; border: 4px solid rgba(255, 140, 0, 0.2);
-            border-top: 4px solid #FF8C00; border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 140, 0, 0.2);
+            border-top: 4px solid #FF8C00;
+            border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
         .loading-text {
-            color: #FF8C00; margin-top: 15px; font-weight: bold; 
-            letter-spacing: 2px; font-size: 14px;
+            color: #FF8C00;
+            margin-top: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -53,7 +83,7 @@
         <div class="spinner"></div>
         <div class="loading-text">LOADING UNIVERSE...</div>
     </div>
-    
+
     <div id="canvas-container">
         <canvas id="galaxyCanvas"></canvas>
     </div>
@@ -79,7 +109,7 @@
         let rotX = 1.8, rotY = 0;
 
         const imageSources = ["luen_logo.png", "hexagon-main.png", "luen.jpg"];
-        
+
         const RINGS = [
             { text: "DINH ", radius: 220, tilt: -0.8, speed: 1.2, color: "#ff6200" },
             { text: "LUONG ", radius: 320, tilt: 0.8, speed: 0.8, color: "#6a00ff" },
@@ -102,20 +132,51 @@
         function initCaches() {
             caches.planet = createCacheCanvas(1000, (ctxCache, center) => {
                 const pr = 60;
+
                 ctxCache.globalCompositeOperation = "lighter";
-                const glow = ctxCache.createRadialGradient(center, center, pr * 0.2, center, center, pr * 1.1);
-                glow.addColorStop(0, "rgba(255,255,220,0.9)");
-                glow.addColorStop(0.2, "rgba(255,180,0,0.8)");
-                glow.addColorStop(0.5, "rgba(255,120,0,0.35)");
-                glow.addColorStop(1, "rgba(255,80,0,0)");
+
+                // Halo chỉ màu cam, KHÔNG có màu trắng ở giữa
+                const glow = ctxCache.createRadialGradient(
+                    center,
+                    center,
+                    pr * 0.45,
+                    center,
+                    center,
+                    pr * 3
+                );
+
+                glow.addColorStop(0.0, "rgba(255,170,0,0.55)");
+                glow.addColorStop(0.35, "rgba(255,120,0,0.30)");
+                glow.addColorStop(0.75, "rgba(255,80,0,0.12)");
+                glow.addColorStop(1.0, "rgba(255,80,0,0)");
+
                 ctxCache.fillStyle = glow;
-                ctxCache.beginPath(); ctxCache.arc(center, center, pr * 3, 0, Math.PI * 2); ctxCache.fill();
-                
-                const sun = ctxCache.createRadialGradient(center - pr*0.3, center - pr*0.3, pr*0.1, center, center, pr);
-                sun.addColorStop(0, "#fff7cc"); sun.addColorStop(0.3, "#ffcc33");
-                sun.addColorStop(0.7, "#ff8800"); sun.addColorStop(1, "#ff5500");
+                ctxCache.beginPath();
+                ctxCache.arc(center, center, pr * 3, 0, Math.PI * 2);
+                ctxCache.fill();
+
+
+                // Highlight lệch sang trái trên
+                const sun = ctxCache.createRadialGradient(
+                    center - pr * 0.45,
+                    center - pr * 0.45,
+                    0,
+                    center,
+                    center,
+                    pr
+                );
+
+                sun.addColorStop(0.00, "#ffffff");
+                sun.addColorStop(0.10, "#fff7dd");
+                sun.addColorStop(0.25, "#ffd65a");
+                sun.addColorStop(0.60, "#ff9800");
+                sun.addColorStop(1.00, "#ff5500");
+
                 ctxCache.fillStyle = sun;
-                ctxCache.beginPath(); ctxCache.arc(center, center, pr, 0, Math.PI * 2); ctxCache.fill();
+                ctxCache.beginPath();
+                ctxCache.arc(center, center, pr, 0, Math.PI * 2);
+                ctxCache.fill();
+
             });
 
             const buildAura = (colorRGB) => createCacheCanvas(400, (ctxCache, center) => {
@@ -131,7 +192,7 @@
                 g.addColorStop(1, `rgba(${colorRGB}, 0)`);
                 // g.addColorStop(1, "rgba(0,0,0,0)");
                 ctxCache.fillStyle = g;
-                ctxCache.beginPath(); ctxCache.arc(center, center, center, 0, Math.PI*2); ctxCache.fill();
+                ctxCache.beginPath(); ctxCache.arc(center, center, center, 0, Math.PI * 2); ctxCache.fill();
             });
             caches.auraOrange = buildAura("255, 140, 0");
             // caches.auraPurple = buildAura("180, 0, 255");
@@ -160,11 +221,11 @@
         let isAppStarted = false;
 
         function startUniverse() {
-            if (isAppStarted) return; 
+            if (isAppStarted) return;
             isAppStarted = true;
 
             initCaches();
-            
+
             bgStars = Array.from({ length: STAR_COUNT }, () => ({
                 x: rand(-1200, 1200), y: rand(-1200, 1200), z: rand(-1200, 1200),
                 size: rand(4, 7), color: "#ffffff"
@@ -179,7 +240,7 @@
 
             resize();
             requestAnimationFrame(animate);
-            
+
             const loadingScreen = document.getElementById("loading-screen");
             loadingScreen.style.opacity = '0';
             setTimeout(() => loadingScreen.style.display = 'none', 500);
@@ -198,13 +259,13 @@
                             const offCtx = offCanvas.getContext('2d');
                             offCtx.filter = "contrast(1.15) saturate(1.1)";
                             offCtx.drawImage(img, 0, 0);
-                            resolve(offCanvas); 
+                            resolve(offCanvas);
                         } catch (e) {
-                            resolve(img); 
+                            resolve(img);
                         }
                     };
                     img.onerror = () => resolve(null);
-                    img.src = src; 
+                    img.src = src;
                 });
             });
 
@@ -237,25 +298,25 @@
 
         /* ===== 4. TƯƠNG TÁC (TOUCH & MOUSE) ===== */
         let dragging = false, lastX = 0, lastY = 0, initialPinchDist = null;
-        
+
         canvas.addEventListener("touchstart", (e) => {
-            if (e.touches.length === 1) { 
-                dragging = true; 
-                lastX = e.touches[0].clientX; 
-                lastY = e.touches[0].clientY; 
-            } else if (e.touches.length === 2) { 
-                dragging = false; 
-                initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); 
-                initialZoom = zoom; 
+            if (e.touches.length === 1) {
+                dragging = true;
+                lastX = e.touches[0].clientX;
+                lastY = e.touches[0].clientY;
+            } else if (e.touches.length === 2) {
+                dragging = false;
+                initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                initialZoom = zoom;
             }
         }, { passive: false });
 
         canvas.addEventListener("touchmove", (e) => {
             if (e.touches.length === 1 && dragging) {
                 e.preventDefault();
-                rotY -= (e.touches[0].clientX - lastX) * 0.005; 
+                rotY -= (e.touches[0].clientX - lastX) * 0.005;
                 rotX -= (e.touches[0].clientY - lastY) * 0.005;
-                lastX = e.touches[0].clientX; 
+                lastX = e.touches[0].clientX;
                 lastY = e.touches[0].clientY;
             } else if (e.touches.length === 2 && initialPinchDist) {
                 e.preventDefault();
@@ -266,21 +327,21 @@
         }, { passive: false });
 
         canvas.addEventListener("touchend", () => { dragging = false; initialPinchDist = null; });
-        
+
         canvas.addEventListener("mousedown", (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
         window.addEventListener("mousemove", (e) => {
             if (!dragging) return;
-            rotY -= (e.clientX - lastX) * 0.005; 
+            rotY -= (e.clientX - lastX) * 0.005;
             rotX -= (e.clientY - lastY) * 0.005;
-            lastX = e.clientX; 
+            lastX = e.clientX;
             lastY = e.clientY;
         });
         window.addEventListener("mouseup", () => dragging = false);
-        
-        canvas.addEventListener("wheel", (e) => { 
+
+        canvas.addEventListener("wheel", (e) => {
             e.preventDefault();
             zoom -= e.deltaY * 0.001;
-            zoom = Math.max(0.1, Math.min(3.0, zoom)); 
+            zoom = Math.max(0.1, Math.min(3.0, zoom));
         }, { passive: false });
 
         /* ===== 5. RENDERING CORE ===== */
@@ -288,14 +349,14 @@
         const renderPool = Array.from({ length: MAX_RENDER }, () => ({
             type: 0, x: 0, y: 0, z: 0, size: 0, charKey: '', imgIdx: 0, cache: null
         }));
-        
+
         let shootingStar = { active: false, x: 0, y: 0, len: 0, speed: 0, opacity: 0 };
         const PTX = Math.PI / 2.3, PTZ = Math.PI / 6;
         const cPTX = Math.cos(PTX), sPTX = Math.sin(PTX), cPTZ = Math.cos(PTZ), sPTZ = Math.sin(PTZ);
 
         function animate() {
             let time = performance.now() * 0.0004;
-            ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h); 
+            ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
 
             if (!shootingStar.active && Math.random() < 0.01) {
                 shootingStar.active = true; shootingStar.x = -400; shootingStar.y = rand(50, h * 0.7);
@@ -303,7 +364,7 @@
             } else if (shootingStar.active) {
                 shootingStar.x += shootingStar.speed; shootingStar.opacity -= 0.003;
                 if (shootingStar.x > w + 400 || shootingStar.opacity <= 0) shootingStar.active = false;
-                
+
                 ctx.save(); ctx.globalCompositeOperation = "lighter";
                 const grad = ctx.createLinearGradient(shootingStar.x, shootingStar.y, shootingStar.x - shootingStar.len, shootingStar.y);
                 grad.addColorStop(0, `rgba(255, 255, 255, ${shootingStar.opacity})`);
@@ -318,10 +379,10 @@
             let rCount = 0;
 
             const auraData = [
-                { cache: caches.auraOrange, tx: -1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 2500 },
-                { cache: caches.auraPurple, tx: 1200 + Math.sin(time*0.5)*150, ty: 300 + Math.cos(time*0.3)*150, tz: -300 + Math.sin(time*0.5)*100, radius: 2500 }
+                { cache: caches.auraOrange, tx: -1200 + Math.sin(time * 0.5) * 150, ty: 300 + Math.cos(time * 0.3) * 150, tz: -300 + Math.sin(time * 0.5) * 100, radius: 2500 },
+                { cache: caches.auraPurple, tx: 1200 + Math.sin(time * 0.5) * 150, ty: 300 + Math.cos(time * 0.3) * 150, tz: -300 + Math.sin(time * 0.5) * 100, radius: 2500 }
             ];
-            for(let a of auraData) {
+            for (let a of auraData) {
                 let y1 = a.ty * cosRX - a.tz * sinRX, z1 = a.ty * sinRX + a.tz * cosRX;
                 let r = renderPool[rCount++];
                 r.type = 5; r.x = a.tx * cosRY + z1 * sinRY; r.y = y1; r.z = -a.tx * sinRY + z1 * cosRY;
@@ -336,11 +397,11 @@
                 let repeatCount = Math.floor(ring.radius / 15);
                 let fullText = ring.text.repeat(repeatCount);
                 for (let j = 0; j < fullText.length; j++) {
-                    let cA = (time * ring.speed) + (j * (Math.PI * 2 / fullText.length));                    
+                    let cA = (time * ring.speed) + (j * (Math.PI * 2 / fullText.length));
                     let tx = (ring.tilt === "vertical") ? 0 : Math.cos(cA) * ring.radius;
                     let tz = Math.sin(cA) * ring.radius;
                     let ty = (ring.tilt === "vertical") ? Math.cos(cA) * ring.radius : tx * ring.tilt;
-                    
+
                     let y1 = ty * cosRX - tz * sinRX, z1 = ty * sinRX + tz * cosRX;
                     let r = renderPool[rCount++];
                     r.type = 4; r.x = tx * cosRY + z1 * sinRY; r.y = y1; r.z = -tx * sinRY + z1 * cosRY;
@@ -352,11 +413,11 @@
                 let p = particles[i];
                 let curA = p.angle - (time * 0.1) - (time * p.speed * 20);
                 let px = p.radius * Math.cos(curA), pz = p.radius * Math.sin(curA), py = p.yOffset;
-                
+
                 let py1 = py * cPTX - pz * sPTX, pz1 = py * sPTX + pz * cPTX;
                 let tx = px * cPTZ - py1 * sPTZ, ty = px * sPTZ + py1 * cPTZ;
                 let y1 = ty * cosRX - pz1 * sinRX, z1 = ty * sinRX + pz1 * cosRX;
-                
+
                 let r = renderPool[rCount++];
                 r.type = 2; r.x = tx * cosRY + z1 * sinRY; r.y = y1; r.z = -tx * sinRY + z1 * cosRY;
                 r.size = p.size; r.imgIdx = p.imgIndex;
@@ -382,46 +443,46 @@
                 let py = cy + item.y * scale;
 
                 if (item.type === 1) {
-                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "source-over"; currentBlend = "source-over"; }
+                    if (currentBlend !== "source-over") { ctx.globalCompositeOperation = "source-over"; currentBlend = "source-over"; }
                     let sSize = item.size * scale;
                     ctx.fillStyle = "#ffffff";
                     ctx.globalAlpha = Math.min(1, Math.max(0.1, (item.z + 3000) / 5000));
-                    ctx.fillRect(px - sSize/2, py - sSize/2, sSize, sSize);
-                } 
+                    ctx.fillRect(px - sSize / 2, py - sSize / 2, sSize, sSize);
+                }
                 else if (item.type === 2) {
-                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
+                    if (currentBlend !== "source-over") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
                     if (scale > IMAGE_SHOW_SCALE) {
                         let img = images[item.imgIdx];
                         if (img && img.width > 0) {
                             let isize = item.size * scale * 5;
                             isize = Math.min(isize, 1200); // Giới hạn kích thước tối đa
                             ctx.globalAlpha = 1;
-                            ctx.drawImage(img, px - isize/2, py - isize/2, isize, isize);
+                            ctx.drawImage(img, px - isize / 2, py - isize / 2, isize, isize);
                         }
                     } else {
                         let sq = item.size * scale;
                         ctx.fillStyle = "#FF3366";
                         ctx.globalAlpha = Math.min(1, (item.z + 2000) / 3000);
-                        ctx.fillRect(px - sq/2, py - sq/2, sq, sq);
+                        ctx.fillRect(px - sq / 2, py - sq / 2, sq, sq);
                     }
-                } 
+                }
                 else if (item.type === 3 && caches.planet) {
-                    if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
+                    if (currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
                     ctx.globalAlpha = 1;
-                    let pr = PLANET_RADIUS * scale * 6; 
+                    let pr = PLANET_RADIUS * scale * 6;
                     ctx.drawImage(caches.planet, px - pr, py - pr, pr * 2, pr * 2);
                 }
                 else if (item.type === 4) {
-                    if(currentBlend !== "source-over") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
+                    if (currentBlend !== "source-over") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
                     ctx.globalAlpha = 1;
                     let txtImg = caches.text[item.charKey];
                     if (txtImg) {
-                        let ts = 30 * scale; 
+                        let ts = 30 * scale;
                         ctx.drawImage(txtImg, px - ts, py - ts, ts * 2, ts * 2);
                     }
                 }
                 else if (item.type === 5 && item.cache) {
-                    if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
+                    if (currentBlend !== "lighter") { ctx.globalCompositeOperation = "lighter"; currentBlend = "lighter"; }
                     // if(currentBlend !== "lighter") { ctx.globalCompositeOperation = "source-over";ctx.globalAlpha = 0.3; currentBlend = "lighter"; }
                     ctx.globalAlpha = 1;
                     let gradRadius = item.size * scale;
@@ -430,8 +491,8 @@
                     }
                 }
             }
-            
-            ctx.globalAlpha = 1; 
+
+            ctx.globalAlpha = 1;
             requestAnimationFrame(animate);
         }
 
