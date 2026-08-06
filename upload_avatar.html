@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Avatar</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: #f0f2f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+    }
+    .box {
+        background: #fff;
+        width: 400px;
+        max-width: 95%;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .header {
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+        background: #fff;
+    }
+    .body-content {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    .canvas-container {
+        position: relative;
+        margin-bottom: 15px;
+        line-height: 0;
+    }
+    canvas {
+        background: #eee;
+        border-radius: 4px;
+        cursor: grab;
+        display: block;
+    }
+    canvas:active {
+        cursor: grabbing;
+    }
+    .zoom-wrapper {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .zoom-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #ccd0d5;
+        background: #f5f6f7;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 18px;
+        color: #606770;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-bottom: 3px;
+    }
+    .zoom-btn:hover { background: #ebedf0; }
+    input[type=range] {
+        flex: 1;
+        cursor: pointer;
+    }
+    .preview-section {
+        margin-top: 5px;
+        text-align: center;
+        display: none;
+        margin-bottom: 15px;
+    }
+    .preview-section img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        object-fit: cover;
+    }
+    .actions {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 15px;
+        border-top: 1px solid #ddd;
+    }
+    .btn {
+        padding: 0 20px;
+        height: 36px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        border: none;
+    }
+    .btn-upload {
+        background: #e4e6eb;
+        color: #050505;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-upload:hover { background: #d8dadf; }
+    .btn-save {
+        background: #1877f2;
+        color: #fff;
+    }
+    .btn-save:hover { background: #166fe5; }
+    #fileInput { display: none; }
+</style>
+</head>
+<body>
+
+<div class="box">
+    <div class="header">Chỉnh sửa ảnh</div>
+    
+    <div class="body-content">
+        <div class="canvas-container">
+            <canvas id="canvas" width="300" height="300"></canvas>
+        </div>
+
+        <div class="zoom-wrapper">
+            <button class="zoom-btn" onclick="updateZoom(-0.1)">-</button>
+            <input type="range" id="zoomRange" step="0.01">
+            <button class="zoom-btn" onclick="updateZoom(0.1)">+</button>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <img id="avatarResult" src="" alt="">
+        </div>
+
+        <div class="actions">
+            <label for="fileInput" class="btn btn-upload">Chọn ảnh</label>
+            <input type="file" id="fileInput" accept="image/*">
+            <button class="btn btn-save" onclick="saveAvatar()">Lưu ảnh</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const fileInput = document.getElementById("fileInput");
+    const zoomRange = document.getElementById("zoomRange");
+    const avatarResult = document.getElementById("avatarResult");
+    const previewSection = document.getElementById("previewSection");
+
+    const canvasSize = 300;
+    const radius = 140;
+    const diameter = radius * 2;
+
+    let img = new Image();
+    let scale = 1;
+    let minScale = 1;
+    let x = 0, y = 0;
+    let dragging = false;
+    let startX = 0, startY = 0;
+
+    window.onload = () => {
+        const saved = localStorage.getItem("user_avatar_fixed");
+        if (saved) {
+            avatarResult.src = saved;
+            previewSection.style.display = "block";
+        }
+        drawPlaceholder();
+    };
+
+    function drawPlaceholder() {
+        ctx.fillStyle = "#f0f2f5";
+        ctx.fillRect(0,0, canvasSize, canvasSize);
+        ctx.beginPath();
+        ctx.arc(canvasSize/2, canvasSize/2, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "#ddd";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "#999";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Vui lòng chọn ảnh", canvasSize/2, canvasSize/2);
+    }
+
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            img = new Image();
+            img.onload = () => {
+                const minDimension = Math.min(img.width, img.height);
+                minScale = diameter / minDimension;
+                
+                zoomRange.min = minScale;
+                zoomRange.max = minScale * 5;
+                scale = minScale;
+                zoomRange.value = scale;
+                
+                x = 0; 
+                y = 0;
+                
+                clampPosition();
+                draw();
+            };
+            img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    function draw() {
+        if (!img.src) return;
+        ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+        ctx.save();
+        ctx.translate(canvasSize/2 + x, canvasSize/2 + y);
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, -img.width/2, -img.height/2);
+        ctx.restore();
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; 
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(canvasSize/2, canvasSize/2, radius, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.translate(canvasSize/2 + x, canvasSize/2 + y);
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, -img.width/2, -img.height/2);
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(canvasSize/2, canvasSize/2, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(0,0,0,0.2)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    function clampPosition() {
+        if (!img.src) return;
+        const currentW = img.width * scale;
+        const currentH = img.height * scale;
+        const limitX = Math.max(0, currentW/2 - radius);
+        const limitY = Math.max(0, currentH/2 - radius);
+        x = Math.max(-limitX, Math.min(limitX, x));
+        y = Math.max(-limitY, Math.min(limitY, y));
+    }
+
+    zoomRange.oninput = () => {
+        scale = parseFloat(zoomRange.value);
+        clampPosition();
+        draw();
+    };
+
+    function updateZoom(delta) {
+        if (!img.src) return;
+        let newVal = parseFloat(zoomRange.value) + delta;
+        newVal = Math.max(parseFloat(zoomRange.min), Math.min(parseFloat(zoomRange.max), newVal));
+        zoomRange.value = newVal;
+        scale = newVal;
+        clampPosition();
+        draw();
+    }
+
+    canvas.onmousedown = (e) => {
+        if (!img.src) return;
+        dragging = true;
+        startX = e.offsetX - x;
+        startY = e.offsetY - y;
+    };
+
+    canvas.onmousemove = (e) => {
+        if (!dragging) return;
+        e.preventDefault();
+        x = e.offsetX - startX;
+        y = e.offsetY - startY;
+        clampPosition();
+        draw();
+    };
+
+    canvas.onmouseup = () => dragging = false;
+    canvas.onmouseleave = () => dragging = false;
+
+    function saveAvatar() {
+        if (!img.src) return;
+        const outCanvas = document.createElement("canvas");
+        outCanvas.width = diameter;
+        outCanvas.height = diameter;
+        const oCtx = outCanvas.getContext("2d");
+
+        oCtx.beginPath();
+        oCtx.arc(radius, radius, radius, 0, Math.PI * 2);
+        oCtx.clip();
+        oCtx.translate(radius + x, radius + y);
+        oCtx.scale(scale, scale);
+        oCtx.drawImage(img, -img.width/2, -img.height/2);
+
+        const dataURL = outCanvas.toDataURL("image/png");
+        localStorage.setItem("user_avatar_fixed", dataURL);
+        avatarResult.src = dataURL;
+        previewSection.style.display = "block";
+        alert("Đã lưu thành công!");
+    }
+</script>
+</body>
+</html>

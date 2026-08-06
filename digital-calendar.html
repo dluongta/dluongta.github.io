@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Calendar</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #f4f6f8;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .calendar {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        width: 360px;
+        padding: 20px;
+      }
+
+      .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .calendar-header h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .calendar-header button {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+      }
+
+      .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #555;
+      }
+
+      .calendar-dates {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        gap: 5px;
+      }
+
+      .calendar-dates div {
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .calendar-dates div:hover {
+        background-color: #e0f7fa;
+      }
+
+      .today {
+        background-color: #007BFF !important;
+        color: white;
+        font-weight: bold;
+      }
+
+      .selected {
+        background-color: orange !important;
+        color: white;
+        font-weight: bold;
+      }
+
+      #goToday {
+        margin-top: 10px;
+        padding: 8px 16px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      #goToday:hover {
+        background-color: #0056b3;
+      }
+
+      #timeDisplay {
+        margin-top: 15px;
+        font-size: 18px;
+        color: #333;
+        text-align: center;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calendar">
+      <div class="calendar-header">
+        <button id="prev">&#9664;</button>
+        <h2 id="monthYear"></h2>
+        <button id="next">&#9654;</button>
+      </div>
+      <div class="calendar-days">
+        <div>Sun</div>
+        <div>Mon</div>
+        <div>Tue</div>
+        <div>Wed</div>
+        <div>Thu</div>
+        <div>Fri</div>
+        <div>Sat</div>
+      </div>
+      <div class="calendar-dates" id="calendarDates"></div>
+      <button id="goToday">Xem ngày hôm nay</button>
+      <div id="timeDisplay"></div>
+    </div>
+
+    <script>
+      const calendarDates = document.getElementById('calendarDates');
+      const monthYear = document.getElementById('monthYear');
+      const prevBtn = document.getElementById('prev');
+      const nextBtn = document.getElementById('next');
+      const timeDisplay = document.getElementById('timeDisplay');
+      const goTodayBtn = document.getElementById('goToday');
+
+      let currentDate = new Date();
+      let selectedCell = null;
+
+      function renderCalendar(date) {
+        calendarDates.innerHTML = '';
+
+        const year = date.getFullYear();
+        const month = date.getMonth();
+
+        monthYear.textContent = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        const lastDateOfMonth = new Date(year, month + 1, 0).getDate();
+        const startDay = firstDayOfMonth.getDay();
+
+        for (let i = 0; i < startDay; i++) {
+          const blank = document.createElement('div');
+          calendarDates.appendChild(blank);
+        }
+
+        const today = new Date();
+        for (let day = 1; day <= lastDateOfMonth; day++) {
+          const dayDiv = document.createElement('div');
+          dayDiv.textContent = day;
+
+          if (
+            day === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear()
+          ) {
+            dayDiv.classList.add('today');
+          }
+
+          dayDiv.addEventListener('click', () => {
+            if (selectedCell) selectedCell.classList.remove('selected');
+            // Không cho chọn ngày hôm nay thành màu cam
+            if (!(day === today.getDate() && month === today.getMonth() && year === today.getFullYear())) {
+              dayDiv.classList.add('selected');
+              selectedCell = dayDiv;
+            } else {
+              selectedCell = null; // Không chọn gì nếu là ngày hôm nay
+            }
+          });
+
+          calendarDates.appendChild(dayDiv);
+        }
+      }
+
+      prevBtn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar(currentDate);
+        clearSelection();
+      });
+
+      nextBtn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar(currentDate);
+        clearSelection();
+      });
+
+      goTodayBtn.addEventListener('click', () => {
+        currentDate = new Date();
+        renderCalendar(currentDate);
+        clearSelection();
+      });
+
+      function clearSelection() {
+        if (selectedCell) {
+          selectedCell.classList.remove('selected');
+          selectedCell = null;
+        }
+      }
+
+      function updateTime() {
+        const now = new Date();
+        timeDisplay.textContent = now.toLocaleTimeString();
+      }
+
+      renderCalendar(currentDate);
+      updateTime();
+      setInterval(updateTime, 1000);
+    </script>
+  </body>
+</html>

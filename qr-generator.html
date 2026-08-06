@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Generator</title>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> -->
+    <script src="qrcode.min.js"></script>
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:20px;
+    font-family:Arial,sans-serif;
+    background:#ffffff;
+    color:#111;
+    text-align:center;
+}
+
+h1{
+    color:#007bff;
+    margin-bottom:20px;
+}
+
+.container{
+    max-width:600px;
+    margin:auto;
+}
+
+textarea{
+    width:100%;
+    height:120px;
+    padding:15px;
+    border-radius:12px;
+    border:2px solid #007bff;
+    resize:none;
+    font-size:16px;
+    outline:none;
+}
+
+.controls{
+    margin-top:20px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.control-box{
+    background:#f5f5f5;
+    padding:15px;
+    border-radius:14px;
+    text-align:left;
+}
+
+label{
+    display:block;
+    margin-bottom:10px;
+    font-weight:bold;
+}
+
+/* Color Picker & Hex Input Styling */
+.color-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.color-input-wrapper input[type="color"] {
+    width: 45px;
+    height: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.color-input-wrapper input[type="text"] {
+    flex: 1;
+    height: 40px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    text-transform: uppercase;
+}
+
+.color-input-wrapper input[type="text"]:focus {
+    border-color: #007bff;
+}
+
+/* Swatches Styling */
+.swatches {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.swatch:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.file-upload{
+    position:relative;
+    width:100%;
+    padding:18px;
+    border:2px dashed #007bff;
+    border-radius:14px;
+    background:#ffffff;
+    cursor:pointer;
+    transition:0.2s;
+    overflow:hidden;
+    text-align: center;
+}
+
+.file-upload:hover{
+    background:#eef6ff;
+}
+
+.file-upload span{
+    display:block;
+    color:#007bff;
+    font-size:15px;
+    font-weight:bold;
+}
+
+.file-upload input{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    opacity:0;
+    cursor:pointer;
+}
+
+.preview{
+    margin-top:15px;
+    display:none;
+    text-align: center;
+}
+
+.preview-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.preview img{
+    width:90px;
+    height:90px;
+    object-fit:cover;
+    border-radius:14px;
+    border:2px solid #007bff;
+    display: block; 
+}
+
+.remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background: #ff0000 !important; 
+    color: white;
+    border: 2px solid white !important;
+    border-radius: 50% !important;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: 0.2s;
+}
+
+button{
+    margin-top:20px;
+    background:#007bff;
+    color:white;
+    border:none;
+    padding:14px 22px;
+    border-radius:12px;
+    font-size:16px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{
+    background:#005fd1;
+}
+
+.canvas-box{
+    margin-top:30px;
+}
+
+canvas{
+    max-width:100%;
+    border:2px solid #007bff;
+    border-radius:12px;
+}
+
+@media(max-width:768px){
+    h1{
+        color:#ff8800;
+    }
+
+    textarea{
+        border-color:#ff8800;
+    }
+
+    canvas{
+        border-color:#ff8800;
+    }
+
+    button:not(.remove-btn){
+        background:#ff8800;
+    }
+
+    button:not(.remove-btn):hover{
+        background:#e67600;
+    }
+
+    .controls{
+        grid-template-columns:1fr;
+    }
+
+    .file-upload{
+        border-color:#ff8800;
+    }
+
+    .file-upload span{
+        color:#ff8800;
+    }
+
+    .file-upload:hover{
+        background:#fff4e8;
+    }
+
+    .preview img{
+        border-color:#ff8800;
+    }
+
+    .color-input-wrapper input[type="text"]:focus {
+        border-color: #ff8800;
+    }
+}
+.color-input-wrapper input[type="color"] {
+    width: 45px;
+    height: 40px;
+    padding: 0;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;    
+    overflow: hidden;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.color-input-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-input-wrapper input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 10px;
+}
+
+.color-input-wrapper input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>QR Generator</h1>
+
+<textarea id="qrText" placeholder="Enter Your Text Or URL"></textarea>
+
+<div class="controls">
+
+    <div class="control-box">
+        <label>Màu QR</label>
+        <div class="color-input-wrapper">
+            <input type="color" id="qrColor" value="#000000">
+            <input type="text" id="qrColorText" value="#000000" maxlength="7">
+        </div>
+        <div class="swatches" id="qrSwatches">
+            <div class="swatch" style="background:#000000;" data-color="#000000"></div>
+            <div class="swatch" style="background:#ffffff; border:1px solid #ccc" data-color="#ffffff"></div>    
+            <div class="swatch" style="background:#007bff;" data-color="#007bff"></div>
+            <div class="swatch" style="background:#dc3545;" data-color="#dc3545"></div>
+            <div class="swatch" style="background:#28a745;" data-color="#28a745"></div>
+            <div class="swatch" style="background:#ff8800;" data-color="#ff8800"></div>
+        </div>
+    </div>
+
+    <div class="control-box">
+        <label>Màu nền</label>
+        <div class="color-input-wrapper">
+            <input type="color" id="bgColor" value="#ffffff">
+            <input type="text" id="bgColorText" value="#ffffff" maxlength="7">
+        </div>
+        <div class="swatches" id="bgSwatches">
+            <div class="swatch" style="background:#000000;" data-color="#000000"></div>
+            <div class="swatch" style="background:#ffffff; border:1px solid #ccc" data-color="#ffffff"></div>
+            <div class="swatch" style="background:#007bff;" data-color="#f8f9fa"></div>
+            <div class="swatch" style="background:#dc3545;" data-color="#fff3cd"></div>
+            <div class="swatch" style="background:#28a745;" data-color="#d1ecf1"></div>
+            <div class="swatch" style="background:#ff8800;" data-color="#d4edda"></div>
+        </div>
+    </div>
+
+    <div class="control-box" style="grid-column:1/-1;">
+
+        <label>Upload ảnh logo giữa QR</label>
+
+        <div class="file-upload">
+            <span>Chọn ảnh hoặc kéo thả vào đây</span>
+            <input type="file" id="logoInput" accept="image/*">
+        </div>
+
+        <div class="preview" id="preview">
+            <div class="preview-wrapper">
+                <img id="previewImg">
+                <button class="remove-btn" onclick="removeLogo()" title="Xóa logo">✖</button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<button onclick="generateQR()">Tạo QR</button>
+
+<button onclick="downloadQR()">Download PNG</button>
+
+<div class="canvas-box">
+    <canvas id="canvas" width="250" height="250"></canvas>
+</div>
+
+</div>
+
+<script>
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+const preview=document.getElementById("preview");
+const previewImg=document.getElementById("previewImg");
+
+let logoImage=null;
+
+function setupColorPicker(colorInputId, textInputId, swatchesId) {
+    const colorInput = document.getElementById(colorInputId);
+    const textInput = document.getElementById(textInputId);
+    const swatches = document.getElementById(swatchesId).querySelectorAll('.swatch');
+
+    colorInput.addEventListener('input', (e) => {
+        textInput.value = e.target.value.toUpperCase();
+    });
+
+    textInput.addEventListener('input', (e) => {
+        let val = e.target.value.trim();
+        if (!val.startsWith('#') && val.length > 0) {
+            val = '#' + val;
+        }
+        if (val.match(/^#[0-9a-fA-F]{6}$/)) {
+            colorInput.value = val;
+        }
+    });
+
+    swatches.forEach(swatch => {
+        swatch.addEventListener('click', (e) => {
+            const color = e.target.getAttribute('data-color');
+            colorInput.value = color;
+            textInput.value = color.toUpperCase();
+        });
+    });
+}
+
+setupColorPicker('qrColor', 'qrColorText', 'qrSwatches');
+setupColorPicker('bgColor', 'bgColorText', 'bgSwatches');
+
+document.getElementById("logoInput").addEventListener("change",function(e){
+    const file=e.target.files[0];
+    if(!file) return;
+
+    const reader=new FileReader();
+    reader.onload=function(event){
+        preview.style.display="block";
+        previewImg.src=event.target.result;
+        logoImage=new Image();
+        logoImage.onload=function(){
+            generateQR();
+        };
+        logoImage.src=event.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+function removeLogo() {
+    preview.style.display = "none";     
+    document.getElementById("logoInput").value = ""; 
+    logoImage = null;                   
+    generateQR();                       
+}
+
+async function generateQR(){
+    const text=document.getElementById("qrText").value.trim();
+    const qrColor=document.getElementById("qrColor").value;
+    const bgColor=document.getElementById("bgColor").value;
+
+    if(!text){
+        alert("Vui lòng nhập nội dung");
+        return;
+    }
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    await QRCode.toCanvas(canvas,text,{
+        width:250,
+        margin:2,
+        errorCorrectionLevel: 'H', 
+        color:{
+            dark:qrColor,
+            light:bgColor
+        }
+    });
+
+    if(logoImage){
+        const size=60; 
+        const x=(canvas.width-size)/2;
+        const y=(canvas.height-size)/2;
+        const padding = 5; 
+
+        ctx.fillStyle=bgColor;
+
+        ctx.beginPath();
+        ctx.roundRect(x - padding, y - padding, size + (padding*2), size + (padding*2), 10);
+        ctx.fill();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(x, y, size, size, 8);
+        ctx.clip();
+        ctx.drawImage(logoImage, x, y, size, size);
+        ctx.restore();
+    }
+}
+
+function downloadQR(){
+    const link=document.createElement("a");
+    link.download="qr-code.png";
+    link.href=canvas.toDataURL("image/png");
+    link.click();
+}
+</script>
+
+</body>
+</html>

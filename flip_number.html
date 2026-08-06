@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip Number</title>
+    <style>
+        /* Khai báo các biến CSS để dễ dàng thay đổi kích thước theo thiết bị */
+        :root {
+            --flap-w: 40px;
+            --flap-h: 60px;
+            --font-s: 36px;
+            --gap-x: 4px;
+        }
+
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: hidden; 
+        }
+
+        #board {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: fit-content;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .word-group, .number-group {
+            display: flex;
+            gap: var(--gap-x);
+            justify-content: center;
+        }
+
+        /* Responsive cho thiết bị di động (màn hình nhỏ hơn 768px) */
+        @media (max-width: 768px) {
+            :root {
+                --flap-w: 26px;
+                --flap-h: 40px;
+                --font-s: 24px;
+                --gap-x: 2px;
+            }
+            
+            #board {
+                gap: 25px;
+            }
+
+            .row {
+                flex-direction: column; 
+                gap: 8px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #21262d; 
+            }
+
+            .row:last-child {
+                border-bottom: none;
+            }
+        }
+
+        /* ---------------- CSS Cấu trúc ô lật (Vuông vức 100%) ---------------- */
+        
+        .split-flap {
+            position: relative;
+            width: var(--flap-w);
+            height: var(--flap-h);
+            font-size: var(--font-s);
+            font-weight: bold;
+            perspective: 1000px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            background-color: #161b22;
+        }
+
+        .half {
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            background-color: #21262d;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            color: #58a6ff;
+        }
+
+        .half span {
+            position: absolute;
+            height: var(--flap-h);
+            line-height: var(--flap-h);
+        }
+
+        .top {
+            top: 0;
+            border-bottom: 1px solid #000;
+        }
+
+        .top span { top: 0; }
+
+        .bottom {
+            bottom: 0;
+            border-top: 1px solid #0d1117;
+        }
+
+        .bottom span { bottom: 0; }
+
+        /* Animation (lật trên rơi xuống, sau đó lật dưới đập xuống) */
+        .flap-top, .flap-bottom {
+            z-index: 10;
+        }
+
+        .flap-top {
+            transform-origin: bottom;
+            animation: flipDown 0.25s linear forwards;
+        }
+
+        .flap-bottom {
+            transform-origin: top;
+            transform: rotateX(90deg);
+            animation: flipUp 0.25s linear 0.25s forwards;
+        }
+
+        @keyframes flipDown {
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(-90deg); }
+        }
+
+        @keyframes flipUp {
+            0% { transform: rotateX(90deg); }
+            100% { transform: rotateX(0deg); }
+        }
+        
+        .static-text .half { color: #8b949e; }
+    </style>
+</head>
+<body>
+
+    <div id="board"></div>
+
+    <script>
+        const words = ["USER", "SERVICE", "DEPLOYMENT", "REQUEST", "LOG"];
+        const board = document.getElementById("board");
+        
+        // Trạng thái các bộ đếm số
+        const counters = [2000, 2000, 2000, 2000, 2000]; 
+        const numberElements = [];
+
+        // Tạo phần tử HTML cho 1 ô (Split-flap)
+        function createFlap(char, isStatic = false) {
+            const flap = document.createElement('div');
+            flap.className = `split-flap ${isStatic ? 'static-text' : ''}`;
+            flap.dataset.char = char;
+
+            flap.innerHTML = `
+                <div class="half top"><span>${char}</span></div>
+                <div class="half bottom"><span>${char}</span></div>
+            `;
+            return flap;
+        }
+
+        // Khởi tạo toàn bộ bảng
+        function initBoard() {
+            words.forEach((word, rowIndex) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'row';
+
+                // Nhóm chữ tĩnh
+                const wordGroup = document.createElement('div');
+                wordGroup.className = 'word-group';
+                for (let char of word) {
+                    wordGroup.appendChild(createFlap(char, true));
+                }
+                rowDiv.appendChild(wordGroup);
+
+                // Nhóm số động
+                const numberGroup = document.createElement('div');
+                numberGroup.className = 'number-group';
+                
+                const initialNumStr = counters[rowIndex].toString().padStart(6, '0');
+                const rowDigits = [];
+                for (let char of initialNumStr) {
+                    const digitFlap = createFlap(char);
+                    numberGroup.appendChild(digitFlap);
+                    rowDigits.push(digitFlap);
+                }
+                
+                numberElements.push(rowDigits);
+                rowDiv.appendChild(numberGroup);
+                board.appendChild(rowDiv);
+            });
+        }
+
+        // Xử lý logic lật đồng bộ
+        function triggerFlip(flapDOM, oldChar, newChar) {
+            if (oldChar === newChar) return;
+
+            flapDOM.dataset.char = newChar;
+
+            // Lấy 2 thẻ nền tĩnh
+            const topSpan = flapDOM.querySelector('.top span');
+            const bottomSpan = flapDOM.querySelector('.bottom span');
+
+            // 1. CẬP NHẬT NGAY tấm nền nửa trên thành số MỚI.
+            // Khi thẻ animation ở trên lật rơi xuống, nó sẽ dần để lộ số mới này ra.
+            topSpan.innerText = newChar;
+
+            // Tấm nền nửa dưới vẫn giữ số CŨ, sẽ bị che lấp đi khi thẻ animation nửa dưới đập xuống.
+
+            // 2. Tạo các thẻ animation
+            const flapTop = document.createElement('div');
+            flapTop.className = 'half top flap-top';
+            flapTop.innerHTML = `<span>${oldChar}</span>`; // Lật số cũ đi
+
+            const flapBottom = document.createElement('div');
+            flapBottom.className = 'half bottom flap-bottom';
+            flapBottom.innerHTML = `<span>${newChar}</span>`; // Đập số mới xuống
+
+            flapDOM.appendChild(flapTop);
+            flapDOM.appendChild(flapBottom);
+
+            // 3. Sau khi animation kết thúc (500ms), dọn dẹp và cập nhật nốt nửa dưới
+            setTimeout(() => {
+                bottomSpan.innerText = newChar; // Giờ cả 2 nửa đều là số mới
+                flapTop.remove();
+                flapBottom.remove();
+            }, 500);
+        }
+
+        // Vòng lặp đếm số mỗi 0.5 giây
+        function updateCounters() {
+            for (let i = 0; i < counters.length; i++) {
+                const oldStr = counters[i].toString().padStart(6, '0');
+                counters[i]++; 
+                const newStr = counters[i].toString().padStart(6, '0');
+
+                // So sánh từng chữ số để quyết định lật ô nào
+                for (let j = 0; j < 6; j++) {
+                    if (oldStr[j] !== newStr[j]) {
+                        triggerFlip(numberElements[i][j], oldStr[j], newStr[j]);
+                    }
+                }
+            }
+        }
+
+        // Bắt đầu chạy
+        initBoard();
+        setInterval(updateCounters, 500);
+    </script>
+</body>
+</html>

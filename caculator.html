@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" /> -->
+    <link rel="stylesheet" href="all.min.css" />
+    <style>
+:root {
+    --bg: #f4f6fb;
+    --panel: #ffffff;
+    --text: #222;
+    --btn: #e9edf5;
+    --operator: #4a7dff;
+    --equal: #ff4d00;
+    --danger: #ff5c5c;
+}
+
+[data-theme="dark"] {
+    --bg: #1e1f26;
+    --panel: #2a2c36;
+    --text: #f1f1f1;
+    --btn: #3a3d4a;
+    --operator: #6c8cff;
+    --equal: #ff5c5c;
+    --danger: #ff7675;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    background: var(--bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Calculator */
+.calculator {
+    width: 320px;
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    color: var(--text);
+}
+
+/* Screen */
+.screen {
+    background: var(--btn);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: right;
+    margin-bottom: 20px;
+}
+
+#history-mini {
+    font-size: 0.8rem;
+    color: var(--operator);
+    min-height: 18px;
+}
+
+#result {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text);
+}
+
+/* Buttons */
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.btn {
+    height: 55px;
+    border: none;
+    border-radius: 12px;
+    background: var(--btn);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    transition: 0.15s;
+}
+
+.btn:hover {
+    filter: brightness(0.95);
+}
+
+.btn:active {
+    transform: scale(0.96);
+}
+
+/* Special buttons */
+.op {
+    background: var(--operator);
+    color: #fff;
+}
+
+.equal {
+    background: var(--equal);
+    color: #fff;
+    grid-column: span 2;
+}
+
+.clear {
+    background: var(--danger);
+    color: #fff;
+}
+
+/* History panel */
+#history-panel {
+    position: absolute;
+    inset: 0;
+    background: var(--panel);
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    border-radius: 16px;
+}
+
+.hist-item {
+    padding: 6px 0;
+    border-bottom: 1px solid #000000;
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+[data-theme="dark"] .hist-item {
+    color: #fff;
+    border-bottom: 1px solid #ffffff; 
+}
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+
+    <!-- History -->
+    <div id="history-panel">
+        <div class="header">
+            <span>Lịch sử</span>
+            <i class="fas fa-times" onclick="toggleHistory()" style="cursor:pointer"></i>
+        </div>
+
+        <div id="history-list" style="flex:1; overflow:auto;"></div>
+
+        <button class="btn" onclick="clearHistory()" style="background-color: #ff4d00; color: #f1f1f1;">Xóa hết</button>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <i class="fas fa-history" onclick="toggleHistory()" style="cursor:pointer"></i>
+        <b>Calculator</b>
+        <i class="fas fa-moon" id="theme-btn" style="cursor:pointer"></i>
+    </div>
+
+    <!-- Screen -->
+    <div class="screen">
+        <div id="history-mini"></div>
+        <div id="result">0</div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+        <button class="btn" onclick="press('7')">7</button>
+        <button class="btn" onclick="press('8')">8</button>
+        <button class="btn" onclick="press('9')">9</button>
+        <button class="btn clear" onclick="clean()">AC</button>
+
+        <button class="btn" onclick="press('4')">4</button>
+        <button class="btn" onclick="press('5')">5</button>
+        <button class="btn" onclick="press('6')">6</button>
+        <button class="btn op" onclick="press('/')">÷</button>
+
+        <button class="btn" onclick="press('1')">1</button>
+        <button class="btn" onclick="press('2')">2</button>
+        <button class="btn" onclick="press('3')">3</button>
+        <button class="btn op" onclick="press('*')">×</button>
+
+        <button class="btn" onclick="press('0')">0</button>
+        <button class="btn" onclick="press('.')">.</button>
+        <button class="btn" onclick="press('00')">00</button>
+        <button class="btn op" onclick="press('-')">-</button>
+
+        <button class="btn" onclick="undo()"><i class="fas fa-backspace"></i></button>
+        <button class="btn op" onclick="press('+')">+</button>
+        <button class="btn equal" onclick="equal()">=</button>
+    </div>
+
+</div>
+
+<script>
+let currentInput = "";
+let isDone = false;
+let logs = [];
+
+const resultEl = document.getElementById('result');
+const miniHistEl = document.getElementById('history-mini');
+const histListEl = document.getElementById('history-list');
+
+// function press(val) {
+//     if (isDone) {
+//         if (!['+', '-', '*', '/'].includes(val)) currentInput = "";
+//         isDone = false;
+//     }
+//     currentInput += val;
+//     render();
+// }
+function press(val) {
+    if (isDone) {
+        isDone = false;
+    }
+
+    currentInput += val;
+    render();
+}
+
+function render() {
+    resultEl.innerText = currentInput || "0";
+}
+
+function clean() {
+    currentInput = "";
+    miniHistEl.innerText = "";
+    render();
+}
+
+function undo() {
+    currentInput = currentInput.slice(0, -1);
+    isDone = false;
+    render();
+}
+
+function equal() {
+    if (!currentInput) return;
+    try {
+        let res = eval(currentInput);
+        if (res.toString().includes('.')) res = parseFloat(res.toFixed(4));
+
+        miniHistEl.innerText = currentInput + " =";
+        saveLog(`${currentInput} = ${res}`);
+
+        currentInput = res.toString();
+        render();
+        isDone = true;
+    } catch {
+        resultEl.innerText = "Error";
+        currentInput = "";
+    }
+}
+
+/* History */
+function saveLog(msg) {
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    div.innerText = msg;
+    histListEl.prepend(div);
+}
+
+function toggleHistory() {
+    const panel = document.getElementById('history-panel');
+    panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function clearHistory() {
+    histListEl.innerHTML = "";
+}
+
+/* Theme */
+const themeBtn = document.getElementById('theme-btn');
+themeBtn.onclick = () => {
+    const mode = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', mode === 'light' ? 'dark' : 'light');
+};
+</script>
+
+</body>
+</html>

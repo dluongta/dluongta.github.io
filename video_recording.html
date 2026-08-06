@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình Quay Video Trực Tuyến</title>
+    <style>
+        :root {
+            --primary-color: #4686e5;
+            --danger-color: #ef4444;
+            --secondary-color: #6b7280;
+            --switch-color: #10b981;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #000000;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            aspect-ratio: 16 / 9; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .camera-off-text {
+            position: absolute;
+            color: #9ca3af;
+            font-size: 16px;
+            display: none;
+            z-index: 1;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover; 
+            position: relative;
+            z-index: 2;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 140px; 
+        }
+
+        #toggleCameraBtn {
+            background-color: var(--secondary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(107, 114, 128, 0.3);
+        }
+
+        #switchCameraBtn {
+            background-color: var(--switch-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        #startBtn {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        #stopBtn {
+            background-color: var(--danger-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        }
+
+        button:hover:not(:disabled) {
+            filter: brightness(0.9);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none;
+        }
+
+        .recording-pulse {
+            width: 12px;
+            height: 12px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #e5e7eb;
+            display: none; 
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #10b981;
+        }
+
+        #downloadBtn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 24px;
+            background-color: #10b981;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        #downloadBtn:hover {
+            background-color: #059669;
+        }
+
+        @media (max-width: 600px) {
+            .video-wrapper {
+                aspect-ratio: 3 / 4; 
+                max-height: 65vh; 
+            }
+            
+            .controls {
+                gap: 8px;
+            }
+            
+            button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Studio Trực Tuyến</h1>
+        
+        <div class="video-wrapper">
+            <div class="camera-off-text" id="cameraOffText">Camera đang tắt</div>
+            <video id="livePreview" autoplay muted playsinline></video>
+        </div>
+
+        <div class="controls">
+            <button id="switchCameraBtn">
+                <span></span> Lật Camera
+            </button>
+            <button id="toggleCameraBtn">
+                <span></span> Tắt Camera
+            </button>
+            
+            <button id="startBtn">
+                <span class="icon">▶</span> Bắt đầu quay
+            </button>
+            <button id="stopBtn" disabled>
+                <span>⏹</span> Dừng lại
+            </button>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h2>✨ Video của bạn đã sẵn sàng!</h2>
+            <div class="video-wrapper">
+                <video id="playbackVideo" controls playsinline></video>
+            </div>
+            <a id="downloadBtn" download="recorded_video.webm">Tải Video Về Máy</a>
+        </div>
+    </div>
+
+    <script>
+        const livePreview = document.getElementById('livePreview');
+        const playbackVideo = document.getElementById('playbackVideo');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const toggleCameraBtn = document.getElementById('toggleCameraBtn');
+        const switchCameraBtn = document.getElementById('switchCameraBtn');
+        const resultSection = document.getElementById('resultSection');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const cameraOffText = document.getElementById('cameraOffText');
+
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream = null;
+        let isCameraOn = false;
+        
+        let currentFacingMode = 'user'; 
+
+        function stopCurrentStreamTracks() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        async function startCamera() {
+            stopCurrentStreamTracks(); 
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: currentFacingMode }, 
+                    audio: true 
+                });
+                
+                livePreview.srcObject = stream;
+                isCameraOn = true;
+                
+                cameraOffText.style.display = 'none';
+                livePreview.style.display = 'block';
+                toggleCameraBtn.innerHTML = '<span></span> Tắt Camera';
+                startBtn.disabled = false;
+                switchCameraBtn.disabled = false;
+            } catch (err) {
+                console.error("Lỗi truy cập thiết bị: ", err);
+                alert("Vui lòng cấp quyền truy cập Camera và Micro để sử dụng tính năng này!");
+            }
+        }
+
+        function stopCamera() {
+            stopCurrentStreamTracks();
+            stream = null;
+            livePreview.srcObject = null;
+            isCameraOn = false;
+            
+            cameraOffText.style.display = 'block';
+            livePreview.style.display = 'none';
+            toggleCameraBtn.innerHTML = '<span>📹</span> Bật Camera';
+            startBtn.disabled = true; 
+            switchCameraBtn.disabled = true; 
+        }
+
+        toggleCameraBtn.addEventListener('click', () => {
+            if (isCameraOn) {
+                stopCamera();
+            } else {
+                startCamera();
+            }
+        });
+
+        switchCameraBtn.addEventListener('click', () => {
+            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+            
+            if (isCameraOn) {
+                startCamera();
+            }
+        });
+
+        startBtn.addEventListener('click', () => {
+            if (!stream) {
+                alert("Camera chưa sẵn sàng!");
+                return;
+            }
+
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const videoURL = URL.createObjectURL(blob);
+                
+                playbackVideo.src = videoURL;
+                downloadBtn.href = videoURL;
+                
+                resultSection.style.display = 'block';
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            mediaRecorder.start();
+            
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            toggleCameraBtn.disabled = true; 
+            switchCameraBtn.disabled = true; 
+            startBtn.innerHTML = '<span class="recording-pulse"></span> Đang quay...';
+        });
+
+        stopBtn.addEventListener('click', () => {
+            mediaRecorder.stop();
+            
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            toggleCameraBtn.disabled = false; 
+            switchCameraBtn.disabled = false;
+            startBtn.innerHTML = '<span class="icon">▶</span> Quay lại video khác';
+        });
+
+        window.addEventListener('load', startCamera);
+    </script>
+</body>
+</html>

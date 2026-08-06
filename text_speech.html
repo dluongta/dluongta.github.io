@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text Speech</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      color: #2c3e50;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 15px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      background: #fafafa;
+      box-sizing: border-box;
+      resize: vertical;
+      transition: border .3s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #2196f3;
+      background: #fff;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 15px 0;
+      justify-content: center;
+    }
+
+    button {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s, background-color 0.3s, box-shadow 0.3s;
+      color: white;
+      background: #6c63ff;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button.primary {
+      background: #4caf50;
+      box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+    }
+
+    button.blue {
+      background: #2196f3;
+    }
+
+    button.purple {
+      background: #6c63ff;
+    }
+
+    button.red {
+      background: #e53935;
+    }
+
+    button.gray {
+      background: #607d8b;
+      color: white;
+    }
+
+    .modes {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: center;
+    }
+
+    /* Mặc định màu xanh dương sáng cho các nút cài đặt ngôn ngữ */
+    .modes button {
+      background: #2196f3; 
+      color: white;
+      flex: 1;
+    }
+
+    /* Khi được chọn (active) sẽ chuyển sang xanh dương đậm (nhạt hơn bản trước một chút) */
+    .modes button.active {
+      background: #1565c0 !important; 
+      color: white;
+      box-shadow: 0 4px 10px rgba(21, 101, 192, 0.3);
+    }
+
+    /* Định dạng cho trạng thái thiết bị để nhìn rõ ràng hơn */
+    #device-status {
+      font-size: 14px;
+      font-weight: bold;
+      color: #607d8b;
+      margin-top: -8px;
+      margin-bottom: 2px;
+      padding: 15px;
+      /* background: #eceff1; */
+      /* border-radius: 8px; */
+      display: inline-block;
+    }
+
+    #status {
+      font-size: 13px; 
+      color: #e53935; 
+      margin-top: 10px;
+      font-weight: 500;
+      min-height: 20px;
+    }
+
+    /* Mobile fix styling */
+    @media (max-width: 600px) {
+      .container {
+        margin: 10px;
+        padding: 15px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 10px;
+      }
+      #device-status {
+      font-size: 14px;
+      font-weight: bold;
+      color: #607d8b;
+      margin-top: 0px;
+      margin-bottom: 15px;
+      padding: 10px;
+      display: inline-block;
+    }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Text Speech</h1>
+
+    <textarea id="text" placeholder="Nhập nội dung vào đây..."></textarea>
+
+    <div class="row">
+      <button class="purple" onclick="copyText()">📋 Sao chép</button>
+      <button class="purple" onclick="clearText()">❌ Xóa</button>
+    </div>
+
+    <h3 style="margin-top:20px; font-size: 1rem;">Cài đặt giọng đọc</h3>
+    <div class="modes">
+      <button id="viBtn" class="active" onclick="setLang('vi-VN')">🇻🇳 Tiếng Việt</button>
+      <button id="enBtn" onclick="setLang('en-US')">🇬🇧 English</button>
+    </div>
+
+    <div class="row" style="margin-top: 20px;">
+      <button id="recordBtn" class="blue" onclick="toggleRecord()">🎤 Ghi âm</button>
+    </div>
+
+    <div class="row">
+      <button class="primary" onclick="speak()">▶️ ĐỌC NGAY</button>
+    </div>
+
+    <p id="status"></p>
+
+    <div id="device-status"></div>
+  </div>
+
+  <script>
+    const textEl = document.getElementById("text");
+    const recordBtn = document.getElementById("recordBtn");
+    const viBtn = document.getElementById("viBtn");
+    const enBtn = document.getElementById("enBtn");
+    const statusEl = document.getElementById("status");
+    const deviceStatusEl = document.getElementById("device-status");
+    let speakTimeout = null;
+
+    let currentLang = "vi-VN";
+    let isRecording = false;
+    let recognition = null;
+    let allVoices = [];
+
+    // Tự động nhận diện thiết bị và hiển thị Icon + Text tương ứng
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    deviceStatusEl.innerText = isMobile ? "📱 Chế độ Mobile" : "💻 Chế độ PC";
+
+    function loadVoices() {
+      allVoices = speechSynthesis.getVoices();
+      if (allVoices.length === 0) {
+        setTimeout(loadVoices, 100);
+      }
+    }
+
+    // Kích hoạt load giọng ngay lập tức
+    loadVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function setLang(lang) {
+      currentLang = lang;
+      viBtn.classList.toggle("active", lang === "vi-VN");
+      enBtn.classList.toggle("active", lang === "en-US");
+      statusEl.innerText = "";
+    }
+
+    function stopSpeak() {
+      speechSynthesis.cancel();
+    }
+
+    function speak() {
+      if (!textEl.value.trim()) {
+        alert("Vui lòng nhập văn bản!");
+        return;
+      }
+
+      speechSynthesis.cancel();
+
+      if (speakTimeout) clearTimeout(speakTimeout);
+
+      speakTimeout = setTimeout(() => {
+        allVoices = speechSynthesis.getVoices();
+
+        const utterance = new SpeechSynthesisUtterance(textEl.value);
+        let selectedVoice = null;
+
+        if (currentLang === "vi-VN") {
+          selectedVoice = allVoices.find(v => v.lang === "vi-VN");
+
+          if (!selectedVoice) {
+            selectedVoice = allVoices.find(v =>
+              v.name.includes("Vietnamese") || v.name.includes("Tiếng Việt")
+            );
+          }
+
+          if (isMobile && !selectedVoice) {
+            statusEl.innerText = "⚠️ Không có giọng Việt, dùng giọng Anh thay thế.";
+            selectedVoice = allVoices.find(v => v.lang === "en-US");
+          }
+        } else {
+          selectedVoice = allVoices.find(v => v.lang === "en-US");
+        }
+
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+          utterance.lang = selectedVoice.lang;
+        } else {
+          utterance.lang = currentLang;
+        }
+
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+
+        utterance.onerror = (e) => {
+          console.warn("Speech error", e);
+
+          if (isMobile) {
+            speechSynthesis.cancel();
+            const fb = new SpeechSynthesisUtterance(textEl.value);
+            const enVoice = allVoices.find(v => v.lang === "en-US");
+            if (enVoice) fb.voice = enVoice;
+            fb.lang = "en-US";
+            speechSynthesis.speak(fb);
+          }
+        };
+        speechSynthesis.speak(utterance);
+      }, 120);
+    }
+
+    // --- CÁC CHỨC NĂNG KHÁC ---
+
+    function copyText() {
+      if (!textEl.value) return;
+      navigator.clipboard.writeText(textEl.value);
+      statusEl.style.color = "#4caf50";
+      statusEl.innerText = "📋 Đã sao chép vào bộ nhớ tạm";
+      setTimeout(() => statusEl.innerText = "", 2000);
+    }
+
+    function clearText() {
+      textEl.value = "";
+      statusEl.innerText = "";
+    }
+
+    function toggleRecord() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Trình duyệt không hỗ trợ ghi âm");
+        return;
+      }
+
+      if (!recognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false; // Chỉ lấy kết quả cuối cùng để đỡ lỗi
+        recognition.lang = currentLang;
+
+        recognition.onstart = () => {
+          isRecording = true;
+          recordBtn.textContent = "⏹️ Dừng Ghi";
+          recordBtn.classList.add("red");
+          recordBtn.classList.remove("blue");
+          statusEl.style.color = "#2196f3";
+          statusEl.innerText = "🎙️ Đang lắng nghe...";
+        };
+
+        recognition.onresult = e => {
+          let text = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            if (e.results[i].isFinal) {
+              text += e.results[i][0].transcript;
+            }
+          }
+          textEl.value += (textEl.value ? " " : "") + text;
+        };
+
+        recognition.onerror = (e) => {
+          console.error(e);
+          stopRecordUI();
+          statusEl.style.color = "#e53935";
+          statusEl.innerText = "❌ Lỗi ghi âm (Micro hoặc mạng)";
+        };
+
+        recognition.onend = () => {
+          stopRecordUI();
+        };
+      }
+
+      if (isRecording) {
+        recognition.stop();
+      } else {
+        recognition.lang = currentLang;
+        recognition.start();
+      }
+    }
+
+    function stopRecordUI() {
+      isRecording = false;
+      recordBtn.textContent = "🎤 Ghi âm";
+      recordBtn.classList.remove("red");
+      recordBtn.classList.add("blue");
+      statusEl.innerText = "";
+    }
+  </script>
+</body>
+
+</html>
