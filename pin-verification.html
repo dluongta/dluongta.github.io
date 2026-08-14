@@ -235,6 +235,145 @@
         <div id="messageBox" class="message-box"></div>
     </div>
 
+    <!-- <script>
+        const inputs = document.querySelectorAll('.pin-input');
+        const messageBox = document.getElementById('messageBox');
+        const btnClearOne = document.getElementById('btnClearOne');
+        const btnClearAll = document.getElementById('btnClearAll');
+        const CORRECT_PIN = '123456';
+
+        inputs[0].focus();
+
+        inputs.forEach((input, index) => {
+            // Xử lý khi người dùng click hoặc focus vào ô
+            input.addEventListener('focus', (e) => {
+                let targetIndex = Array.from(inputs).findIndex(inp => !inp.dataset.realValue);
+
+                if (targetIndex === -1) {
+                    targetIndex = inputs.length - 1; // Nếu đã điền hết thì focus vào ô cuối
+                }
+
+                if (index !== targetIndex) {
+                    inputs[targetIndex].focus();
+                }
+            });
+
+            // Xử lý khi gõ phím vào ô
+            input.addEventListener('input', (e) => {
+                clearMessage();
+                let rawVal = e.target.value;
+
+                // Loại bỏ dấu '-' hoặc dấu '•' để lấy đúng số người dùng vừa gõ vào
+                let typedChar = rawVal.replace(/[-•]/g, '');
+
+                if (typedChar === '') {
+                    e.target.value = '-';
+                    input.dataset.realValue = '';
+                    input.classList.remove('filled'); // <--- Trở về màu xám
+                    return;
+                }
+
+                // Lưu lại số thật vừa gõ
+                input.dataset.realValue = typedChar.slice(-1);
+
+                // Fix cứng hiển thị thành dấu chấm tròn
+                e.target.value = '•';
+                input.classList.add('filled'); // <--- Đổi sang màu đen
+
+                // Chuyển sang ô tiếp theo
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                } else {
+                    checkPIN();
+                }
+            });
+
+            // Xử lý khi bấm phím Xoá (Backspace) trên bàn phím
+            input.addEventListener('keydown', (e) => {
+                if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                    e.preventDefault();
+                }
+
+                if (e.key === 'Backspace') {
+                    e.preventDefault();
+
+                    let hasValue = (input.dataset.realValue !== undefined && input.dataset.realValue !== '');
+
+                    if (hasValue) {
+                        // Xoá dữ liệu ô hiện tại, đưa về '-'
+                        input.value = '-';
+                        input.dataset.realValue = '';
+                        input.classList.remove('filled'); // <--- Trở về màu xám
+                        clearMessage();
+                    } else {
+                        // Nếu ô hiện tại đã là '-', lùi về ô trước đó và xoá nó
+                        if (index > 0) {
+                            inputs[index - 1].value = '-';
+                            inputs[index - 1].dataset.realValue = '';
+                            inputs[index - 1].classList.remove('filled'); // <--- Trở về màu xám
+                            inputs[index - 1].focus();
+                            clearMessage();
+                        }
+                    }
+                }
+            });
+        });
+
+        function clearMessage() {
+            messageBox.textContent = '';
+            messageBox.className = 'message-box';
+        }
+
+        // Xử lý nút Delete (Xoá 1 ô)
+        btnClearOne.addEventListener('click', () => {
+            let lastFilledIndex = -1;
+            for (let i = inputs.length - 1; i >= 0; i--) {
+                if (inputs[i].dataset.realValue) {
+                    lastFilledIndex = i;
+                    break;
+                }
+            }
+
+            if (lastFilledIndex !== -1) {
+                inputs[lastFilledIndex].value = '-';
+                inputs[lastFilledIndex].dataset.realValue = '';
+                inputs[lastFilledIndex].classList.remove('filled'); // <--- Trở về màu xám
+                inputs[lastFilledIndex].focus();
+                clearMessage();
+            } else {
+                inputs[0].focus();
+            }
+        });
+
+        // Xử lý nút Clear all (Xoá tất cả)
+        btnClearAll.addEventListener('click', () => {
+            inputs.forEach(input => {
+                input.value = '-';
+                input.dataset.realValue = '';
+                input.classList.remove('filled'); // <--- Trở về màu xám
+            });
+            clearMessage();
+            inputs[0].focus();
+        });
+
+        function checkPIN() {
+            let pin = '';
+            inputs.forEach(input => {
+                pin += input.dataset.realValue || '';
+            });
+
+            if (pin.length === 6) {
+                if (pin === CORRECT_PIN) {
+                    messageBox.textContent = '✅ Verification successful!';
+                    messageBox.classList.add('success');
+                } else {
+                    messageBox.textContent = '❌ Incorrect PIN. Please try again!';
+                    messageBox.classList.add('error');
+                }
+            }
+        }
+    </script> -->
+
     <script>
         const inputs = document.querySelectorAll('.pin-input');
         const messageBox = document.getElementById('messageBox');
@@ -279,19 +418,19 @@
 
                 // Hiển thị số thật lên màn hình trước
                 e.target.value = typedChar;
-                input.classList.add('filled'); 
+                input.classList.add('filled');
 
                 // Xóa bộ đếm thời gian cũ nếu có để tránh lỗi
                 if (input.maskTimeout) {
                     clearTimeout(input.maskTimeout);
                 }
 
-                // Cài đặt sau 1 giây (1000ms) sẽ biến thành dấu chấm tròn
+                // Cài đặt sau 0.5 giây (500ms) sẽ biến thành dấu chấm tròn
                 input.maskTimeout = setTimeout(() => {
                     if (input.dataset.realValue !== '') {
                         input.value = '•';
                     }
-                }, 1000);
+                }, 500);
 
                 // Chuyển sang ô tiếp theo
                 if (index < inputs.length - 1) {
