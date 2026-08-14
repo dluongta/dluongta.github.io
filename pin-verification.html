@@ -402,7 +402,7 @@
                 clearMessage();
                 let rawVal = e.target.value;
 
-                // Chỉ lọc loại bỏ dấu chấm tròn (•)
+                // Lọc loại bỏ dấu chấm tròn
                 let typedChar = rawVal.replace(/[•]/g, '');
 
                 if (typedChar === '') {
@@ -410,29 +410,37 @@
                     return;
                 }
 
-                // Lấy đúng số người dùng vừa gõ (chữ số cuối cùng nếu gõ nhanh)
+                // Lấy đúng số người dùng vừa gõ
                 typedChar = typedChar.slice(-1);
 
-                // Lưu lại số thật vừa gõ
+                // Lưu số thật, hiện số lên màn hình và đổi màu
                 input.dataset.realValue = typedChar;
-
-                // Hiển thị số thật lên màn hình trước
                 e.target.value = typedChar;
                 input.classList.add('filled');
 
-                // Xóa bộ đếm thời gian cũ nếu có để tránh lỗi
+                // QUAN TRỌNG: Quét tất cả các ô khác (nhất là ô vừa nhập trước đó), 
+                // xoá thời gian đếm ngược của chúng và ép biến thành dấu chấm ngay lập tức
+                inputs.forEach((otherInput, otherIndex) => {
+                    if (otherIndex !== index && otherInput.dataset.realValue) {
+                        if (otherInput.maskTimeout) {
+                            clearTimeout(otherInput.maskTimeout);
+                        }
+                        otherInput.value = '•';
+                    }
+                });
+
+                // Đặt lại đếm ngược 0.5s cho riêng ô HIỆN TẠI vừa nhập
                 if (input.maskTimeout) {
                     clearTimeout(input.maskTimeout);
                 }
 
-                // Cài đặt sau 0.5 giây (500ms) sẽ biến thành dấu chấm tròn
                 input.maskTimeout = setTimeout(() => {
                     if (input.dataset.realValue !== '') {
                         input.value = '•';
                     }
                 }, 500);
 
-                // Chuyển sang ô tiếp theo
+                // Chuyển focus sang ô tiếp theo
                 if (index < inputs.length - 1) {
                     inputs[index + 1].focus();
                 } else {
@@ -471,15 +479,13 @@
             messageBox.className = 'message-box';
         }
 
-        // Hàm tiện ích để xoá trắng 1 ô
         function clearInput(input) {
             if (input.maskTimeout) clearTimeout(input.maskTimeout);
-            input.value = ''; // Để trống thì placeholder "-" sẽ tự hiện lên
+            input.value = '';
             input.dataset.realValue = '';
             input.classList.remove('filled');
         }
 
-        // Xử lý nút Delete (Xoá 1 ô)
         btnClearOne.addEventListener('click', () => {
             let lastFilledIndex = -1;
             for (let i = inputs.length - 1; i >= 0; i--) {
@@ -498,7 +504,6 @@
             }
         });
 
-        // Xử lý nút Clear all (Xoá tất cả)
         btnClearAll.addEventListener('click', () => {
             inputs.forEach(input => {
                 clearInput(input);
