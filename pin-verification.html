@@ -286,12 +286,12 @@
                     clearTimeout(input.maskTimeout);
                 }
 
-                // Cài đặt sau 3 giây (3000ms) sẽ biến thành dấu chấm tròn
+                // Cài đặt sau 1 giây (1000ms) sẽ biến thành dấu chấm tròn
                 input.maskTimeout = setTimeout(() => {
                     if (input.dataset.realValue !== '') {
                         input.value = '•';
                     }
-                }, 3000);
+                }, 1000);
 
                 // Chuyển sang ô tiếp theo
                 if (index < inputs.length - 1) {
