@@ -100,7 +100,7 @@
         const PARTICLE_COUNT = 1200;
         const IMAGE_SHOW_SCALE = 0.8;
         const PERSPECTIVE = 2000;
-        const PLANET_RADIUS = 180;
+        const PLANET_RADIUS = 300;
 
         let w, h, cx, cy;
         let zoom = isMobile ? 0.30 : 0.35;
@@ -135,49 +135,39 @@
 
                 ctxCache.globalCompositeOperation = "lighter";
 
-                // Halo chỉ màu cam, KHÔNG có màu trắng ở giữa
+                // 1. Tăng cường vầng hào quang (Glow) tỏa rộng màu cam chói lóa
                 const glow = ctxCache.createRadialGradient(
-                    center,
-                    center,
-                    pr * 0.45,
-                    center,
-                    center,
-                    pr * 3
+                    center, center, 0,
+                    center, center, pr * 4.5 // Tỏa rộng hơn để tạo độ chói
                 );
 
-                glow.addColorStop(0.0, "rgba(255,170,0,0.55)");
-                glow.addColorStop(0.35, "rgba(255,120,0,0.30)");
-                glow.addColorStop(0.75, "rgba(255,80,0,0.12)");
-                glow.addColorStop(1.0, "rgba(255,80,0,0)");
+                glow.addColorStop(0.0, "rgba(255, 255, 255, 0.9)"); // Tâm trắng sáng
+                glow.addColorStop(0.15, "rgba(255, 100, 0, 0.7)");  // Cam chói cực mạnh
+                glow.addColorStop(0.4, "rgba(255, 50, 0, 0.3)");    // Cam đỏ mờ dần
+                glow.addColorStop(1.0, "rgba(255, 20, 0, 0)");      // Phai ra không màu
 
                 ctxCache.fillStyle = glow;
                 ctxCache.beginPath();
-                ctxCache.arc(center, center, pr * 3, 0, Math.PI * 2);
+                ctxCache.arc(center, center, pr * 4.5, 0, Math.PI * 2);
                 ctxCache.fill();
 
-
-                // Highlight lệch sang trái trên
                 const sun = ctxCache.createRadialGradient(
-                    center - pr * 0.45,
-                    center - pr * 0.45,
-                    0,
-                    center,
-                    center,
-                    pr
+                    center, center, 0,
+                    center, center, pr
                 );
 
-                sun.addColorStop(0.00, "#ffffff");
-                sun.addColorStop(0.10, "#fff7dd");
-                sun.addColorStop(0.25, "#ffd65a");
-                sun.addColorStop(0.60, "#ff9800");
-                sun.addColorStop(1.00, "#ff5500");
+                sun.addColorStop(0.00, "#ffffff"); // Lõi trong cùng nóng trắng
+                sun.addColorStop(0.20, "#ffb366"); // Vàng cam chói
+                sun.addColorStop(0.50, "#ff6600"); // Cam rực rỡ
+                sun.addColorStop(0.80, "#ff3300"); // Cam đỏ
+                sun.addColorStop(1.00, "#b30000"); // Viền đỏ sậm hòa vào không gian
 
                 ctxCache.fillStyle = sun;
                 ctxCache.beginPath();
                 ctxCache.arc(center, center, pr, 0, Math.PI * 2);
                 ctxCache.fill();
-
             });
+
 
             const buildAura = (colorRGB) => createCacheCanvas(400, (ctxCache, center) => {
                 const g = ctxCache.createRadialGradient(center, center, 0, center, center, center);
