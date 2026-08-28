@@ -156,16 +156,13 @@
     //   }
     // }
     function handleDayClick(dayDiv) {
-      // Xóa màu cam của ngày đã chọn trước đó
-      if (selectedCell) {
-        selectedCell.classList.remove('selected');
+      if (selectedCell) selectedCell.classList.remove('selected');
+      if (!dayDiv.classList.contains('today')) {
+        dayDiv.classList.add('selected');
+        selectedCell = dayDiv;
+      } else {
+        selectedCell = null;
       }
-
-      // Thêm màu cam cho ngày vừa click
-      dayDiv.classList.add('selected');
-
-      // Lưu lại ngày đang được chọn
-      selectedCell = dayDiv;
     }
 
 
