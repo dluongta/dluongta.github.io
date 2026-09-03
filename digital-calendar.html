@@ -146,25 +146,25 @@
     let currentDate = new Date();
     let selectedCell = null;
 
-    function handleDayClick(dayDiv) {
-      if (selectedCell) selectedCell.classList.remove('selected');
-      if (!dayDiv.classList.contains('today')) {
-        dayDiv.classList.add('selected');
-        selectedCell = dayDiv;
-      } else {
-        selectedCell = null;
-      }
-    }
-
     // function handleDayClick(dayDiv) {
-    //   if (selectedCell) {
-    //     selectedCell.classList.remove('selected');
+    //   if (selectedCell) selectedCell.classList.remove('selected');
+    //   if (!dayDiv.classList.contains('today')) {
+    //     dayDiv.classList.add('selected');
+    //     selectedCell = dayDiv;
+    //   } else {
+    //     selectedCell = null;
     //   }
-
-    //   dayDiv.classList.add('selected');
-
-    //   selectedCell = dayDiv;
     // }
+
+    function handleDayClick(dayDiv) {
+      if (selectedCell) {
+        selectedCell.classList.remove('selected');
+      }
+
+      dayDiv.classList.add('selected');
+
+      selectedCell = dayDiv;
+    }
 
 
     function renderCalendar(date) {
