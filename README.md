@@ -92,7 +92,7 @@ An online shop application.
 
 https://the-digital-shop.onrender.com/
 
-### React App
+### React App Resume Page
 A React-based application and resume/project page.
 
 https://react-app-resume-page.vercel.app/
