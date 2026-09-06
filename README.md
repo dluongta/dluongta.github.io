@@ -134,8 +134,7 @@ Some of the technologies and concepts explored across these projects include:
 - Canvas
 - WebRTC
 - QR Code
-- 3D animations
-- Interactive UI
+- 3D Animations
 
 ---
 
