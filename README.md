@@ -1,6 +1,6 @@
 # DLUONGTA — Web Developer Portfolio
 
-> Personal portfolio and collection of web projects, experiments, and useful tools.
+> Personal portfolio and collection of web projects and useful tools.
 
 **Portfolio:** https://dluongta.github.io/
 
@@ -12,9 +12,9 @@
 
 ## About Me
 
-I'm a Web Developer who enjoys building web applications, interactive experiences, developer tools, and experimental projects.
+I'm a Web Developer who enjoys building web applications, interactive experiences, developer tools, and practical projects.
 
-This repository contains my personal portfolio and a collection of projects I've built while learning and experimenting with modern web technologies.
+This repository contains my personal portfolio and a collection of projects I've built while learning and practice with modern web technologies.
 
 ---
 
@@ -27,7 +27,7 @@ A simple calculator application for performing basic mathematical operations.
 A digital calendar application for managing and viewing dates.
 
 ### Particle Text Canvas
-An interactive canvas experiment using particles and text effects.
+An interactive canvas using particles and text effects.
 
 ### Image Editor
 A browser-based image editing tool.
@@ -75,13 +75,13 @@ A browser-based video recording application.
 An interactive random spin-wheel application.
 
 ### VN Telex Input
-A Vietnamese Telex input experiment.
+A Vietnamese Telex Input.
 
 ### Flip Number
-An animated flip-number UI experiment.
+An animated flip-number UI.
 
 ### PIN Verification
-A PIN verification interface and interaction experiment.
+A PIN verification interface and interaction.
 
 ---
 
@@ -108,7 +108,7 @@ A React-based livestream application.
 https://react-livestream-app.onrender.com/
 
 ### Shooting Tank IO
-A browser-based multiplayer-style shooting game experiment.
+A browser-based multiplayer-style shooting game.
 
 https://shootingtankio.onrender.com/
 
@@ -131,16 +131,11 @@ Some of the technologies and concepts explored across these projects include:
 - CSS
 - JavaScript
 - React
-- Canvas API
+- Canvas
 - WebRTC
-- Web APIs
-- Browser Media APIs
-- PDF generation
-- Excel generation
 - QR Code
 - 3D animations
 - Interactive UI
-- Real-time communication
 
 ---
 
