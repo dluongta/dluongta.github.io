@@ -1,12 +1,12 @@
 # DLUONGTA — Web Developer Portfolio
 
-> Personal portfolio and collection of web projects and useful tools.
+> Personal portfolio and collection of web projects, experiments, and useful tools.
 
 **Portfolio:** https://dluongta.github.io/
 
 **Email:** dluongta@gmail.com
 
-**GitHub:** https://github.com/DLUONGTA
+**GitHub:** https://github.com/dluongta
 
 ---
 
@@ -157,7 +157,7 @@ You can explore all projects directly from the portfolio:
 If you'd like to get in touch:
 
 - **Email:** dluongta@gmail.com
-- **GitHub:** https://github.com/DLUONGTA
+- **GitHub:** https://github.com/dluongta
 - **Portfolio:** https://dluongta.github.io/
 
 ---
