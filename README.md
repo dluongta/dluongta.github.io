@@ -1,6 +1,6 @@
 # DLUONGTA — Web Developer Portfolio
 
-> Personal portfolio and collection of web projects and useful tools.
+Personal portfolio and collection of web projects and useful tools.
 
 **Portfolio:** https://dluongta.github.io/
 
