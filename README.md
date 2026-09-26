@@ -1,6 +1,6 @@
 ## My Portfolio Website
 
-**Personal portfolio and collection of web projects and interactive animation website.**
+**Personal portfolio and collection of web projects and interactive animation websites.**
 
 **Portfolio:** https://dluongta.github.io/
 
@@ -12,7 +12,7 @@
 
 ## About Me
 
-I am a Web Developer. I am extremely fascinated by building web applications, practical projects and interactive animation website.
+I am a Web Developer. I am extremely fascinated by building web applications, practical projects and interactive animation websites.
 
 This repository contains my personal portfolio and a collection of projects I have built while learning and practice with modern web technologies.
 
