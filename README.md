@@ -12,7 +12,7 @@
 
 ## About Me
 
-I'm a Web Developer who enjoys building web applications, interactive experiences, developer tools, and practical projects.
+I am a Web Developer. I am extremely fascinated by building web applications, practical projects and interactive animation website.
 
 This repository contains my personal portfolio and a collection of projects I have built while learning and practice with modern web technologies.
 
