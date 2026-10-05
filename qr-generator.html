@@ -160,8 +160,8 @@ label{
 .preview img{
     width:90px;
     height:90px;
-    object-fit:contain; /* Đã sửa thành contain để hiển thị đúng tỷ lệ trong preview */
-    border-radius:14px;
+    object-fit:contain; 
+    /* Đã bỏ border-radius để preview hiển thị ảnh vuông vức */
     border:2px solid #007bff;
     display: block; 
     background-color: #f9f9f9;
@@ -463,18 +463,11 @@ async function generateQR(){
 
         ctx.fillStyle = bgColor;
 
-        // Vẽ lớp nền phía dưới (bo tròn bám theo hình dạng ảnh mới)
-        ctx.beginPath();
-        ctx.roundRect(x - padding, y - padding, drawWidth + (padding*2), drawHeight + (padding*2), 10);
-        ctx.fill();
+        // Vẽ lớp nền phía dưới (góc vuông)
+        ctx.fillRect(x - padding, y - padding, drawWidth + (padding*2), drawHeight + (padding*2));
 
-        // Vẽ ảnh logo
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(x, y, drawWidth, drawHeight, 8);
-        ctx.clip();
+        // Vẽ ảnh logo (vẽ trực tiếp, không cần clip để giữ nguyên góc vuông)
         ctx.drawImage(logoImage, x, y, drawWidth, drawHeight);
-        ctx.restore();
     }
 }
 
