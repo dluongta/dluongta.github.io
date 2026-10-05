@@ -448,25 +448,20 @@ async function generateQR(){
     });
 
     if(logoImage){
-        // Kích thước tối đa cho logo (khung bao quanh)
         const maxLogoSize = 60; 
         
-        // Tính toán tỷ lệ để ảnh giữ nguyên aspect ratio
         const ratio = Math.min(maxLogoSize / logoImage.width, maxLogoSize / logoImage.height);
         const drawWidth = logoImage.width * ratio;
         const drawHeight = logoImage.height * ratio;
 
-        // Tính tọa độ trung tâm
         const x = (canvas.width - drawWidth) / 2;
         const y = (canvas.height - drawHeight) / 2;
         const padding = 5; 
 
         ctx.fillStyle = bgColor;
 
-        // Vẽ lớp nền phía dưới (góc vuông)
         ctx.fillRect(x - padding, y - padding, drawWidth + (padding*2), drawHeight + (padding*2));
 
-        // Vẽ ảnh logo (vẽ trực tiếp, không cần clip để giữ nguyên góc vuông)
         ctx.drawImage(logoImage, x, y, drawWidth, drawHeight);
     }
 }
