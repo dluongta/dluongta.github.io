@@ -160,10 +160,11 @@ label{
 .preview img{
     width:90px;
     height:90px;
-    object-fit:cover;
+    object-fit:contain; /* Đã sửa thành contain để hiển thị đúng tỷ lệ trong preview */
     border-radius:14px;
     border:2px solid #007bff;
     display: block; 
+    background-color: #f9f9f9;
 }
 
 .remove-btn {
@@ -447,22 +448,32 @@ async function generateQR(){
     });
 
     if(logoImage){
-        const size=60; 
-        const x=(canvas.width-size)/2;
-        const y=(canvas.height-size)/2;
+        // Kích thước tối đa cho logo (khung bao quanh)
+        const maxLogoSize = 60; 
+        
+        // Tính toán tỷ lệ để ảnh giữ nguyên aspect ratio
+        const ratio = Math.min(maxLogoSize / logoImage.width, maxLogoSize / logoImage.height);
+        const drawWidth = logoImage.width * ratio;
+        const drawHeight = logoImage.height * ratio;
+
+        // Tính tọa độ trung tâm
+        const x = (canvas.width - drawWidth) / 2;
+        const y = (canvas.height - drawHeight) / 2;
         const padding = 5; 
 
-        ctx.fillStyle=bgColor;
+        ctx.fillStyle = bgColor;
 
+        // Vẽ lớp nền phía dưới (bo tròn bám theo hình dạng ảnh mới)
         ctx.beginPath();
-        ctx.roundRect(x - padding, y - padding, size + (padding*2), size + (padding*2), 10);
+        ctx.roundRect(x - padding, y - padding, drawWidth + (padding*2), drawHeight + (padding*2), 10);
         ctx.fill();
 
+        // Vẽ ảnh logo
         ctx.save();
         ctx.beginPath();
-        ctx.roundRect(x, y, size, size, 8);
+        ctx.roundRect(x, y, drawWidth, drawHeight, 8);
         ctx.clip();
-        ctx.drawImage(logoImage, x, y, size, size);
+        ctx.drawImage(logoImage, x, y, drawWidth, drawHeight);
         ctx.restore();
     }
 }
