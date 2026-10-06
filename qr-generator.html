@@ -72,10 +72,28 @@ label{
 .color-input-wrapper input[type="color"] {
     width: 45px;
     height: 40px;
-    border: none;
-    background: none;
-    cursor: pointer;
     padding: 0;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;    
+    overflow: hidden;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.color-input-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-input-wrapper input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 10px;
+}
+
+.color-input-wrapper input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 10px;
 }
 
 .color-input-wrapper input[type="text"] {
@@ -161,7 +179,6 @@ label{
     width:90px;
     height:90px;
     object-fit:contain; 
-    /* Đã bỏ border-radius để preview hiển thị ảnh vuông vức */
     border:2px solid #007bff;
     display: block; 
     background-color: #f9f9f9;
@@ -219,72 +236,36 @@ canvas{
     h1{
         color:#ff8800;
     }
-
     textarea{
         border-color:#ff8800;
     }
-
     canvas{
         border-color:#ff8800;
     }
-
     button:not(.remove-btn){
         background:#ff8800;
     }
-
     button:not(.remove-btn):hover{
         background:#e67600;
     }
-
     .controls{
         grid-template-columns:1fr;
     }
-
     .file-upload{
         border-color:#ff8800;
     }
-
     .file-upload span{
         color:#ff8800;
     }
-
     .file-upload:hover{
         background:#fff4e8;
     }
-
     .preview img{
         border-color:#ff8800;
     }
-
     .color-input-wrapper input[type="text"]:focus {
         border-color: #ff8800;
     }
-}
-.color-input-wrapper input[type="color"] {
-    width: 45px;
-    height: 40px;
-    padding: 0;
-    cursor: pointer;
-    border: none;
-    border-radius: 10px;    
-    overflow: hidden;
-    background: transparent;
-    appearance: none;
-    -webkit-appearance: none;
-}
-
-.color-input-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
-}
-
-.color-input-wrapper input[type="color"]::-webkit-color-swatch {
-    border: none;
-    border-radius: 10px;
-}
-
-.color-input-wrapper input[type="color"]::-moz-color-swatch {
-    border: none;
-    border-radius: 10px;
 }
 </style>
 </head>
@@ -356,6 +337,7 @@ canvas{
 <button onclick="downloadQR()">Download PNG</button>
 
 <div class="canvas-box">
+    <!-- Cố định kích thước QR ở 250x250 theo đúng chuẩn -->
     <canvas id="canvas" width="250" height="250"></canvas>
 </div>
 
@@ -437,6 +419,7 @@ async function generateQR(){
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
+    // Render mã QR theo kích thước cố định 250
     await QRCode.toCanvas(canvas,text,{
         width:250,
         margin:2,
@@ -450,6 +433,7 @@ async function generateQR(){
     if(logoImage){
         const maxLogoSize = 60; 
         
+        // Công thức chuẩn giữ đúng Aspect Ratio của ảnh upload
         const ratio = Math.min(maxLogoSize / logoImage.width, maxLogoSize / logoImage.height);
         const drawWidth = logoImage.width * ratio;
         const drawHeight = logoImage.height * ratio;
@@ -458,10 +442,15 @@ async function generateQR(){
         const y = (canvas.height - drawHeight) / 2;
         const padding = 5; 
 
+        // Vẽ ô vuông làm nền viền cho logo
         ctx.fillStyle = bgColor;
-
         ctx.fillRect(x - padding, y - padding, drawWidth + (padding*2), drawHeight + (padding*2));
 
+        // BẬT tính năng khử răng cưa và làm mịn ảnh để logo lên form đẹp và sắc nét nhất
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        // Render logo đè lên vị trí tâm
         ctx.drawImage(logoImage, x, y, drawWidth, drawHeight);
     }
 }
