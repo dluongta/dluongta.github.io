@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3D Particle Heart</title>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #05000a;
+            background: radial-gradient(circle at center, #1a0015 0%, #05000a 100%);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Subtle overlay text to guide the user */
+        #hint {
+            position: absolute;
+            bottom: 30px;
+            text-align: center;
+            width: 100%;
+            color: #ff88bb;
+            font-size: 1.1rem;
+            font-weight: 500;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.6;
+            letter-spacing: 1px;
+            text-shadow: 0px 2px 8px rgba(255, 0, 100, 0.5);
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.02); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 0.4; }
+        }
+    </style>
+
+    <!-- Load Three.js core -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
+    <script src="three.min.js"></script>
+    <!-- Load OrbitControls for user interaction -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script> -->
+    <script src="OrbitControls.js"></script>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    <!-- <div id="hint">Drag to rotate - Scroll to zoom</div> -->
+
+    <script>
+        const container = document.getElementById('canvas-container');
+        
+        // Scene setup
+        const scene = new THREE.Scene();
+        // Add a subtle fog to blend distant particles into the background
+        // scene.fog = new THREE.FogExp2(0x05000a, 0.002);        
+        // Camera setup
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const cameraDistance = window.innerWidth < 768 ? 82 : 60;
+        camera.position.set(0, 0, cameraDistance);
+
+        // Renderer setup
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance on high-density displays
+        container.appendChild(renderer.domElement);
+
+        // Function to create a radial gradient texture for soft, glowing particles
+        function createGlowingParticleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const context = canvas.getContext('2d');
+            
+            // Draw radial gradient
+            const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.1, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(0.4, 'rgba(255, 50, 100, 0.5)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 64, 64);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+
+        const particleTexture = createGlowingParticleTexture();
+
+        // Number of particles
+        const particleCount = 20000;
+        
+        // Buffers for geometry
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        
+        // Helper to evaluate the 3D heart mathematical formula (Taubin's Heart Surface)
+        // (x^2 + 9/4 y^2 + z^2 - 1)^3 - x^2 z^3 - 9/80 y^2 z^3 <= 0
+        function isInsideHeart(x, y, z) {
+            const x2 = x * x;
+            const y2 = y * y;
+            const z2 = z * z;
+            const a = x2 + 2.25 * y2 + z2 - 1;
+            const val = (a * a * a) - (x2 * (z2 * z)) - (0.1125 * y2 * (z2 * z));
+            return val <= 0;
+        }
+
+        const colorInside = new THREE.Color(0xffffff); // Hot white/pink core
+        const colorMiddle = new THREE.Color(0xff1461); // Vibrant pinkish-red
+        const colorEdge = new THREE.Color(0x8a002a);   // Deep dark red
+
+        let i = 0;
+        // Rejection sampling: randomly pick points in a bounding box, keep those inside the heart shape
+        while (i < particleCount) {
+            // Heart bounds roughly [-1.5, 1.5]
+            const x = (Math.random() - 0.5) * 3.0;
+            const y = (Math.random() - 0.5) * 3.0;
+            const z = (Math.random() - 0.5) * 3.0;
+
+            if (isInsideHeart(x, y, z)) {
+                // Scale up the points for the scene
+                const scale = 12;
+                
+                // Note: Standard math z is vertical, but in Three.js y is vertical.
+                // We swap z and y coordinates so the heart stands upright.
+                const px = x * scale;
+                const py = z * scale;
+                const pz = y * scale;
+
+                // Add slight random jitter for a "dusty/cloudy" effect
+                const jitter = 0.5;
+                positions[i * 3]     = px + (Math.random() - 0.5) * jitter;
+                positions[i * 3 + 1] = py + (Math.random() - 0.5) * jitter;
+                positions[i * 3 + 2] = pz + (Math.random() - 0.5) * jitter;
+
+                // Calculate distance from center to determine color (core is hotter)
+                const distance = Math.sqrt(x*x + y*y + z*z);
+                const normalizedDist = Math.max(0, Math.min(1, distance / 1.5));
+                
+                const particleColor = new THREE.Color();
+                if (normalizedDist < 0.4) {
+                    particleColor.lerpColors(colorInside, colorMiddle, normalizedDist / 0.4);
+                } else {
+                    particleColor.lerpColors(colorMiddle, colorEdge, (normalizedDist - 0.4) / 0.6);
+                }
+
+                colors[i * 3]     = particleColor.r;
+                colors[i * 3 + 1] = particleColor.g;
+                colors[i * 3 + 2] = particleColor.b;
+
+                i++;
+            }
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: 0.8,
+            map: particleTexture,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending, // Makes overlapping particles glow intensely
+            transparent: true,
+            depthWrite: false, // Prevents particles from occluding each other weirdly
+            opacity: 0.9
+        });
+
+        const particleHeart = new THREE.Points(geometry, material);
+        // Slightly lower it so it's perfectly centered in view
+        particleHeart.position.y = -2; 
+        scene.add(particleHeart);
+
+        // OrbitControls for mouse interaction (zoom, pan, rotate)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; 
+        controls.dampingFactor = 0.04;
+        controls.autoRotate = true;    
+        controls.autoRotateSpeed = 1.5;
+        controls.enablePan = false;    
+        controls.minDistance = 20;     
+        controls.maxDistance = 150;    
+
+        // Handle window resizing
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        const clock = new THREE.Clock();
+        
+        // Save initial positions for a breathing animation effect
+        const initialPositions = new Float32Array(positions);
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            // 1. Breathing/Pulsing effect
+            const positionsAttribute = particleHeart.geometry.attributes.position;
+            // A rhythmic heartbeat pulse using a combination of sine waves
+            const pulse = 1 + Math.sin(elapsedTime * 3) * 0.02 + Math.sin(elapsedTime * 6) * 0.01;
+            
+            particleHeart.scale.set(pulse, pulse, pulse);
+            
+            // Gentle float up and down
+            particleHeart.position.y = -2 + Math.sin(elapsedTime * 1.5) * 1.5;
+
+            // Update controls
+            controls.update();
+
+            // Render
+            renderer.render(scene, camera);
+        }
+
+        // Start the magic
+        animate();
+    </script>
+</body>
+</html>
