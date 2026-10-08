@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QR Generator</title>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script> -->
     <script src="qrcode.min.js"></script>
 <style>
 *{
@@ -226,10 +225,14 @@ button:hover{
     margin-top:30px;
 }
 
-canvas{
-    max-width:100%;
-    border:2px solid #007bff;
-    border-radius:12px;
+/* FIX LỖI MÉO VÀ TO: Dùng !important để ép trình duyệt bỏ qua CSS do thư viện tự chèn */
+canvas {
+    width: 250px !important;
+    max-width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    border: 2px solid #007bff;
+    border-radius: 12px;
 }
 
 @media(max-width:768px){
@@ -279,7 +282,6 @@ canvas{
 <textarea id="qrText" placeholder="Enter Your Text Or URL"></textarea>
 
 <div class="controls">
-
     <div class="control-box">
         <label>Màu QR</label>
         <div class="color-input-wrapper">
@@ -313,32 +315,25 @@ canvas{
     </div>
 
     <div class="control-box" style="grid-column:1/-1;">
-
         <label>Upload ảnh logo giữa QR</label>
-
         <div class="file-upload">
             <span>Chọn ảnh hoặc kéo thả vào đây</span>
             <input type="file" id="logoInput" accept="image/*">
         </div>
-
         <div class="preview" id="preview">
             <div class="preview-wrapper">
                 <img id="previewImg">
                 <button class="remove-btn" onclick="removeLogo()" title="Xóa logo">✖</button>
             </div>
         </div>
-
     </div>
-
 </div>
 
 <button onclick="generateQR()">Tạo QR</button>
-
 <button onclick="downloadQR()">Download PNG</button>
 
 <div class="canvas-box">
-    <!-- Cố định kích thước QR ở 250x250 theo đúng chuẩn -->
-    <canvas id="canvas" width="250" height="250"></canvas>
+    <canvas id="canvas"></canvas>
 </div>
 
 </div>
@@ -417,12 +412,10 @@ async function generateQR(){
         return;
     }
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // Render mã QR theo kích thước cố định 250
+    // Vẫn giữ 1000px để xuất file chất lượng cao, nét căng
     await QRCode.toCanvas(canvas,text,{
-        width:250,
-        margin:2,
+        width: 1000, 
+        margin: 2,
         errorCorrectionLevel: 'H', 
         color:{
             dark:qrColor,
@@ -431,33 +424,32 @@ async function generateQR(){
     });
 
     if(logoImage){
-        const maxLogoSize = 60; 
+        const maxLogoSize = 240; 
         
-        // Công thức chuẩn giữ đúng Aspect Ratio của ảnh upload
         const ratio = Math.min(maxLogoSize / logoImage.width, maxLogoSize / logoImage.height);
         const drawWidth = logoImage.width * ratio;
         const drawHeight = logoImage.height * ratio;
 
         const x = (canvas.width - drawWidth) / 2;
         const y = (canvas.height - drawHeight) / 2;
-        const padding = 5; 
+        const padding = 20; 
 
-        // Vẽ ô vuông làm nền viền cho logo
+        // Vẽ ô nền viền
         ctx.fillStyle = bgColor;
         ctx.fillRect(x - padding, y - padding, drawWidth + (padding*2), drawHeight + (padding*2));
 
-        // BẬT tính năng khử răng cưa và làm mịn ảnh để logo lên form đẹp và sắc nét nhất
+        // Khử răng cưa cho Logo
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
-        // Render logo đè lên vị trí tâm
+        // Gắn logo vào trung tâm
         ctx.drawImage(logoImage, x, y, drawWidth, drawHeight);
     }
 }
 
 function downloadQR(){
     const link=document.createElement("a");
-    link.download="qr-code.png";
+    link.download="qr-code-hq.png";
     link.href=canvas.toDataURL("image/png");
     link.click();
 }
