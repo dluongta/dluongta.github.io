@@ -116,7 +116,8 @@
 
         <div id="status" class="loading">Sẵn sàng...</div>
 
-        <textarea id="output" placeholder="Văn bản sẽ hiển thị ở đây..."></textarea>
+        <!-- Đã thêm spellcheck="false" để tắt gạch chân đỏ kiểm tra chính tả -->
+        <textarea id="output" placeholder="Văn bản sẽ hiển thị ở đây..." spellcheck="false"></textarea>
 
         <button class="btn" id="copyBtn">Sao chép kết quả</button>
     </div>
@@ -190,7 +191,6 @@
                 }
             };
         }
-
 
         window.addEventListener('paste', (e) => {
             const items = e.clipboardData.items;
