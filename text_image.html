@@ -126,7 +126,7 @@
         <!-- Đã thêm hàng loạt thuộc tính để chặn hoàn toàn gạch đỏ chính tả -->
         <textarea id="output" lang="vi" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Văn bản sẽ hiển thị ở đây..."></textarea>
 
-        <button class="btn" id="copyBtn">📋 Sao chép kết quả</button>
+        <button class="btn" id="copyBtn">Sao chép kết quả</button>
     </div>
 
     <script>
@@ -231,7 +231,7 @@
             output.select();
             document.execCommand('copy');
             const originalText = copyBtn.innerText;
-            copyBtn.innerText = "✔️ Đã sao chép!";
+            copyBtn.innerText = "Đã sao chép!";
             setTimeout(() => copyBtn.innerText = originalText, 2000);
         });
 
