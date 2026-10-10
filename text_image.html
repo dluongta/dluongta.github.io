@@ -7,7 +7,7 @@
     <title>Text Image</title>
     <!-- <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script> -->
     <script src="tesseract.min.js"></script>
-    <style>
+<style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 700px;
@@ -51,7 +51,12 @@
             box-sizing: border-box;
             resize: vertical;
             white-space: pre-wrap;
-            /* Giữ nguyên khoảng trắng và xuống hàng */
+        }
+
+        /* Ẩn dấu gạch chân đỏ trên một số trình duyệt khó tính */
+        #output:focus {
+            outline: none;
+            border-color: #007bff;
         }
 
         .btn {
@@ -118,8 +123,8 @@
 
         <div id="status" class="loading">Sẵn sàng...</div>
 
-        <!-- Tắt gạch chân đỏ chính tả -->
-        <textarea id="output" placeholder="Văn bản sẽ hiển thị ở đây..." spellcheck="false"></textarea>
+        <!-- Đã thêm hàng loạt thuộc tính để chặn hoàn toàn gạch đỏ chính tả -->
+        <textarea id="output" lang="vi" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Văn bản sẽ hiển thị ở đây..."></textarea>
 
         <button class="btn" id="copyBtn">📋 Sao chép kết quả</button>
     </div>
@@ -148,7 +153,7 @@
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-                // 1. Phóng to ảnh để đọc chữ nhỏ rõ hơn
+                // 1. Phóng to ảnh để đọc chữ nhỏ sắc nét
                 const scale = 2.0;
                 canvas.width = img.width * scale;
                 canvas.height = img.height * scale;
@@ -159,7 +164,7 @@
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
 
-                // 2. Chuyển xám và ép tương phản để triệt tiêu nhiễu
+                // 2. Chuyển xám và ép tương phản mềm
                 const contrast = 75;
                 const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
 
@@ -185,12 +190,16 @@
                         }
                     );
 
-                    // --- BƯỚC QUAN TRỌNG: GIỮ NGUYÊN ĐỊNH DẠNG XUỐNG HÀNG ---
-                    // Thay vì dùng result.data.text (dễ bị lỗi thụt dòng ngẫu nhiên), 
-                    // ta lặp qua từng dòng (lines) được phát hiện trong ảnh và ghép chúng lại
-                    const formattedText = result.data.lines
-                        .map(line => line.text.trimEnd()) // Xóa khoảng trắng thừa ở cuối mỗi dòng
-                        .join('\n'); // Nối các dòng lại bằng ký tự xuống dòng thuần túy (\n)
+                    // --- GIẢI QUYẾT LỖI XUỐNG DÒNG SAI CHỖ ---
+                    // Tesseract trả về toàn bộ text (result.data.text).
+                    // Ta dùng Regex để: 
+                    // 1. Thay thế các dấu xuống dòng ĐƠN LẺ (\n) bằng khoảng trắng (nối lại thành câu).
+                    // 2. Giữ nguyên các dấu xuống dòng KÉP (\n\n) để phân tách các đoạn văn rõ ràng.
+                    let formattedText = result.data.text
+                        .replace(/([^\n])\n([^\n])/g, '$1 $2') // Tìm vị trí xuống dòng giữa 2 chữ và thay bằng khoảng trắng
+                        .replace(/\n{2,}/g, '\n\n')            // Nếu có 2 dấu xuống dòng trở lên, giữ nguyên làm đoạn mới
+                        .replace(/ {2,}/g, ' ')                // Xóa các khoảng trắng thừa
+                        .trim();
 
                     output.value = formattedText;
                     status.innerText = "Hoàn thành!";
