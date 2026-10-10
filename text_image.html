@@ -31,6 +31,7 @@
             margin-bottom: 20px;
             color: #666;
             transition: 0.3s;
+            cursor: pointer;
         }
 
         .drop-zone.active {
@@ -48,6 +49,7 @@
             font-size: 14px;
             line-height: 1.5;
             box-sizing: border-box;
+            resize: vertical;
         }
 
         .btn {
@@ -73,6 +75,8 @@
             display: none;
             border-radius: 8px;
             border: 1px solid #eee;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .loading {
@@ -114,7 +118,7 @@
 
         <textarea id="output" placeholder="Văn bản sẽ hiển thị ở đây..."></textarea>
 
-        <button class="btn" id="copyBtn">📋 Sao chép kết quả</button>
+        <button class="btn" id="copyBtn">Sao chép kết quả</button>
     </div>
 
     <script>
@@ -139,34 +143,36 @@
             const img = new Image();
             img.src = imgURL;
             img.onload = async () => {
-                // 1. Dùng Canvas để tăng độ tương phản và chuyển trắng đen
                 const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-                // Vẽ ảnh lên canvas
-                ctx.drawImage(img, 0, 0);
+                const scale = 2.0;
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
 
-                // Lấy pixel data
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
 
-                // Chuyển sang trắng đen và tăng tương phản cực đại (Binarization)
+                const contrast = 75;
+                const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+
                 for (let i = 0; i < data.length; i += 4) {
-                    // Tính độ sáng
-                    const brightness = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
-                    // Threshold (ngưỡng 128)
-                    const color = brightness > 128 ? 255 : 0;
-                    data[i] = data[i + 1] = data[i + 2] = color;
+                    let gray = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+
+                    gray = factor * (gray - 128) + 128;
+                    gray = Math.max(0, Math.min(255, gray));
+
+                    data[i] = data[i + 1] = data[i + 2] = gray;
                 }
                 ctx.putImageData(imageData, 0, 0);
 
-                // 2. Đưa ảnh đã làm nét vào Tesseract
                 try {
                     status.innerText = "Đang đọc văn bản...";
                     const result = await Tesseract.recognize(
-                        canvas, // Đưa canvas vào thay vì file gốc
+                        canvas,
                         'vie+eng',
                         {
                             logger: m => {
@@ -185,7 +191,7 @@
             };
         }
 
-        // 1. Xử lý khi dán (Ctrl + V)
+
         window.addEventListener('paste', (e) => {
             const items = e.clipboardData.items;
             for (let i = 0; i < items.length; i++) {
@@ -196,21 +202,20 @@
             }
         });
 
-        // 2. Xử lý khi chọn file truyền thống
         dropZone.addEventListener('click', () => imageInput.click());
-        imageInput.addEventListener('change', (e) => processImage(e.target.files[0]));
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) processImage(e.target.files[0]);
+        });
 
-        // 3. Xử lý nút Copy
         copyBtn.addEventListener('click', () => {
             if (!output.value) return;
             output.select();
             document.execCommand('copy');
             const originalText = copyBtn.innerText;
-            copyBtn.innerText = "✔️ Đã sao chép!";
+            copyBtn.innerText = "Đã sao chép!";
             setTimeout(() => copyBtn.innerText = originalText, 2000);
         });
 
-        // Hiệu ứng kéo thả (Bonus)
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.classList.add('active');
@@ -219,7 +224,7 @@
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('active');
-            processImage(e.dataTransfer.files[0]);
+            if (e.dataTransfer.files.length > 0) processImage(e.dataTransfer.files[0]);
         });
     </script>
 
