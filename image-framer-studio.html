@@ -665,9 +665,16 @@
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
 
-        <!-- ĐƯỜNG DẪN QUỸ ĐẠO MỚI -->
+        <!-- ĐƯỜNG DẪN QUỸ ĐẠO CHO TEXT -->
+        <!-- Đường dẫn phía trên -->
         <path id="topTextPath" d="M 115 470 A 385 385 0 0 1 885 470" fill="none"/>
+        
+        <!-- Đường dẫn bên trái -->
         <path id="leftTextPath" d="M 500 855 A 385 385 0 0 1 500 85" fill="none"/>
+        
+        <!-- Đường dẫn bên phải (ĐÃ FIX): Vẽ từ dưới (805) lên trên (135) ngược chiều kim đồng hồ (sweep-flag = 0) -->
+        <!-- Điều này giúp CHÂN CHỮ bám sát vào đường path ở R=335, đầu chữ hướng vào tâm -->
+        <path id="rightTextPath" d="M 500 805 A 335 335 0 0 0 500 135" fill="none"/>
 
         <pattern id="microGrid" width="40" height="40" patternUnits="userSpaceOnUse">
           <path d="M40 0H0V40" fill="none" stroke="#50CFFF" stroke-opacity=".10" stroke-width="1"/>
@@ -727,15 +734,24 @@
       <circle cx="500" cy="470" r="350" fill="none" stroke="#8BEAFF" stroke-width="3" opacity=".95"/>
       <circle cx="500" cy="470" r="340" fill="none" stroke="#168EFF" stroke-width="2" opacity=".85"/>
 
+      <!-- 1. Text phía trên -->
       <text fill="url(#goldText)" font-size="28" font-weight="800" letter-spacing="2">
         <textPath href="#topTextPath" startOffset="50%" text-anchor="middle">
           HAPPY 23RD BIRTHDAY - DINH LUONG TA
         </textPath>
       </text>
 
+      <!-- 2. Text bên trái -->
       <text fill="#FFFFFF" font-size="22" font-weight="700" letter-spacing=".7">
         <textPath href="#leftTextPath" startOffset="50%" text-anchor="middle">
             09/01/2003 - 09/01/2026
+        </textPath>
+      </text>
+
+      <!-- 3. Text bên phải (CHÂN CHỮ NẰM TRÊN ĐƯỜNG TRÒN, TRONG HÌNH TRÒN) -->
+      <text fill="#FFA500" font-size="22" font-weight="700" letter-spacing=".7">
+        <textPath href="#rightTextPath" startOffset="50%" text-anchor="middle">
+            DLUONGTA - TSCEND
         </textPath>
       </text>
 
