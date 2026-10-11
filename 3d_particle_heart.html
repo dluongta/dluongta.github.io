@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>3D Particle Heart</title>
-    
+
     <style>
         body {
             margin: 0;
@@ -46,9 +47,20 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.02); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 0.4; }
+            0% {
+                transform: scale(1);
+                opacity: 0.4;
+            }
+
+            50% {
+                transform: scale(1.02);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.4;
+            }
         }
     </style>
 
@@ -59,6 +71,7 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script> -->
     <script src="OrbitControls.js"></script>
 </head>
+
 <body>
 
     <div id="canvas-container"></div>
@@ -66,7 +79,7 @@
 
     <script>
         const container = document.getElementById('canvas-container');
-        
+
         // Scene setup
         const scene = new THREE.Scene();
         // Add a subtle fog to blend distant particles into the background
@@ -88,17 +101,17 @@
             canvas.width = 64;
             canvas.height = 64;
             const context = canvas.getContext('2d');
-            
+
             // Draw radial gradient
             const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
             gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
             gradient.addColorStop(0.1, 'rgba(255, 255, 255, 0.8)');
             gradient.addColorStop(0.4, 'rgba(255, 50, 100, 0.5)');
             gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            
+
             context.fillStyle = gradient;
             context.fillRect(0, 0, 64, 64);
-            
+
             const texture = new THREE.CanvasTexture(canvas);
             return texture;
         }
@@ -107,11 +120,11 @@
 
         // Number of particles
         const particleCount = 20000;
-        
+
         // Buffers for geometry
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
-        
+
         // Helper to evaluate the 3D heart mathematical formula (Taubin's Heart Surface)
         // (x^2 + 9/4 y^2 + z^2 - 1)^3 - x^2 z^3 - 9/80 y^2 z^3 <= 0
         function isInsideHeart(x, y, z) {
@@ -138,7 +151,7 @@
             if (isInsideHeart(x, y, z)) {
                 // Scale up the points for the scene
                 const scale = 12;
-                
+
                 // Note: Standard math z is vertical, but in Three.js y is vertical.
                 // We swap z and y coordinates so the heart stands upright.
                 const px = x * scale;
@@ -147,14 +160,14 @@
 
                 // Add slight random jitter for a "dusty/cloudy" effect
                 const jitter = 0.5;
-                positions[i * 3]     = px + (Math.random() - 0.5) * jitter;
+                positions[i * 3] = px + (Math.random() - 0.5) * jitter;
                 positions[i * 3 + 1] = py + (Math.random() - 0.5) * jitter;
                 positions[i * 3 + 2] = pz + (Math.random() - 0.5) * jitter;
 
                 // Calculate distance from center to determine color (core is hotter)
-                const distance = Math.sqrt(x*x + y*y + z*z);
+                const distance = Math.sqrt(x * x + y * y + z * z);
                 const normalizedDist = Math.max(0, Math.min(1, distance / 1.5));
-                
+
                 const particleColor = new THREE.Color();
                 if (normalizedDist < 0.4) {
                     particleColor.lerpColors(colorInside, colorMiddle, normalizedDist / 0.4);
@@ -162,7 +175,7 @@
                     particleColor.lerpColors(colorMiddle, colorEdge, (normalizedDist - 0.4) / 0.6);
                 }
 
-                colors[i * 3]     = particleColor.r;
+                colors[i * 3] = particleColor.r;
                 colors[i * 3 + 1] = particleColor.g;
                 colors[i * 3 + 2] = particleColor.b;
 
@@ -186,19 +199,39 @@
 
         const particleHeart = new THREE.Points(geometry, material);
         // Slightly lower it so it's perfectly centered in view
-        particleHeart.position.y = -2; 
+        particleHeart.position.y = -2;
         scene.add(particleHeart);
 
         // OrbitControls for mouse interaction (zoom, pan, rotate)
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true; 
-        controls.dampingFactor = 0.06;
-        controls.autoRotate = false;
-        controls.autoRotateSpeed = 5.0;
-        controls.rotateSpeed = 1.0;
-        controls.enablePan = false;    
-        controls.minDistance = 20;     
-        controls.maxDistance = 150;    
+
+        const isMobile = window.innerWidth < 768;
+
+        // Các thông số chung
+        controls.enableDamping = true;
+        controls.enablePan = false;
+
+        if (isMobile) {
+            // MOBILE
+            controls.dampingFactor = 0.1;
+            controls.autoRotate = false;
+            controls.autoRotateSpeed = 10.0;
+            controls.rotateSpeed = 2.0;
+            controls.minDistance = 12;
+            controls.maxDistance = 250;
+            controls.zoomSpeed = 2.0;
+            controls.touches.ONE = THREE.TOUCH.ROTATE;
+            controls.touches.TWO = THREE.TOUCH.DOLLY_ROTATE;
+
+        } else {
+            controls.dampingFactor = 0.08;
+            controls.autoRotate = false;
+            controls.autoRotateSpeed = 5.0;
+            controls.rotateSpeed = 1.0;
+            controls.minDistance = 20;
+            controls.maxDistance = 150;
+            controls.zoomSpeed = 1.0;
+        }
 
         // Handle window resizing
         window.addEventListener('resize', onWindowResize, false);
@@ -210,7 +243,7 @@
         }
 
         const clock = new THREE.Clock();
-        
+
         // Save initial positions for a breathing animation effect
         const initialPositions = new Float32Array(positions);
 
@@ -223,9 +256,9 @@
             const positionsAttribute = particleHeart.geometry.attributes.position;
             // A rhythmic heartbeat pulse using a combination of sine waves
             const pulse = 1 + Math.sin(elapsedTime * 3) * 0.02 + Math.sin(elapsedTime * 6) * 0.01;
-            
+
             particleHeart.scale.set(pulse, pulse, pulse);
-            
+
             // Gentle float up and down
             particleHeart.position.y = -2 + Math.sin(elapsedTime * 1.5) * 1.5;
 
@@ -240,4 +273,5 @@
         animate();
     </script>
 </body>
+
 </html>
