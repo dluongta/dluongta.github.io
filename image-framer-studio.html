@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Framer Studio</title>
+    <style>
+        /* CSS Reset & Variables */
+        :root {
+            --blue-100: #dbeafe;
+            --blue-200: #bfdbfe;
+            --blue-400: #60a5fa;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --blue-700: #1d4ed8;
+            --slate-50:  #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-300: #cbd5e1;
+            --slate-400: #94a3b8;
+            --slate-500: #64748b;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --slate-800: #1e293b;
+            --red-500:   #ef4444;
+            --green-500: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            background-color: var(--slate-100);
+            color: var(--slate-800);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--slate-200); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--slate-400); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--slate-500); }
+
+        /* Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            flex-grow: 1;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--blue-600);
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: transform 0.1s, background 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: var(--blue-700);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: var(--slate-300);
+            border-radius: 2px;
+        }
+        input[type=range]:focus { outline: none; }
+
+        /* Header */
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--slate-200);
+            padding: 1rem 1.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            position: relative;
+        }
+        .header-content {
+            max-width: 1152px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-icon {
+            background-color: var(--blue-600);
+            color: white;
+            padding: 0.625rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px var(--blue-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-title { font-size: 1.25rem; font-weight: 700; line-height: 1.25; }
+        .header-subtitle { font-size: 0.75rem; color: var(--blue-600); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .btn-export {
+            background-color: var(--blue-600);
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s, opacity 0.2s;
+            box-shadow: 0 4px 6px -1px var(--blue-200);
+            font-family: inherit;
+        }
+        .btn-export:hover:not(:disabled) { background-color: var(--blue-700); }
+        .btn-export:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Main Layout */
+        main {
+            flex-grow: 1;
+            padding: 1rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        .main-container {
+            width: 100%;
+            max-width: 1152px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        @media (min-width: 1024px) {
+            main { padding: 2rem; }
+            .main-container { flex-direction: row; }
+            .col-canvas { width: 60%; }
+            .col-controls { width: 40%; }
+        }
+
+        /* Canvas Area */
+        .col-canvas {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1 / 1;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #ffffff;
+            background-image: linear-gradient(45deg, var(--slate-50) 25%, transparent 25%),
+                              linear-gradient(-45deg, var(--slate-50) 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, var(--slate-50) 75%),
+                              linear-gradient(-45deg, transparent 75%, var(--slate-50) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            touch-action: none;
+            transition: border-color 0.2s ease;
+            border: 4px solid transparent;
+        }
+        .canvas-container.drag-over {
+            border-color: var(--blue-500);
+            background-color: var(--blue-50);
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab;
+        }
+        canvas:active { cursor: grabbing; }
+
+        /* Empty State */
+        .empty-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(2px);
+            transition: opacity 0.3s;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        .empty-icon-container {
+            background-color: white;
+            padding: 1.25rem;
+            border-radius: 50%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            color: var(--blue-600);
+            margin-bottom: 1rem;
+            border: 1px solid var(--blue-100);
+            transition: transform 0.3s, background-color 0.3s;
+            animation: bounce 0.9s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+            50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); }
+        }
+            /* .empty-state:hover .empty-icon-container {
+                transform: scale(1.1);
+                background-color: var(--blue-50);
+                animation: none;
+            } */
+        .empty-title { font-size: 1.25rem; font-weight: 700; color: var(--slate-800); }
+        .empty-subtitle { font-size: 0.875rem; color: var(--slate-700); margin-top: 0.5rem; text-align: center; font-weight: 500; line-height: 1.5; }
+
+        .instruction-text {
+            font-size: 0.75rem;
+            color: var(--slate-500);
+            margin-top: 1.25rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            font-weight: 500;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            border: 1px solid var(--slate-200);
+            transition: opacity 0.3s;
+        }
+
+        /* Controls Area */
+        .col-controls {
+            width: 100%;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            border: 1px solid var(--slate-200);
+            padding: 1.5rem;
+        }
+        @media (min-width: 1024px) { .col-controls { padding: 2rem; } }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--slate-500);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
+        .upload-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 8rem;
+            border: 2px dashed var(--slate-300);
+            border-radius: 0.75rem;
+            cursor: pointer;
+            background-color: var(--slate-50);
+            transition: all 0.2s;
+            margin-bottom: 2rem;
+        }
+        .upload-zone:hover {
+            background-color: var(--slate-100);
+            border-color: var(--blue-400);
+        }
+        .upload-zone svg { color: var(--slate-400); margin-bottom: 0.5rem; }
+        .upload-zone p { font-size: 0.875rem; color: var(--slate-600); margin-bottom: 0.25rem; }
+        .upload-zone span { font-weight: 600; color: var(--blue-600); }
+        .upload-zone small { font-size: 0.75rem; color: var(--slate-400); }
+
+        .controls-group {
+            opacity: 0.4;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        .controls-group.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .control-row { margin-bottom: 2rem; }
+        .flex-between { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.75rem; }
+        .value-badge {
+            font-size: 0.75rem;
+            font-family: monospace;
+            background-color: var(--slate-100);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            color: var(--blue-600);
+            font-weight: 600;
+        }
+
+        .slider-group { display: flex; align-items: center; gap: 1rem; color: var(--slate-400); }
+
+        .grid-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+        .btn-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 0.5rem;
+            background-color: #ffffff;
+            border: 1px solid var(--slate-300);
+            border-radius: 0.5rem;
+            color: var(--slate-600);
+            transition: all 0.2s ease;
+            gap: 0.25rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-control:hover:not(:disabled) {
+            background-color: var(--blue-100);
+            border-color: var(--blue-200);
+            color: var(--blue-600);
+        }
+        .btn-control:active:not(:disabled) { transform: scale(0.96); }
+        .btn-control span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; }
+
+        .reset-container {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--slate-100);
+            display: flex;
+            justify-content: flex-end;
+        }
+        .btn-reset {
+            background: none;
+            border: none;
+            font-size: 0.875rem;
+            color: var(--slate-500);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            transition: color 0.2s;
+            font-family: inherit;
+        }
+        .btn-reset:hover { color: var(--blue-600); }
+
+        /* Toast */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: var(--green-500);
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px 16px;
+            position: fixed;
+            z-index: 50;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s, visibility 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+        .upload-zone.drag-over {
+            background-color: var(--blue-100);
+            border-color: var(--blue-600);
+            border-style: solid;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-icon">
+                    <!-- Image Icon -->
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="header-title">Framer Studio</h1>
+                    <p class="header-subtitle">Frame your photos perfectly</p>
+                </div>
+            </div>
+            <div>
+                <button id="btnDownload" class="btn-export" disabled>
+                    <!-- Download Icon -->
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Export Framer Image</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="main-container">
+            <!-- Canvas Area (Left) -->
+            <div class="col-canvas">
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="editorCanvas"></canvas>
+
+                    <!-- Interactive Empty State Overlay -->
+                    <div id="emptyState" class="empty-state">
+                        <div class="empty-icon-container">
+                            <!-- Upload Cloud Icon -->
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <h3 class="empty-title">Click or Drag Image Here</h3>
+                        <p class="empty-subtitle">Your photo will automatically snap<br>perfectly into the frame.</p>
+                    </div>
+                </div>
+                
+                <p id="instructionText" class="instruction-text">
+                    <!-- Hand Grab Icon -->
+                <svg width="16" height="16" style="color: var(--blue-500);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Viền ngoài 5 ngón khép kín liền mạch với đáy cổ tay uốn cong mềm mại -->
+                    <path d="M 6 18.5
+                            C 4.8 16 3.5 14.5 3.5 13.5
+                            A 1.5 1.5 0 0 1 6.5 13.5
+                            V 11
+                            A 1.5 1.5 0 0 1 9.5 11
+                            V 9.5
+                            A 1.5 1.5 0 0 1 12.5 9.5
+                            V 10.5
+                            A 1.5 1.5 0 0 1 15.5 10.5
+                            V 12.5
+                            A 1.5 1.5 0 0 1 18.5 12.5
+                            V 16.5
+                            C 18.5 19.5 16 21.5 12.2 21.5
+                            C 8.5 21.5 6 19.5 6 18.5
+                            Z" />
+
+                    <!-- Các kẽ ngón tay thon dài theo chiều dọc -->
+                    <path d="M 6.5 13.5 V 16.5" />
+                    <path d="M 9.5 11 V 16" />
+                    <path d="M 12.5 10.5 V 15.5" />
+                    <path d="M 15.5 12.5 V 15.5" />
+                </svg>
+
+                    Click and drag on canvas to arrange composition
+                </p>
+            </div>
+
+            <!-- Controls Area (Right) -->
+            <div class="col-controls">
+                
+                <!-- Upload Section -->
+                <div style="margin-bottom: 2rem;">
+                    <h2 class="section-title">1. Select Photo</h2>
+                    <label class="upload-zone" id="uploadZone">                        <!-- Image File Icon -->
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        <p><span>Click to upload</span> or drag & drop</p>
+                        <small>High-resolution PNG, JPG, JPEG, or WEBP</small>
+                        <input id="fileUpload" type="file" style="display: none;" accept="image/png, image/jpg, image/jpeg, image/webp" />
+                    </label>
+                </div>
+
+                <div id="controlsGroup" class="controls-group">
+                    <!-- Zoom Control -->
+                    <div class="control-row">
+                        <div class="flex-between">
+                            <h2 class="section-title" style="margin:0;">2. Scale / Zoom</h2>
+                            <span id="zoomValue" class="value-badge">100%</span>
+                        </div>
+                        <div class="slider-group">
+                            <!-- Zoom Out Icon -->
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>
+                            </svg>
+                            <input type="range" id="zoomSlider" min="0.1" max="3" step="0.01" value="1">
+                            <!-- Zoom In Icon -->
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Rotation & Flip -->
+                    <div class="control-row">
+                        <h2 class="section-title">3. Adjustments</h2>
+                        <div class="grid-buttons">
+                            <button class="btn-control" id="btnRotateLeft" title="Rotate Left 90°">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+                                </svg>
+                                <span>Left</span>
+                            </button>
+                            <button class="btn-control" id="btnRotateRight" title="Rotate Right 90°">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+                                </svg>
+                                <span>Right</span>
+                            </button>
+                            <button class="btn-control" id="btnFlipH" title="Flip Horizontally">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><line x1="12" y1="3" x2="12" y2="21"/>
+                                </svg>
+                                <span>Flip H</span>
+                            </button>
+                            <button class="btn-control" id="btnFlipV" title="Flip Vertically">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 8V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3"/><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><line x1="3" y1="12" x2="21" y2="12"/>
+                                </svg>
+                                <span>Flip V</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Fine Rotation -->
+                    <div class="control-row">
+                        <div class="flex-between">
+                            <h2 class="section-title" style="margin:0;">Fine Rotation</h2>
+                            <span id="angleValue" class="value-badge">0°</span>
+                        </div>
+                        <input type="range" id="angleSlider" min="-180" max="180" step="1" value="0">
+                    </div>
+
+                    <!-- Reset Action -->
+                    <div class="reset-container">
+                        <button id="btnReset" class="btn-reset">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+                            </svg>
+                            Reset Configuration
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        Image exported successfully!
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        const canvas = document.getElementById('editorCanvas');
+        const ctx = canvas.getContext('2d');
+        const FRAME_SIZE = 1000;
+        canvas.width = FRAME_SIZE;
+        canvas.height = FRAME_SIZE;
+
+        // Bán kính phần rỗng hình tròn trong SVG là 355. Đường kính là 710.
+        const INNER_OPENING_DIAMETER = 710;
+
+        const state = {
+            image: null,
+            frame: null,
+            x: FRAME_SIZE / 2,
+            y: FRAME_SIZE / 2,
+            scale: 1,
+            angle: 0,
+            flipX: 1,
+            flipY: 1,
+            defaultScale: 1
+        };
+
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let initialImgX = 0;
+        let initialImgY = 0;
+
+        // UI Elements
+        const fileUpload = document.getElementById('fileUpload');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const emptyState = document.getElementById('emptyState');
+        const instructionText = document.getElementById('instructionText');
+        const controlsGroup = document.getElementById('controlsGroup');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const zoomValue = document.getElementById('zoomValue');
+        const angleSlider = document.getElementById('angleSlider');
+        const angleValue = document.getElementById('angleValue');
+        const btnDownload = document.getElementById('btnDownload');
+        const toast = document.getElementById('toast');
+
+        function generateFrameSVG() {
+            return `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${FRAME_SIZE}" height="${FRAME_SIZE}" viewBox="0 0 1000 1000">
+      <defs>
+        <!-- Khung xanh, khoét rỗng hình tròn ở giữa -->
+        <mask id="frameHole">
+          <rect width="1000" height="1000" fill="white"/>
+          <circle cx="500" cy="470" r="355" fill="black"/>
+        </mask>
+
+        <linearGradient id="blueBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#073AAB"/>
+          <stop offset="48%" stop-color="#0756D9"/>
+          <stop offset="100%" stop-color="#001B79"/>
+        </linearGradient>
+
+        <linearGradient id="blueBottom" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0878E8"/>
+          <stop offset="100%" stop-color="#00175E"/>
+        </linearGradient>
+
+        <linearGradient id="neon" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#00E5FF"/>
+          <stop offset="45%" stop-color="#FFFFFF"/>
+          <stop offset="70%" stop-color="#18BFFF"/>
+          <stop offset="100%" stop-color="#0077FF"/>
+        </linearGradient>
+
+        <linearGradient id="goldText" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FFF7B0"/>
+          <stop offset="45%" stop-color="#FFD84A"/>
+          <stop offset="100%" stop-color="#FF9F1C"/>
+        </linearGradient>
+
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="8" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+
+        <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+
+        <!-- ĐƯỜNG DẪN QUỸ ĐẠO MỚI -->
+        <path id="topTextPath" d="M 115 470 A 385 385 0 0 1 885 470" fill="none"/>
+        <path id="leftTextPath" d="M 500 855 A 385 385 0 0 1 500 85" fill="none"/>
+
+        <pattern id="microGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0H0V40" fill="none" stroke="#50CFFF" stroke-opacity=".10" stroke-width="1"/>
+        </pattern>
+      </defs>
+
+      <g mask="url(#frameHole)">
+        <rect width="1000" height="1000" fill="url(#blueBg)"/>
+        <rect width="1000" height="1000" fill="url(#microGrid)"/>
+
+        <path d="M0 0H360L1000 640V0Z" fill="#1684FF" opacity=".12"/>
+        <path d="M0 190L330 0H510L0 300Z" fill="#4CB7FF" opacity=".09"/>
+        <path d="M1000 150L720 0H1000Z" fill="#54C8FF" opacity=".10"/>
+        <path d="M0 820L210 720L440 1000H0Z" fill="#1684FF" opacity=".12"/>
+        <path d="M1000 700L820 840L570 1000H1000Z" fill="url(#blueBottom)" opacity=".85"/>
+
+        <path d="M0 900 C200 810 320 940 520 900 S830 850 1000 740 V1000H0Z" fill="#00165F" opacity=".45"/>
+        <path d="M0 865 C220 780 330 920 540 870 S850 820 1000 710" fill="none" stroke="#168BFF" stroke-width="3" opacity=".65"/>
+
+        <!-- Mạch điện trái -->
+        <g fill="none" stroke="#B4EDFF" stroke-width="2" opacity=".85">
+          <path d="M0 90H135L165 65H235"/>
+          <path d="M0 125H170L195 150H260"/>
+          <path d="M0 175H75L95 195H145"/>
+          <path d="M0 225H110"/>
+        </g>
+        <g fill="#FFFFFF">
+          <circle cx="235" cy="65" r="5"/><circle cx="260" cy="150" r="5"/><circle cx="145" cy="195" r="4"/><circle cx="110" cy="225" r="4"/>
+        </g>
+
+        <!-- Mạch điện phải -->
+        <g fill="none" stroke="#B4EDFF" stroke-width="2" opacity=".85">
+          <path d="M1000 90H865L835 65H765"/>
+          <path d="M1000 125H830L805 150H740"/>
+          <path d="M1000 175H925L905 195H855"/>
+          <path d="M1000 225H890"/>
+        </g>
+        <g fill="#FFFFFF">
+          <circle cx="765" cy="65" r="5"/><circle cx="740" cy="150" r="5"/><circle cx="855" cy="195" r="4"/><circle cx="890" cy="225" r="4"/>
+        </g>
+
+        <g fill="none" stroke="#19B8FF" stroke-width="2" opacity=".65">
+          <circle cx="500" cy="470" r="400" stroke-dasharray="180 25 65 35"/>
+          <circle cx="500" cy="470" r="420" stroke-dasharray="80 40 150 60"/>
+          <path d="M165 280 A390 390 0 0 1 370 85"/>
+          <path d="M810 230 A390 390 0 0 1 900 520"/>
+          <path d="M810 690 A390 390 0 0 1 690 835"/>
+        </g>
+
+        <g fill="#16BFFF">
+          <circle cx="370" cy="85" r="5"/><circle cx="900" cy="520" r="5"/><circle cx="690" cy="835" r="5"/><circle cx="165" cy="280" r="4"/>
+        </g>
+      </g>
+
+      <circle cx="500" cy="470" r="370" fill="none" stroke="#00BFFF" stroke-width="12" opacity=".65" filter="url(#glow)"/>
+      <circle cx="500" cy="470" r="362" fill="none" stroke="url(#neon)" stroke-width="8" filter="url(#softGlow)"/>
+      <circle cx="500" cy="470" r="350" fill="none" stroke="#8BEAFF" stroke-width="3" opacity=".95"/>
+      <circle cx="500" cy="470" r="340" fill="none" stroke="#168EFF" stroke-width="2" opacity=".85"/>
+
+      <text fill="url(#goldText)" font-size="28" font-weight="800" letter-spacing="2">
+        <textPath href="#topTextPath" startOffset="50%" text-anchor="middle">
+          HAPPY 23RD BIRTHDAY - DINH LUONG TA
+        </textPath>
+      </text>
+
+      <text fill="#FFFFFF" font-size="22" font-weight="700" letter-spacing=".7">
+        <textPath href="#leftTextPath" startOffset="50%" text-anchor="middle">
+            09/01/2003 - 09/01/2026
+        </textPath>
+      </text>
+
+      <g transform="translate(240 845)">
+        <rect x="0" y="0" width="520" height="94" rx="14" fill="#001B79" fill-opacity=".92" stroke="#63CFFF" stroke-width="2"/>
+        <rect x="7" y="7" width="506" height="80" rx="10" fill="none" stroke="#18BFFF" stroke-width="1" opacity=".8"/>
+        <text x="260" y="32" text-anchor="middle" font-size="17" font-weight="700" letter-spacing="2" fill="#A8E9FF">KỶ NIỆM</text>
+        <text x="260" y="60" text-anchor="middle" font-size="25" font-weight="900" fill="url(#goldText)">23 NĂM NGÀY SINH - ĐÌNH LƯƠNG TẠ</text>
+        <text x="260" y="79" text-anchor="middle" font-size="13" font-weight="600" fill="#FFFFFF">09/01/2003 - 09/01/2026</text>
+      </g>
+
+      <rect x="4" y="4" width="992" height="992" fill="none" stroke="#63CFFF" stroke-width="3" opacity=".85"/>
+      <rect x="12" y="12" width="976" height="976" fill="none" stroke="#FFFFFF" stroke-width="1" opacity=".25"/>
+    </svg>
+            `;
+        }
+
+        function initFrame() {
+            const svgData = generateFrameSVG();
+            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = (window.URL || window.webkitURL).createObjectURL(blob);
+
+            state.frame = new Image();
+            state.frame.onload = () => render();
+            state.frame.src = url;
+        }
+
+        initFrame();
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (state.image) {
+                ctx.save();
+                ctx.translate(state.x, state.y);
+                ctx.rotate(state.angle * Math.PI / 180);
+                ctx.scale(state.scale * state.flipX, state.scale * state.flipY);
+                ctx.drawImage(state.image, -state.image.width / 2, -state.image.height / 2);
+                ctx.restore();
+            }
+            if (state.frame) {
+                ctx.drawImage(state.frame, 0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function handleFiles(files) {
+            const file = files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const img = new Image();
+                img.onload = function () {
+                    state.image = img;
+                    const scaleX = INNER_OPENING_DIAMETER / img.width;
+                    const scaleY = INNER_OPENING_DIAMETER / img.height;
+                    const initialScale = Math.max(scaleX, scaleY) * 1.05;
+
+                    state.defaultScale = initialScale;
+                    resetImageState();
+
+                    // Update UI
+                    emptyState.style.display = 'none';
+                    instructionText.style.display = 'flex';
+                    controlsGroup.classList.add('active');
+                    btnDownload.disabled = false;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // fileUpload.addEventListener('change', (e) => handleFiles(e.target.files));
+        // emptyState.addEventListener('click', () => fileUpload.click());
+
+        fileUpload.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+
+            // Cho phép chọn lại cùng một file
+            e.target.value = '';
+        });
+
+        emptyState.addEventListener('click', () => fileUpload.click());
+
+        // Vùng upload bên phải
+        const uploadZone = document.getElementById('uploadZone');
+
+        // Ngăn trình duyệt mở ảnh trực tiếp khi kéo thả
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        // Hiệu ứng khi kéo ảnh vào vùng upload
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => {
+                uploadZone.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, () => {
+                uploadZone.classList.remove('drag-over');
+            });
+        });
+
+        // Xử lý file được thả vào vùng upload bên phải
+        uploadZone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            canvasContainer.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            canvasContainer.addEventListener(eventName, () => {
+                canvasContainer.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            canvasContainer.addEventListener(eventName, () => {
+                canvasContainer.classList.remove('drag-over');
+            }, false);
+        });
+
+        canvasContainer.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files), false);
+
+        function resetImageState() {
+            state.x = FRAME_SIZE / 2;
+            state.y = FRAME_SIZE / 2;
+            state.scale = state.defaultScale;
+            state.angle = 0;
+            state.flipX = 1;
+            state.flipY = 1;
+
+            zoomSlider.value = state.scale;
+            zoomSlider.min = state.defaultScale * 0.2;
+            zoomSlider.max = state.defaultScale * 4;
+            updateZoomLabel();
+
+            angleSlider.value = 0;
+            updateAngleLabel();
+            render();
+        }
+
+        document.getElementById('btnReset').addEventListener('click', () => {
+            if (state.image) resetImageState();
+        });
+
+        function getEventPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function handleDragStart(e) {
+            if (!state.image) return;
+            if (e.type === 'touchstart') e.preventDefault();
+
+            isDragging = true;
+            const pos = getEventPos(e);
+            dragStartX = pos.x;
+            dragStartY = pos.y;
+            initialImgX = state.x;
+            initialImgY = state.y;
+        }
+
+        function handleDragMove(e) {
+            if (!isDragging || !state.image) return;
+            if (e.type === 'touchmove') e.preventDefault();
+
+            const pos = getEventPos(e);
+            const dx = pos.x - dragStartX;
+            const dy = pos.y - dragStartY;
+
+            state.x = initialImgX + dx;
+            state.y = initialImgY + dy;
+            render();
+        }
+
+        function handleDragEnd() { isDragging = false; }
+
+        canvas.addEventListener('mousedown', handleDragStart);
+        window.addEventListener('mousemove', handleDragMove);
+        window.addEventListener('mouseup', handleDragEnd);
+
+        canvas.addEventListener('touchstart', handleDragStart, { passive: false });
+        window.addEventListener('touchmove', handleDragMove, { passive: false });
+        window.addEventListener('touchend', handleDragEnd);
+
+        function updateZoomLabel() {
+            const percent = Math.round((state.scale / state.defaultScale) * 100);
+            zoomValue.textContent = `${percent}%`;
+        }
+
+        zoomSlider.addEventListener('input', (e) => {
+            state.scale = parseFloat(e.target.value);
+            updateZoomLabel();
+            render();
+        });
+
+        canvas.addEventListener('wheel', (e) => {
+            if (!state.image) return;
+            e.preventDefault();
+            const zoomAmount = 0.05 * state.defaultScale;
+            if (e.deltaY < 0) {
+                state.scale = Math.min(state.scale + zoomAmount, parseFloat(zoomSlider.max));
+            } else {
+                state.scale = Math.max(state.scale - zoomAmount, parseFloat(zoomSlider.min));
+            }
+            zoomSlider.value = state.scale;
+            updateZoomLabel();
+            render();
+        }, { passive: false });
+
+        function updateAngleLabel() { angleValue.textContent = `${state.angle}°`; }
+
+        angleSlider.addEventListener('input', (e) => {
+            state.angle = parseInt(e.target.value);
+            updateAngleLabel();
+            render();
+        });
+
+        document.getElementById('btnRotateLeft').addEventListener('click', () => {
+            state.angle = (state.angle - 90) % 360;
+            angleSlider.value = state.angle > 180 ? state.angle - 360 : state.angle < -180 ? state.angle + 360 : state.angle;
+            updateAngleLabel();
+            render();
+        });
+
+        document.getElementById('btnRotateRight').addEventListener('click', () => {
+            state.angle = (state.angle + 90) % 360;
+            angleSlider.value = state.angle > 180 ? state.angle - 360 : state.angle < -180 ? state.angle + 360 : state.angle;
+            updateAngleLabel();
+            render();
+        });
+
+        document.getElementById('btnFlipH').addEventListener('click', () => { state.flipX *= -1; render(); });
+        document.getElementById('btnFlipV').addEventListener('click', () => { state.flipY *= -1; render(); });
+
+        function showToast() {
+            toast.classList.add("show");
+            setTimeout(function () { toast.classList.remove("show"); }, 3000);
+        }
+
+        btnDownload.addEventListener('click', () => {
+            if (!state.image) return;
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `framer-image-${Date.now()}.png`;
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast();
+        });
+    </script>
+</body>
+</html>
