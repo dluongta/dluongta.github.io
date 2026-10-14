@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GitHub 3D Globe</title>
-    <!-- Three.js r128 -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
-    <script src="three@r128.min.js"></script>
+    <title>3D Globe</title>
     <style>
         * {
             margin: 0;
@@ -41,6 +38,11 @@
         }
         #canvas-container:active {
             cursor: grabbing;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
         /* Bảng điều khiển gọn gàng ở góc trên bên phải, không che khuất Globe */
@@ -221,8 +223,10 @@
 </head>
 <body>
 
-    <!-- 3D Globe Container -->
-    <div id="canvas-container"></div>
+    <!-- Pure 2D Canvas Globe Container -->
+    <div id="canvas-container">
+        <canvas id="globe-canvas"></canvas>
+    </div>
 
     <!-- Interactive Controls -->
     <aside class="controls-wrapper">
@@ -326,7 +330,13 @@
             [[166,-46],[178,-37],[175,-41],[168,-46]]
         ];
 
-        const ARC_COLORS = [0x38bdf8, 0xa855f7, 0x34d399, 0xf472b6, 0xfbbf24];
+        const ARC_COLORS = [
+            { r: 56, g: 189, b: 248 },   // Sky (#38bdf8)
+            { r: 168, g: 85, b: 247 },   // Purple (#a855f7)
+            { r: 52, g: 211, b: 153 },   // Emerald (#34d399)
+            { r: 244, g: 114, b: 182 },  // Pink (#f472b6)
+            { r: 251, g: 191, b: 36 }    // Amber (#fbbf24)
+        ];
 
         function isPointInPolygon(lng, lat, polygon) {
             let inside = false;
@@ -347,23 +357,97 @@
             return false;
         }
 
-        function latLngToVector3(lat, lng, radius) {
+        // ============================================================================
+        // 2. PURE 3D MATH & PROJECTION HELPERS
+        // ============================================================================
+        const GLOBE_RADIUS = 100;
+        const FOV_RAD = (45 * Math.PI) / 180;
+
+        function latLngToVec3(lat, lng, radius) {
             const phi = (90 - lat) * (Math.PI / 180);
             const theta = (lng + 180) * (Math.PI / 180);
-            const x = -(radius * Math.sin(phi) * Math.cos(theta));
-            const z = (radius * Math.sin(phi) * Math.sin(theta));
-            const y = (radius * Math.cos(phi));
-            return new THREE.Vector3(x, y, z);
+            return {
+                x: -(radius * Math.sin(phi) * Math.cos(theta)),
+                y: radius * Math.cos(phi),
+                z: radius * Math.sin(phi) * Math.sin(theta)
+            };
+        }
+
+        function vecDist(a, b) {
+            return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+        }
+
+        function vecLerpNormalized(a, b, t, length) {
+            const x = a.x + (b.x - a.x) * t;
+            const y = a.y + (b.y - a.y) * t;
+            const z = a.z + (b.z - a.z) * t;
+            const mag = Math.hypot(x, y, z) || 1;
+            return {
+                x: (x / mag) * length,
+                y: (y / mag) * length,
+                z: (z / mag) * length
+            };
+        }
+
+        function cubicBezier3D(p0, p1, p2, p3, t) {
+            const u = 1 - t;
+            const tt = t * t;
+            const uu = u * u;
+            const uuu = uu * u;
+            const ttt = tt * t;
+            return {
+                x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
+                y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y,
+                z: uuu * p0.z + 3 * uu * t * p1.z + 3 * u * tt * p2.z + ttt * p3.z
+            };
+        }
+
+        // Tạo cơ sở trực chuẩn trên mặt phẳng tiếp diện tại vị trí (lat, lng) để vẽ vòng tròn trên mặt cầu
+        function createSurfaceRingPoints(lat, lng, radius, ringRadius, segments) {
+            const center = latLngToVec3(lat, lng, radius);
+            const mag = Math.hypot(center.x, center.y, center.z) || 1;
+            const nx = center.x / mag, ny = center.y / mag, nz = center.z / mag;
+
+            // Chọn vector phụ không cùng phương với pháp tuyến
+            let ux = 0, uy = 1, uz = 0;
+            if (Math.abs(ny) > 0.9) { ux = 1; uy = 0; }
+
+            // Tích có hướng t1 = u x n
+            let t1x = uy * nz - uz * ny;
+            let t1y = uz * nx - ux * nz;
+            let t1z = ux * ny - uy * nx;
+            const t1Mag = Math.hypot(t1x, t1y, t1z) || 1;
+            t1x /= t1Mag; t1y /= t1Mag; t1z /= t1Mag;
+
+            // Tích có hướng t2 = n x t1
+            const t2x = ny * t1z - nz * t1y;
+            const t2y = nz * t1x - nx * t1z;
+            const t2z = nx * t1y - ny * t1x;
+
+            const pts = [];
+            for (let i = 0; i <= segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                const cosA = Math.cos(angle) * ringRadius;
+                const sinA = Math.sin(angle) * ringRadius;
+                pts.push({
+                    x: center.x + t1x * cosA + t2x * sinA,
+                    y: center.y + t1y * cosA + t2y * sinA,
+                    z: center.z + t1z * cosA + t2z * sinA
+                });
+            }
+            return { center, pts, t1: { x: t1x, y: t1y, z: t1z }, t2: { x: t2x, y: t2y, z: t2z } };
         }
 
         // ============================================================================
-        // 2. THREE.JS SCENE & RESPONSIVE VIEW CONFIGURATION
+        // 3. STATE & RESPONSIVE CAMERA CONFIGURATION
         // ============================================================================
-        const GLOBE_RADIUS = 100;
-        let scene, camera, renderer, globeGroup, worldGroup;
-        let atmosphereMesh, cityNodesGroup;
-        const activeArcs = [];
-        const activeRipples = [];
+        const canvas = document.getElementById('globe-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let screenW = window.innerWidth;
+        let screenH = window.innerHeight;
+        let dpr = Math.min(window.devicePixelRatio || 1, 2);
+        let focalLength = 500;
 
         let isDragging = false;
         let previousMousePosition = { x: 0, y: 0 };
@@ -374,14 +458,20 @@
         let showAtmosphere = true;
         let spawnDensity = 4;
 
-        // Tính toán khoảng cách nhìn xa & vị trí quả địa cầu để không bao giờ bị che khuất
+        const stars = [];
+        const landDots = [];
+        const oceanDots = [];
+        const graticuleLines = [];
+        const cityHubs = [];
+        const activeArcs = [];
+        const activeRipples = [];
+
         function getResponsiveView() {
             const w = window.innerWidth;
             const h = window.innerHeight;
             const aspect = w / h;
 
             if (w < 640 || aspect < 0.85) {
-                // Màn hình dọc (Mobile): Lùi camera ra xa và hạ thấp quả cầu xuống dưới bảng điều khiển
                 const mobileZoom = Math.min(650, Math.max(480, Math.round(330 / Math.max(aspect, 0.45))));
                 return {
                     zoom: mobileZoom,
@@ -390,7 +480,6 @@
                     offsetY: -28
                 };
             } else if (w < 1024) {
-                // Tablet / Màn hình vừa
                 return {
                     zoom: 430,
                     minZoom: 220,
@@ -398,7 +487,6 @@
                     offsetY: -10
                 };
             } else {
-                // PC / Desktop: Nhìn xa vừa vặn, thoáng đãng
                 return {
                     zoom: 390,
                     minZoom: 200,
@@ -414,123 +502,60 @@
         let currentOffsetY = viewConfig.offsetY;
         let targetOffsetY = viewConfig.offsetY;
 
-        function initGlobe() {
-            const container = document.getElementById('canvas-container');
+        // Hàm xoay điểm 3D (xoay quanh trục Y trước, sau đó xoay trục X như Three.js Euler XYZ) và chiếu lên màn hình 2D
+        function project3D(pt, sinX, cosX, sinY, cosY) {
+            // Xoay quanh trục Y (Longitude spin)
+            const x1 = pt.x * cosY + pt.z * sinY;
+            const z1 = -pt.x * sinY + pt.z * cosY;
 
-            scene = new THREE.Scene();
+            // Xoay quanh trục X (Latitude tilt)
+            const y2 = pt.y * cosX - z1 * sinX;
+            const z2 = pt.y * sinX + z1 * cosX;
 
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2500);
-            camera.position.set(0, 0, cameraZoom);
+            // Dịch theo worldGroup.position.y
+            const worldY = y2 + currentOffsetY;
+            const depth = cameraZoom - z2;
+            if (depth <= 10) return null;
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            container.appendChild(renderer.domElement);
-
-            // Nhóm chứa cả quả địa cầu + khí quyển để dịch chuyển tránh bảng Control
-            worldGroup = new THREE.Group();
-            worldGroup.position.y = currentOffsetY;
-            scene.add(worldGroup);
-
-            globeGroup = new THREE.Group();
-            worldGroup.add(globeGroup);
-
-            const ambientLight = new THREE.AmbientLight(0x88b4ff, 0.9);
-            scene.add(ambientLight);
-
-            const dirLight1 = new THREE.DirectionalLight(0x38bdf8, 1.8);
-            dirLight1.position.set(-250, 200, 250);
-            scene.add(dirLight1);
-
-            const dirLight2 = new THREE.DirectionalLight(0xa855f7, 1.4);
-            dirLight2.position.set(250, -180, 150);
-            scene.add(dirLight2);
-
-            createStarfield();
-            createEarthCore();
-            createContinentDotMatrix();
-            createAtmosphereShaders();
-            createCityHubs();
-
-            for (let i = 0; i < 16; i++) {
-                spawnRandomArc(Math.random() * 0.85);
-            }
-
-            setupEventListeners();
-            animate();
+            const scale = focalLength / depth;
+            return {
+                sx: screenW * 0.5 + x1 * scale,
+                sy: screenH * 0.5 - worldY * scale,
+                z: z2,
+                scale: scale
+            };
         }
 
         // ============================================================================
-        // 3. GLOBE VISUAL LAYERS
+        // 4. GENERATE GEOMETRY DATA (STARS, DOT MATRIX, GRATICULES, CITIES)
         // ============================================================================
-        function createStarfield() {
-            const starCount = 1600;
-            const starGeo = new THREE.BufferGeometry();
-            const positions = new Float32Array(starCount * 3);
-            const colors = new Float32Array(starCount * 3);
-
-            for (let i = 0; i < starCount; i++) {
-                const r = 550 + Math.random() * 800;
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos(2 * Math.random() - 1);
-
-                positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-                positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-                positions[i * 3 + 2] = r * Math.cos(phi);
-
+        function buildSceneData() {
+            // 1. Stars (2D screen-space + subtle parallax)
+            for (let i = 0; i < 380; i++) {
                 const tint = Math.random();
-                if (tint < 0.6) {
-                    colors[i * 3] = 0.75; colors[i * 3 + 1] = 0.85; colors[i * 3 + 2] = 1.0;
-                } else if (tint < 0.85) {
-                    colors[i * 3] = 0.45; colors[i * 3 + 1] = 0.75; colors[i * 3 + 2] = 1.0;
-                } else {
-                    colors[i * 3] = 0.80; colors[i * 3 + 1] = 0.60; colors[i * 3 + 2] = 1.0;
-                }
+                let color = 'rgba(195, 220, 255, ';
+                if (tint > 0.6 && tint <= 0.85) color = 'rgba(115, 195, 255, ';
+                else if (tint > 0.85) color = 'rgba(205, 155, 255, ';
+
+                stars.push({
+                    u: Math.random(),
+                    v: Math.random(),
+                    size: 0.6 + Math.random() * 1.3,
+                    alpha: 0.25 + Math.random() * 0.6,
+                    twinkleSpeed: 0.01 + Math.random() * 0.025,
+                    phase: Math.random() * Math.PI * 2,
+                    colorPrefix: color
+                });
             }
 
-            starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-            const starMat = new THREE.PointsMaterial({
-                size: 1.6,
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.75
-            });
-
-            scene.add(new THREE.Points(starGeo, starMat));
-        }
-
-        function createEarthCore() {
-            const sphereGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 0.992, 64, 64);
-            const sphereMat = new THREE.MeshPhongMaterial({
-                color: 0x070d1f,
-                emissive: 0x050b1a,
-                specular: 0x1e3a8a,
-                shininess: 18
-            });
-            globeGroup.add(new THREE.Mesh(sphereGeo, sphereMat));
-
-            const wireGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 0.995, 36, 18);
-            const wireMat = new THREE.MeshBasicMaterial({
-                color: 0x1e3a8a,
-                wireframe: true,
-                transparent: true,
-                opacity: 0.08
-            });
-            globeGroup.add(new THREE.Mesh(wireGeo, wireMat));
-        }
-
-        function createContinentDotMatrix() {
-            const totalSamples = 22000;
-            const landPositions = [];
-            const oceanPositions = [];
+            // 2. Continent Dot Matrix (Fibonacci Sphere)
+            const totalSamples = 18000;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
 
             for (let i = 0; i < totalSamples; i++) {
                 const y = 1 - (i / (totalSamples - 1)) * 2;
                 const radiusAtY = Math.sqrt(1 - y * y);
-                const theta = 2 * Math.PI * i / goldenRatio;
+                const theta = (2 * Math.PI * i) / goldenRatio;
 
                 const x = Math.cos(theta) * radiusAtY;
                 const z = Math.sin(theta) * radiusAtY;
@@ -540,120 +565,61 @@
                 const normLng = ((lng + 540) % 360) - 180;
 
                 if (isLand(normLng, lat)) {
-                    landPositions.push(x * GLOBE_RADIUS, y * GLOBE_RADIUS, z * GLOBE_RADIUS);
+                    landDots.push({
+                        x: x * GLOBE_RADIUS,
+                        y: y * GLOBE_RADIUS,
+                        z: z * GLOBE_RADIUS
+                    });
                 } else if (i % 7 === 0) {
-                    oceanPositions.push(x * GLOBE_RADIUS, y * GLOBE_RADIUS, z * GLOBE_RADIUS);
+                    oceanDots.push({
+                        x: x * GLOBE_RADIUS,
+                        y: y * GLOBE_RADIUS,
+                        z: z * GLOBE_RADIUS
+                    });
                 }
             }
 
-            const landGeo = new THREE.BufferGeometry();
-            landGeo.setAttribute('position', new THREE.Float32BufferAttribute(landPositions, 3));
-            const landMat = new THREE.PointsMaterial({
-                color: 0x60a5fa,
-                size: 1.35,
-                transparent: true,
-                opacity: 0.78,
-                blending: THREE.AdditiveBlending
-            });
-            globeGroup.add(new THREE.Points(landGeo, landMat));
-
-            const oceanGeo = new THREE.BufferGeometry();
-            oceanGeo.setAttribute('position', new THREE.Float32BufferAttribute(oceanPositions, 3));
-            const oceanMat = new THREE.PointsMaterial({
-                color: 0x1e40af,
-                size: 0.85,
-                transparent: true,
-                opacity: 0.25
-            });
-            globeGroup.add(new THREE.Points(oceanGeo, oceanMat));
-        }
-
-        function createAtmosphereShaders() {
-            const vertexShader = `
-                varying vec3 vNormal;
-                void main() {
-                    vNormal = normalize(normalMatrix * normal);
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            // 3. Subtle Graticule Wireframe Lines (Kinh tuyến & Vĩ tuyến)
+            for (let lat = -60; lat <= 60; lat += 30) {
+                const ring = [];
+                for (let lng = -180; lng <= 180; lng += 8) {
+                    ring.push(latLngToVec3(lat, lng, GLOBE_RADIUS * 0.996));
                 }
-            `;
-
-            const fragmentShader = `
-                varying vec3 vNormal;
-                void main() {
-                    float intensity = pow(0.68 - dot(vNormal, vec3(0, 0, 1.0)), 2.6);
-                    vec3 glowColor = mix(vec3(0.15, 0.55, 1.0), vec3(0.58, 0.28, 0.98), 0.35);
-                    gl_FragColor = vec4(glowColor, 1.0) * intensity * 1.45;
+                graticuleLines.push(ring);
+            }
+            for (let lng = -180; lng < 180; lng += 30) {
+                const line = [];
+                for (let lat = -75; lat <= 75; lat += 8) {
+                    line.push(latLngToVec3(lat, lng, GLOBE_RADIUS * 0.996));
                 }
-            `;
+                graticuleLines.push(line);
+            }
 
-            const atmosGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.14, 64, 64);
-            const atmosMat = new THREE.ShaderMaterial({
-                vertexShader,
-                fragmentShader,
-                blending: THREE.AdditiveBlending,
-                side: THREE.BackSide,
-                transparent: true,
-                depthWrite: false
-            });
-
-            atmosphereMesh = new THREE.Mesh(atmosGeo, atmosMat);
-            worldGroup.add(atmosphereMesh);
-        }
-
-        function createCityHubs() {
-            cityNodesGroup = new THREE.Group();
-            globeGroup.add(cityNodesGroup);
-
-            const dotGeo = new THREE.SphereGeometry(1.15, 12, 12);
-            const ringGeo = new THREE.RingGeometry(1.5, 2.3, 24);
-
+            // 4. Tech Hubs
             TECH_HUBS.forEach((hub, index) => {
-                const pos = latLngToVector3(hub.lat, hub.lng, GLOBE_RADIUS * 1.004);
                 const isMajor = index % 3 === 0;
-
-                const dotMat = new THREE.MeshBasicMaterial({
-                    color: isMajor ? 0x38bdf8 : 0xa855f7
+                const surfaceData = createSurfaceRingPoints(hub.lat, hub.lng, GLOBE_RADIUS * 1.004, 1.9, 16);
+                cityHubs.push({
+                    lat: hub.lat,
+                    lng: hub.lng,
+                    center: surfaceData.center,
+                    ringPts: surfaceData.pts,
+                    color: isMajor ? '#38bdf8' : '#a855f7',
+                    rgb: isMajor ? '56, 189, 248' : '168, 85, 247'
                 });
-                const dotMesh = new THREE.Mesh(dotGeo, dotMat);
-                dotMesh.position.copy(pos);
-                cityNodesGroup.add(dotMesh);
-
-                const ringMat = new THREE.MeshBasicMaterial({
-                    color: isMajor ? 0x38bdf8 : 0xa855f7,
-                    side: THREE.DoubleSide,
-                    transparent: true,
-                    opacity: 0.55,
-                    blending: THREE.AdditiveBlending
-                });
-                const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-                ringMesh.position.copy(pos);
-                ringMesh.lookAt(pos.clone().multiplyScalar(2));
-                cityNodesGroup.add(ringMesh);
             });
         }
 
         // ============================================================================
-        // 4. ANIMATED 3D ARCS & SURFACE RIPPLE WAVES
+        // 5. ANIMATED 3D ARCS & SURFACE RIPPLE WAVES
         // ============================================================================
-        function spawnSurfaceRipple(lat, lng, colorHex) {
-            const pos = latLngToVector3(lat, lng, GLOBE_RADIUS * 1.005);
-            const ringGeo = new THREE.RingGeometry(0.6, 1.25, 32);
-            const ringMat = new THREE.MeshBasicMaterial({
-                color: colorHex,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.95,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-
-            const mesh = new THREE.Mesh(ringGeo, ringMat);
-            mesh.position.copy(pos);
-            mesh.lookAt(pos.clone().multiplyScalar(2));
-            globeGroup.add(mesh);
-
+        function spawnSurfaceRipple(lat, lng, colorObj) {
+            const basis = createSurfaceRingPoints(lat, lng, GLOBE_RADIUS * 1.005, 1.0, 24);
             activeRipples.push({
-                mesh,
+                center: basis.center,
+                t1: basis.t1,
+                t2: basis.t2,
+                color: colorObj,
                 progress: 0,
                 speed: 0.022
             });
@@ -668,82 +634,61 @@
 
             const startHub = TECH_HUBS[startIdx];
             const endHub = TECH_HUBS[endIdx];
-            const colorHex = ARC_COLORS[Math.floor(Math.random() * ARC_COLORS.length)];
+            const colorObj = ARC_COLORS[Math.floor(Math.random() * ARC_COLORS.length)];
 
-            const startVec = latLngToVector3(startHub.lat, startHub.lng, GLOBE_RADIUS);
-            const endVec = latLngToVector3(endHub.lat, endHub.lng, GLOBE_RADIUS);
+            const startVec = latLngToVec3(startHub.lat, startHub.lng, GLOBE_RADIUS);
+            const endVec = latLngToVec3(endHub.lat, endHub.lng, GLOBE_RADIUS);
 
-            const distance = startVec.distanceTo(endVec);
+            const distance = vecDist(startVec, endVec);
             const altitude = Math.min(Math.max(distance * 0.42, 18), 85);
 
-            const mid1 = startVec.clone().lerp(endVec, 0.28).normalize().multiplyScalar(GLOBE_RADIUS + altitude);
-            const mid2 = startVec.clone().lerp(endVec, 0.72).normalize().multiplyScalar(GLOBE_RADIUS + altitude);
+            const mid1 = vecLerpNormalized(startVec, endVec, 0.28, GLOBE_RADIUS + altitude);
+            const mid2 = vecLerpNormalized(startVec, endVec, 0.72, GLOBE_RADIUS + altitude);
 
-            const curve = new THREE.CubicBezierCurve3(startVec, mid1, mid2, endVec);
-            const segments = 80;
-
-            const tubeGeo = new THREE.TubeGeometry(curve, segments, 0.36, 6, false);
-
-            const bgMat = new THREE.MeshBasicMaterial({
-                color: colorHex,
-                transparent: true,
-                opacity: 0.12,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-            const bgTube = new THREE.Mesh(tubeGeo.clone(), bgMat);
-            globeGroup.add(bgTube);
-
-            const pulseMat = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.95,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-            pulseMat.color.lerp(new THREE.Color(colorHex), 0.45);
-
-            const pulseTube = new THREE.Mesh(tubeGeo, pulseMat);
-            tubeGeo.setDrawRange(0, 0);
-            globeGroup.add(pulseTube);
-
-            const headGeo = new THREE.SphereGeometry(0.95, 10, 10);
-            const headMat = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                transparent: true,
-                opacity: 1,
-                blending: THREE.AdditiveBlending
-            });
-            const headMesh = new THREE.Mesh(headGeo, headMat);
-            headMesh.position.copy(startVec);
-            globeGroup.add(headMesh);
+            const segments = 64;
+            const points = [];
+            for (let i = 0; i <= segments; i++) {
+                points.push(cubicBezier3D(startVec, mid1, mid2, endVec, i / segments));
+            }
 
             if (initialProgress === 0) {
-                spawnSurfaceRipple(startHub.lat, startHub.lng, colorHex);
+                spawnSurfaceRipple(startHub.lat, startHub.lng, colorObj);
             }
 
             activeArcs.push({
-                curve,
-                bgTube,
-                pulseTube,
-                headMesh,
+                points,
                 segments,
                 progress: initialProgress,
                 speed: 0.0055 + Math.random() * 0.0045,
                 tailLength: 0.28,
                 endHub,
-                colorHex,
+                color: colorObj,
                 impactTriggered: false
             });
         }
 
         // ============================================================================
-        // 5. INTERACTION & CONTROLS (PC + MOBILE PINCH-TO-ZOOM)
+        // 6. CANVAS RESIZE & INTERACTION LISTENERS
         // ============================================================================
+        function updateCanvasSize() {
+            screenW = window.innerWidth;
+            screenH = window.innerHeight;
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            canvas.width = screenW * dpr;
+            canvas.height = screenH * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            focalLength = (screenH * 0.5) / Math.tan(FOV_RAD * 0.5);
+
+            viewConfig = getResponsiveView();
+            targetZoom = viewConfig.zoom;
+            targetOffsetY = viewConfig.offsetY;
+        }
+
         function setupEventListeners() {
             const container = document.getElementById('canvas-container');
 
-            // Mouse Events
             container.addEventListener('mousedown', (e) => {
                 isDragging = true;
                 previousMousePosition = { x: e.clientX, y: e.clientY };
@@ -765,7 +710,6 @@
                 isDragging = false;
             });
 
-            // Touch Events (1 ngón xoay + 2 ngón phóng to/thu nhỏ)
             container.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 1) {
                     isDragging = true;
@@ -806,25 +750,15 @@
                 pinchStartDist = 0;
             });
 
-            // Scroll Wheel Zoom
             container.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 targetZoom += e.deltaY * 0.18;
                 targetZoom = Math.max(viewConfig.minZoom, Math.min(viewConfig.maxZoom, targetZoom));
             }, { passive: false });
 
-            // Tự động điều chỉnh lại bố cục khi xoay màn hình hoặc đổi kích thước cửa sổ
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
+            window.addEventListener('resize', updateCanvasSize);
 
-                viewConfig = getResponsiveView();
-                targetZoom = viewConfig.zoom;
-                targetOffsetY = viewConfig.offsetY;
-            });
-
-            // Buttons & Sliders
+            // UI Controls
             const btnAutoRotate = document.getElementById('btn-autorotate');
             btnAutoRotate.addEventListener('click', () => {
                 autoRotate = !autoRotate;
@@ -834,7 +768,6 @@
             const btnAtmosphere = document.getElementById('btn-atmosphere');
             btnAtmosphere.addEventListener('click', () => {
                 showAtmosphere = !showAtmosphere;
-                atmosphereMesh.visible = showAtmosphere;
                 btnAtmosphere.classList.toggle('active-purple', showAtmosphere);
             });
 
@@ -861,97 +794,337 @@
         }
 
         // ============================================================================
-        // 6. MAIN RENDER & ANIMATION LOOP
+        // 7. MAIN 2D CANVAS RENDER LOOP
         // ============================================================================
+        function drawArcSegmentPath(projPts, startIdx, endIdx, checkOcclusion, globeCenterX, globeCenterY, apparentRadius) {
+            ctx.beginPath();
+            let penDown = false;
+            const rSq = apparentRadius * apparentRadius * 0.97;
+
+            for (let i = startIdx; i <= endIdx; i++) {
+                const p = projPts[i];
+                if (!p) {
+                    penDown = false;
+                    continue;
+                }
+                if (checkOcclusion && p.z < 0) {
+                    const dx = p.sx - globeCenterX;
+                    const dy = p.sy - globeCenterY;
+                    if (dx * dx + dy * dy < rSq) {
+                        penDown = false;
+                        continue;
+                    }
+                }
+                if (!penDown) {
+                    ctx.moveTo(p.sx, p.sy);
+                    penDown = true;
+                } else {
+                    ctx.lineTo(p.sx, p.sy);
+                }
+            }
+            ctx.stroke();
+        }
+
         function animate() {
             requestAnimationFrame(animate);
 
+            // 1. Update Camera & Globe Rotation
             if (autoRotate && !isDragging) {
                 targetRotation.y += 0.0018;
             }
             currentRotation.x += (targetRotation.x - currentRotation.x) * 0.08;
             currentRotation.y += (targetRotation.y - currentRotation.y) * 0.08;
-
-            globeGroup.rotation.x = currentRotation.x;
-            globeGroup.rotation.y = currentRotation.y;
-
             cameraZoom += (targetZoom - cameraZoom) * 0.08;
-            camera.position.z = cameraZoom;
-
             currentOffsetY += (targetOffsetY - currentOffsetY) * 0.08;
-            worldGroup.position.y = currentOffsetY;
 
+            const sinX = Math.sin(currentRotation.x);
+            const cosX = Math.cos(currentRotation.x);
+            const sinY = Math.sin(currentRotation.y);
+            const cosY = Math.cos(currentRotation.y);
+
+            // Tính tâm và bán kính hiển thị của quả địa cầu trên màn hình 2D
+            const globeCenterX = screenW * 0.5;
+            const globeCenterY = screenH * 0.5 - currentOffsetY * (focalLength / cameraZoom);
+            const apparentRadius = (GLOBE_RADIUS * focalLength) / Math.sqrt(Math.max(100, cameraZoom * cameraZoom - GLOBE_RADIUS * GLOBE_RADIUS));
+
+            ctx.clearRect(0, 0, screenW, screenH);
+
+            // 2. Render Background Starfield
+            for (let i = 0; i < stars.length; i++) {
+                const s = stars[i];
+                s.phase += s.twinkleSpeed;
+                const alpha = s.alpha * (0.65 + 0.35 * Math.sin(s.phase));
+                const sx = ((s.u * screenW - currentRotation.y * 25) % screenW + screenW) % screenW;
+                const sy = ((s.v * screenH - currentRotation.x * 25) % screenH + screenH) % screenH;
+
+                ctx.fillStyle = s.colorPrefix + alpha.toFixed(2) + ')';
+                ctx.fillRect(sx, sy, s.size, s.size);
+            }
+
+            // 3. Outer Atmosphere Halo Glow (khi bật Halo Glow)
+            if (showAtmosphere) {
+                const outerGrad = ctx.createRadialGradient(
+                    globeCenterX, globeCenterY, apparentRadius * 0.82,
+                    globeCenterX, globeCenterY, apparentRadius * 1.26
+                );
+                outerGrad.addColorStop(0, 'rgba(56, 189, 248, 0.26)');
+                outerGrad.addColorStop(0.45, 'rgba(139, 92, 246, 0.14)');
+                outerGrad.addColorStop(1, 'rgba(14, 165, 233, 0)');
+
+                ctx.fillStyle = outerGrad;
+                ctx.beginPath();
+                ctx.arc(globeCenterX, globeCenterY, apparentRadius * 1.26, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 4. Render 3D Shaded Earth Core Sphere
+            const coreGrad = ctx.createRadialGradient(
+                globeCenterX - apparentRadius * 0.32,
+                globeCenterY - apparentRadius * 0.32,
+                apparentRadius * 0.05,
+                globeCenterX,
+                globeCenterY,
+                apparentRadius
+            );
+            coreGrad.addColorStop(0, '#11224d');
+            coreGrad.addColorStop(0.55, '#070f26');
+            coreGrad.addColorStop(1, '#040816');
+
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(globeCenterX, globeCenterY, apparentRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Rim Fresnel Edge Highlight
+            if (showAtmosphere) {
+                const rimGrad = ctx.createRadialGradient(
+                    globeCenterX, globeCenterY, apparentRadius * 0.86,
+                    globeCenterX, globeCenterY, apparentRadius
+                );
+                rimGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+                rimGrad.addColorStop(0.75, 'rgba(56, 189, 248, 0.14)');
+                rimGrad.addColorStop(1, 'rgba(168, 85, 247, 0.45)');
+
+                ctx.fillStyle = rimGrad;
+                ctx.beginPath();
+                ctx.arc(globeCenterX, globeCenterY, apparentRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 5. Render Subtle Graticule Lines (Mặt trước quả địa cầu)
+            ctx.strokeStyle = 'rgba(30, 64, 175, 0.14)';
+            ctx.lineWidth = 0.8;
+            for (let i = 0; i < graticuleLines.length; i++) {
+                const line = graticuleLines[i];
+                ctx.beginPath();
+                let started = false;
+                for (let j = 0; j < line.length; j++) {
+                    const p = project3D(line[j], sinX, cosX, sinY, cosY);
+                    if (p && p.z > 5) {
+                        if (!started) {
+                            ctx.moveTo(p.sx, p.sy);
+                            started = true;
+                        } else {
+                            ctx.lineTo(p.sx, p.sy);
+                        }
+                    } else {
+                        started = false;
+                    }
+                }
+                ctx.stroke();
+            }
+
+            // 6. Render Ocean Dots
+            ctx.fillStyle = 'rgba(30, 64, 175, 0.35)';
+            const oceanSize = Math.max(0.8, (0.9 * focalLength) / cameraZoom);
+            for (let i = 0; i < oceanDots.length; i++) {
+                const p = project3D(oceanDots[i], sinX, cosX, sinY, cosY);
+                if (p && p.z > 0) {
+                    ctx.fillRect(p.sx - oceanSize * 0.5, p.sy - oceanSize * 0.5, oceanSize, oceanSize);
+                }
+            }
+
+            // 7. Render Continent Dot Matrix (Chia 2 mức độ sáng theo chiều sâu Z tạo khối cầu 3D)
+            const baseDotSize = Math.max(1.0, (1.35 * focalLength) / cameraZoom);
+
+            ctx.fillStyle = 'rgba(96, 165, 250, 0.42)';
+            for (let i = 0; i < landDots.length; i++) {
+                const p = project3D(landDots[i], sinX, cosX, sinY, cosY);
+                if (p && p.z > -8 && p.z <= 38) {
+                    ctx.fillRect(p.sx - baseDotSize * 0.5, p.sy - baseDotSize * 0.5, baseDotSize, baseDotSize);
+                }
+            }
+
+            ctx.fillStyle = 'rgba(135, 198, 255, 0.88)';
+            for (let i = 0; i < landDots.length; i++) {
+                const p = project3D(landDots[i], sinX, cosX, sinY, cosY);
+                if (p && p.z > 38) {
+                    ctx.fillRect(p.sx - baseDotSize * 0.5, p.sy - baseDotSize * 0.5, baseDotSize * 1.08, baseDotSize * 1.08);
+                }
+            }
+
+            // 8. Render Tech Hub Nodes & Surface Rings
+            for (let i = 0; i < cityHubs.length; i++) {
+                const hub = cityHubs[i];
+                const centerProj = project3D(hub.center, sinX, cosX, sinY, cosY);
+                if (!centerProj || centerProj.z < 5) continue;
+
+                const fade = Math.min(1, centerProj.z / 35);
+
+                // Vòng tròn nhỏ nằm phẳng trên bề mặt
+                ctx.beginPath();
+                for (let j = 0; j < hub.ringPts.length; j++) {
+                    const rp = project3D(hub.ringPts[j], sinX, cosX, sinY, cosY);
+                    if (!rp) continue;
+                    if (j === 0) ctx.moveTo(rp.sx, rp.sy);
+                    else ctx.lineTo(rp.sx, rp.sy);
+                }
+                ctx.strokeStyle = `rgba(${hub.rgb}, ${(0.55 * fade).toFixed(2)})`;
+                ctx.lineWidth = 1.1;
+                ctx.stroke();
+
+                // Điểm sáng trung tâm thành phố
+                ctx.beginPath();
+                ctx.arc(centerProj.sx, centerProj.sy, Math.max(1.4, 1.15 * centerProj.scale), 0, Math.PI * 2);
+                ctx.fillStyle = hub.color;
+                ctx.fill();
+            }
+
+            // 9. Update & Render Expanding Surface Ripples
+            for (let i = activeRipples.length - 1; i >= 0; i--) {
+                const ripple = activeRipples[i];
+                ripple.progress += ripple.speed;
+
+                if (ripple.progress >= 1.0) {
+                    activeRipples.splice(i, 1);
+                    continue;
+                }
+
+                const centerProj = project3D(ripple.center, sinX, cosX, sinY, cosY);
+                if (!centerProj || centerProj.z < 0) continue;
+
+                const radius = 0.8 + ripple.progress * 4.5;
+                const alpha = (1.0 - ripple.progress) * 0.9 * Math.min(1, centerProj.z / 25);
+                const segments = 20;
+
+                ctx.beginPath();
+                for (let s = 0; s <= segments; s++) {
+                    const angle = (s / segments) * Math.PI * 2;
+                    const cosA = Math.cos(angle) * radius;
+                    const sinA = Math.sin(angle) * radius;
+                    const pt3d = {
+                        x: ripple.center.x + ripple.t1.x * cosA + ripple.t2.x * sinA,
+                        y: ripple.center.y + ripple.t1.y * cosA + ripple.t2.y * sinA,
+                        z: ripple.center.z + ripple.t1.z * cosA + ripple.t2.z * sinA
+                    };
+                    const rp = project3D(pt3d, sinX, cosX, sinY, cosY);
+                    if (!rp) continue;
+                    if (s === 0) ctx.moveTo(rp.sx, rp.sy);
+                    else ctx.lineTo(rp.sx, rp.sy);
+                }
+                ctx.strokeStyle = `rgba(${ripple.color.r}, ${ripple.color.g}, ${ripple.color.b}, ${alpha.toFixed(2)})`;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // 10. Spawn & Render 3D Cubic Bezier Arcs
             const maxConcurrentArcs = spawnDensity * 6;
             if (activeArcs.length < maxConcurrentArcs && Math.random() < spawnDensity * 0.03) {
                 spawnRandomArc(0);
             }
 
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.lineCap = 'round';
+
             for (let i = activeArcs.length - 1; i >= 0; i--) {
                 const arc = activeArcs[i];
                 arc.progress += arc.speed;
 
-                const headT = Math.min(arc.progress, 1.0);
-                const tailT = Math.max(arc.progress - arc.tailLength, 0.0);
-
-                const startSegment = Math.floor(tailT * arc.segments);
-                const endSegment = Math.ceil(headT * arc.segments);
-                const indicesPerSegment = 36;
-
-                const startIndex = startSegment * indicesPerSegment;
-                const drawCount = Math.max(0, (endSegment - startSegment) * indicesPerSegment);
-
-                arc.pulseTube.geometry.setDrawRange(startIndex, drawCount);
-
-                if (arc.progress <= 1.0) {
-                    const headPos = arc.curve.getPointAt(headT);
-                    arc.headMesh.position.copy(headPos);
-                } else {
-                    arc.headMesh.visible = false;
-                    if (!arc.impactTriggered) {
-                        arc.impactTriggered = true;
-                        spawnSurfaceRipple(arc.endHub.lat, arc.endHub.lng, arc.colorHex);
-                    }
-                }
-
-                if (arc.progress > 1.0) {
-                    const fade = 1.0 - ((arc.progress - 1.0) / arc.tailLength);
-                    arc.bgTube.material.opacity = Math.max(0, fade * 0.12);
+                if (arc.progress > 1.0 && !arc.impactTriggered) {
+                    arc.impactTriggered = true;
+                    spawnSurfaceRipple(arc.endHub.lat, arc.endHub.lng, arc.color);
                 }
 
                 if (arc.progress >= 1.0 + arc.tailLength) {
-                    globeGroup.remove(arc.bgTube);
-                    globeGroup.remove(arc.pulseTube);
-                    globeGroup.remove(arc.headMesh);
-                    arc.bgTube.geometry.dispose();
-                    arc.bgTube.material.dispose();
-                    arc.pulseTube.geometry.dispose();
-                    arc.pulseTube.material.dispose();
-                    arc.headMesh.geometry.dispose();
-                    arc.headMesh.material.dispose();
                     activeArcs.splice(i, 1);
+                    continue;
+                }
+
+                // Chiếu toàn bộ các điểm trên đường cong 3D sang 2D
+                const projPts = new Array(arc.points.length);
+                for (let j = 0; j < arc.points.length; j++) {
+                    projPts[j] = project3D(arc.points[j], sinX, cosX, sinY, cosY);
+                }
+
+                // A. Vẽ đường quỹ đạo mờ (Background Trajectory)
+                let bgAlpha = 0.16;
+                if (arc.progress > 1.0) {
+                    bgAlpha = Math.max(0, (1.0 - (arc.progress - 1.0) / arc.tailLength) * 0.16);
+                }
+                ctx.strokeStyle = `rgba(${arc.color.r}, ${arc.color.g}, ${arc.color.b}, ${bgAlpha.toFixed(3)})`;
+                ctx.lineWidth = 1.2;
+                drawArcSegmentPath(projPts, 0, arc.segments, true, globeCenterX, globeCenterY, apparentRadius);
+
+                // B. Vẽ tia năng lượng di chuyển (Moving Pulse Laser)
+                const headT = Math.min(arc.progress, 1.0);
+                const tailT = Math.max(arc.progress - arc.tailLength, 0.0);
+                const startSeg = Math.floor(tailT * arc.segments);
+                const endSeg = Math.ceil(headT * arc.segments);
+
+                if (endSeg > startSeg) {
+                    // Lớp hào quang màu bên ngoài tia
+                    ctx.strokeStyle = `rgba(${arc.color.r}, ${arc.color.g}, ${arc.color.b}, 0.65)`;
+                    ctx.lineWidth = 3.2;
+                    drawArcSegmentPath(projPts, startSeg, endSeg, true, globeCenterX, globeCenterY, apparentRadius);
+
+                    // Lõi trắng sáng rực bên trong
+                    ctx.strokeStyle = `rgba(255, 255, 255, 0.92)`;
+                    ctx.lineWidth = 1.4;
+                    drawArcSegmentPath(projPts, startSeg, endSeg, true, globeCenterX, globeCenterY, apparentRadius);
+                }
+
+                // C. Hạt cầu sáng ở đầu tia (Glowing Head Particle)
+                if (arc.progress <= 1.0) {
+                    const headPt = projPts[endSeg];
+                    if (headPt) {
+                        const dx = headPt.sx - globeCenterX;
+                        const dy = headPt.sy - globeCenterY;
+                        const occluded = headPt.z < 0 && (dx * dx + dy * dy < apparentRadius * apparentRadius * 0.97);
+
+                        if (!occluded) {
+                            const r = Math.max(2.0, 1.2 * headPt.scale);
+                            ctx.beginPath();
+                            ctx.arc(headPt.sx, headPt.sy, r * 1.8, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(${arc.color.r}, ${arc.color.g}, ${arc.color.b}, 0.55)`;
+                            ctx.fill();
+
+                            ctx.beginPath();
+                            ctx.arc(headPt.sx, headPt.sy, r * 0.9, 0, Math.PI * 2);
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fill();
+                        }
+                    }
                 }
             }
 
-            for (let i = activeRipples.length - 1; i >= 0; i--) {
-                const ripple = activeRipples[i];
-                ripple.progress += ripple.speed;
-
-                const scale = 1.0 + ripple.progress * 3.8;
-                ripple.mesh.scale.set(scale, scale, scale);
-                ripple.mesh.material.opacity = Math.max(0, (1.0 - ripple.progress) * 0.9);
-
-                if (ripple.progress >= 1.0) {
-                    globeGroup.remove(ripple.mesh);
-                    ripple.mesh.geometry.dispose();
-                    ripple.mesh.material.dispose();
-                    activeRipples.splice(i, 1);
-                }
-            }
-
-            renderer.render(scene, camera);
+            ctx.restore();
         }
 
-        window.onload = initGlobe;
+        // Khởi chạy ứng dụng
+        window.onload = () => {
+            updateCanvasSize();
+            cameraZoom = viewConfig.zoom;
+            currentOffsetY = viewConfig.offsetY;
+            buildSceneData();
+
+            for (let i = 0; i < 16; i++) {
+                spawnRandomArc(Math.random() * 0.85);
+            }
+
+            setupEventListeners();
+            animate();
+        };
     </script>
 </body>
 </html>
