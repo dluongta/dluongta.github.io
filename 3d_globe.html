@@ -158,7 +158,7 @@
             height: 100%;
         }
 
-        /* Bảng điều khiển gọn gàng ở góc trên bên phải, không che khuất Globe */
+        /* Bảng điều khiển gọn gàng ở góc trên bên phải */
         .controls-wrapper {
             position: fixed;
             top: 12px;
@@ -218,41 +218,19 @@
             color: #cbd5e1;
         }
 
-        /* Nút bấm */
+        /* Nút bấm trong Grid */
         button {
             font-family: inherit;
             cursor: pointer;
             outline: none;
         }
-        .btn-burst {
-            padding: 4px 8px;
-            border-radius: 7px;
-            border: none;
-            background: linear-gradient(to right, #0ea5e9, #6366f1);
-            color: #ffffff;
-            font-size: 11px;
-            font-weight: 500;
-            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2);
-            transition: transform 0.15s ease, filter 0.15s ease;
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            white-space: nowrap;
-        }
-        .btn-burst:hover {
-            filter: brightness(1.1);
-        }
-        .btn-burst:active {
-            transform: scale(0.95);
-        }
-
         .toggle-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 6px;
         }
         .btn-toggle {
-            padding: 5px 8px;
+            padding: 6px 8px;
             border-radius: 7px;
             font-size: 11px;
             font-weight: 500;
@@ -271,10 +249,27 @@
             background: rgba(14, 165, 233, 0.15);
             color: #7dd3fc;
         }
-        .btn-toggle.active-purple {
-            border-color: rgba(168, 85, 247, 0.4);
-            background: rgba(168, 85, 247, 0.15);
-            color: #d8b4fe;
+        .btn-burst {
+            padding: 6px 8px;
+            border-radius: 7px;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 500;
+            box-shadow: 0 4px 10px -1px rgba(14, 165, 233, 0.25);
+            transition: transform 0.15s ease, filter 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .btn-burst:hover {
+            filter: brightness(1.12);
+        }
+        .btn-burst:active {
+            transform: scale(0.95);
         }
 
         /* Thanh trượt (Range Slider) */
@@ -371,18 +366,15 @@
         <div class="glass-panel">
             <div class="controls-header">
                 <span class="controls-title">Controls</span>
-                <button id="btn-burst" class="btn-burst">
-                    <span>⚡ Release Surge</span>
-                </button>
             </div>
 
-            <!-- Toggles -->
+            <!-- Nút Rotate và Release Surge (thay vị trí nút Glow) -->
             <div class="toggle-grid">
                 <button id="btn-autorotate" class="btn-toggle active-sky">
                     <span>🔄 Rotate</span>
                 </button>
-                <button id="btn-atmosphere" class="btn-toggle active-purple">
-                    <span>✨ Glow</span>
+                <button id="btn-burst" class="btn-burst">
+                    <span>⚡ Release Surge</span>
                 </button>
             </div>
 
@@ -592,9 +584,8 @@
         let previousMousePosition = { x: 0, y: 0 };
         let pinchStartDist = 0;
         let targetRotation = { x: 0.25, y: -1.8 };
-        let currentRotation = { x: 0.25, y: -2.4 }; // Bắt đầu lệch nhẹ để khi vào có đà xoay mượt
+        let currentRotation = { x: 0.25, y: -2.4 };
         let autoRotate = true;
-        let showAtmosphere = true;
         let spawnDensity = 4;
 
         const stars = [];
@@ -635,7 +626,6 @@
         }
 
         let viewConfig = getResponsiveView();
-        // Bắt đầu từ xa (zoom + 140) để tạo hiệu ứng Zoom-in mượt mà khi vừa load xong
         let cameraZoom = viewConfig.zoom + 140;
         let targetZoom = viewConfig.zoom;
         let currentOffsetY = viewConfig.offsetY;
@@ -667,12 +657,11 @@
         }
 
         // ============================================================================
-        // 4. CHUNKED ASYNC SCENE GENERATION (KHÔNG GÂY ĐƠ TRÌNH DUYỆT)
+        // 4. CHUNKED ASYNC SCENE GENERATION
         // ============================================================================
         async function buildSceneDataAsync() {
             const yieldFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
 
-            // Bước 1: Tạo bầu trời sao & Hệ thống lưới Kinh/Vĩ tuyến (15%)
             for (let i = 0; i < 380; i++) {
                 const tint = Math.random();
                 let color = 'rgba(195, 220, 255, ';
@@ -711,7 +700,6 @@
             setProgressUI(15);
             await yieldFrame();
 
-            // Bước 2: Chia nhỏ tính toán 18,000 điểm lục địa thành 6 đợt (15% -> 90%)
             const totalSamples = 18000;
             const chunkSize = 3000;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
@@ -745,7 +733,6 @@
                 await yieldFrame();
             }
 
-            // Bước 3: Khởi tạo Tech Hubs & Tia năng lượng ban đầu (90% -> 100%)
             TECH_HUBS.forEach((hub, index) => {
                 const isMajor = index % 3 === 0;
                 const surfaceData = createSurfaceRingPoints(hub.lat, hub.lng, GLOBE_RADIUS * 1.004, 1.9, 16);
@@ -766,7 +753,6 @@
             setProgressUI(100);
             await yieldFrame();
 
-            // Khởi chạy vòng lặp vẽ và mở khóa giao diện
             animate();
             setTimeout(() => {
                 loaderOverlay.classList.add('is-hidden');
@@ -928,12 +914,6 @@
                 btnAutoRotate.classList.toggle('active-sky', autoRotate);
             });
 
-            const btnAtmosphere = document.getElementById('btn-atmosphere');
-            btnAtmosphere.addEventListener('click', () => {
-                showAtmosphere = !showAtmosphere;
-                btnAtmosphere.classList.toggle('active-purple', showAtmosphere);
-            });
-
             document.getElementById('btn-burst').addEventListener('click', () => {
                 for (let i = 0; i < 12; i++) {
                     spawnRandomArc(0);
@@ -1023,23 +1003,21 @@
                 ctx.fillRect(sx, sy, s.size, s.size);
             }
 
-            // 3. Outer Atmosphere Halo Glow
-            if (showAtmosphere) {
-                const outerGrad = ctx.createRadialGradient(
-                    globeCenterX, globeCenterY, apparentRadius * 0.82,
-                    globeCenterX, globeCenterY, apparentRadius * 1.26
-                );
-                outerGrad.addColorStop(0, 'rgba(56, 189, 248, 0.26)');
-                outerGrad.addColorStop(0.45, 'rgba(139, 92, 246, 0.14)');
-                outerGrad.addColorStop(1, 'rgba(14, 165, 233, 0)');
+            // 3. Outer Atmosphere Halo Glow (Always On)
+            const outerGrad = ctx.createRadialGradient(
+                globeCenterX, globeCenterY, apparentRadius * 0.82,
+                globeCenterX, globeCenterY, apparentRadius * 1.26
+            );
+            outerGrad.addColorStop(0, 'rgba(56, 189, 248, 0.26)');
+            outerGrad.addColorStop(0.45, 'rgba(139, 92, 246, 0.14)');
+            outerGrad.addColorStop(1, 'rgba(14, 165, 233, 0)');
 
-                ctx.fillStyle = outerGrad;
-                ctx.beginPath();
-                ctx.arc(globeCenterX, globeCenterY, apparentRadius * 1.26, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            ctx.fillStyle = outerGrad;
+            ctx.beginPath();
+            ctx.arc(globeCenterX, globeCenterY, apparentRadius * 1.26, 0, Math.PI * 2);
+            ctx.fill();
 
-            // 4. Render 3D Shaded Earth Core Sphere
+            // 4. Render 3D Shaded Earth Core Sphere + Rim Fresnel Highlight (Always On)
             const coreGrad = ctx.createRadialGradient(
                 globeCenterX - apparentRadius * 0.32,
                 globeCenterY - apparentRadius * 0.32,
@@ -1057,21 +1035,18 @@
             ctx.arc(globeCenterX, globeCenterY, apparentRadius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Rim Fresnel Edge Highlight
-            if (showAtmosphere) {
-                const rimGrad = ctx.createRadialGradient(
-                    globeCenterX, globeCenterY, apparentRadius * 0.86,
-                    globeCenterX, globeCenterY, apparentRadius
-                );
-                rimGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
-                rimGrad.addColorStop(0.75, 'rgba(56, 189, 248, 0.14)');
-                rimGrad.addColorStop(1, 'rgba(168, 85, 247, 0.45)');
+            const rimGrad = ctx.createRadialGradient(
+                globeCenterX, globeCenterY, apparentRadius * 0.86,
+                globeCenterX, globeCenterY, apparentRadius
+            );
+            rimGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+            rimGrad.addColorStop(0.75, 'rgba(56, 189, 248, 0.14)');
+            rimGrad.addColorStop(1, 'rgba(168, 85, 247, 0.45)');
 
-                ctx.fillStyle = rimGrad;
-                ctx.beginPath();
-                ctx.arc(globeCenterX, globeCenterY, apparentRadius, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            ctx.fillStyle = rimGrad;
+            ctx.beginPath();
+            ctx.arc(globeCenterX, globeCenterY, apparentRadius, 0, Math.PI * 2);
+            ctx.fill();
 
             // 5. Render Graticule Lines
             const horizonZ = (GLOBE_RADIUS * GLOBE_RADIUS) / cameraZoom;
