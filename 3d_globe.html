@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Globe</title>
+    <title>GitHub 3D Globe - Pure Canvas</title>
     <style>
         * {
             margin: 0;
@@ -408,18 +408,15 @@
             const mag = Math.hypot(center.x, center.y, center.z) || 1;
             const nx = center.x / mag, ny = center.y / mag, nz = center.z / mag;
 
-            // Chọn vector phụ không cùng phương với pháp tuyến
             let ux = 0, uy = 1, uz = 0;
             if (Math.abs(ny) > 0.9) { ux = 1; uy = 0; }
 
-            // Tích có hướng t1 = u x n
             let t1x = uy * nz - uz * ny;
             let t1y = uz * nx - ux * nz;
             let t1z = ux * ny - uy * nx;
             const t1Mag = Math.hypot(t1x, t1y, t1z) || 1;
             t1x /= t1Mag; t1y /= t1Mag; t1z /= t1Mag;
 
-            // Tích có hướng t2 = n x t1
             const t2x = ny * t1z - nz * t1y;
             const t2y = nz * t1x - nx * t1z;
             const t2z = nx * t1y - ny * t1x;
@@ -460,7 +457,6 @@
 
         const stars = [];
         const landDots = [];
-        const oceanDots = [];
         const graticuleLines = [];
         const cityHubs = [];
         const activeArcs = [];
@@ -502,17 +498,13 @@
         let currentOffsetY = viewConfig.offsetY;
         let targetOffsetY = viewConfig.offsetY;
 
-        // Hàm xoay điểm 3D (xoay quanh trục Y trước, sau đó xoay trục X như Three.js Euler XYZ) và chiếu lên màn hình 2D
         function project3D(pt, sinX, cosX, sinY, cosY) {
-            // Xoay quanh trục Y (Longitude spin)
             const x1 = pt.x * cosY + pt.z * sinY;
             const z1 = -pt.x * sinY + pt.z * cosY;
 
-            // Xoay quanh trục X (Latitude tilt)
             const y2 = pt.y * cosX - z1 * sinX;
             const z2 = pt.y * sinX + z1 * cosX;
 
-            // Dịch theo worldGroup.position.y
             const worldY = y2 + currentOffsetY;
             const depth = cameraZoom - z2;
             if (depth <= 10) return null;
@@ -527,7 +519,7 @@
         }
 
         // ============================================================================
-        // 4. GENERATE GEOMETRY DATA (STARS, DOT MATRIX, GRATICULES, CITIES)
+        // 4. GENERATE GEOMETRY DATA (STARS, CONTINENT DOTS, GRATICULES, CITIES)
         // ============================================================================
         function buildSceneData() {
             // 1. Stars (2D screen-space + subtle parallax)
@@ -548,7 +540,7 @@
                 });
             }
 
-            // 2. Continent Dot Matrix (Fibonacci Sphere)
+            // 2. Continent Dot Matrix (Chỉ tạo chấm ở các lục địa, bỏ hoàn toàn chấm đại dương)
             const totalSamples = 18000;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
 
@@ -566,12 +558,6 @@
 
                 if (isLand(normLng, lat)) {
                     landDots.push({
-                        x: x * GLOBE_RADIUS,
-                        y: y * GLOBE_RADIUS,
-                        z: z * GLOBE_RADIUS
-                    });
-                } else if (i % 7 === 0) {
-                    oceanDots.push({
                         x: x * GLOBE_RADIUS,
                         y: y * GLOBE_RADIUS,
                         z: z * GLOBE_RADIUS
@@ -842,7 +828,6 @@
             const sinY = Math.sin(currentRotation.y);
             const cosY = Math.cos(currentRotation.y);
 
-            // Tính tâm và bán kính hiển thị của quả địa cầu trên màn hình 2D
             const globeCenterX = screenW * 0.5;
             const globeCenterY = screenH * 0.5 - currentOffsetY * (focalLength / cameraZoom);
             const apparentRadius = (GLOBE_RADIUS * focalLength) / Math.sqrt(Math.max(100, cameraZoom * cameraZoom - GLOBE_RADIUS * GLOBE_RADIUS));
@@ -861,7 +846,7 @@
                 ctx.fillRect(sx, sy, s.size, s.size);
             }
 
-            // 3. Outer Atmosphere Halo Glow (khi bật Halo Glow)
+            // 3. Outer Atmosphere Halo Glow
             if (showAtmosphere) {
                 const outerGrad = ctx.createRadialGradient(
                     globeCenterX, globeCenterY, apparentRadius * 0.82,
@@ -934,17 +919,7 @@
                 ctx.stroke();
             }
 
-            // 6. Render Ocean Dots
-            ctx.fillStyle = 'rgba(30, 64, 175, 0.35)';
-            const oceanSize = Math.max(0.8, (0.9 * focalLength) / cameraZoom);
-            for (let i = 0; i < oceanDots.length; i++) {
-                const p = project3D(oceanDots[i], sinX, cosX, sinY, cosY);
-                if (p && p.z > 0) {
-                    ctx.fillRect(p.sx - oceanSize * 0.5, p.sy - oceanSize * 0.5, oceanSize, oceanSize);
-                }
-            }
-
-            // 7. Render Continent Dot Matrix (Chia 2 mức độ sáng theo chiều sâu Z tạo khối cầu 3D)
+            // 6. Render Continent Dot Matrix (Giữ nguyên các chấm lục địa)
             const baseDotSize = Math.max(1.0, (1.35 * focalLength) / cameraZoom);
 
             ctx.fillStyle = 'rgba(96, 165, 250, 0.42)';
@@ -963,7 +938,7 @@
                 }
             }
 
-            // 8. Render Tech Hub Nodes & Surface Rings
+            // 7. Render Tech Hub Nodes & Surface Rings
             for (let i = 0; i < cityHubs.length; i++) {
                 const hub = cityHubs[i];
                 const centerProj = project3D(hub.center, sinX, cosX, sinY, cosY);
@@ -971,7 +946,6 @@
 
                 const fade = Math.min(1, centerProj.z / 35);
 
-                // Vòng tròn nhỏ nằm phẳng trên bề mặt
                 ctx.beginPath();
                 for (let j = 0; j < hub.ringPts.length; j++) {
                     const rp = project3D(hub.ringPts[j], sinX, cosX, sinY, cosY);
@@ -983,14 +957,13 @@
                 ctx.lineWidth = 1.1;
                 ctx.stroke();
 
-                // Điểm sáng trung tâm thành phố
                 ctx.beginPath();
                 ctx.arc(centerProj.sx, centerProj.sy, Math.max(1.4, 1.15 * centerProj.scale), 0, Math.PI * 2);
                 ctx.fillStyle = hub.color;
                 ctx.fill();
             }
 
-            // 9. Update & Render Expanding Surface Ripples
+            // 8. Update & Render Expanding Surface Ripples
             for (let i = activeRipples.length - 1; i >= 0; i--) {
                 const ripple = activeRipples[i];
                 ripple.progress += ripple.speed;
@@ -1027,7 +1000,7 @@
                 ctx.stroke();
             }
 
-            // 10. Spawn & Render 3D Cubic Bezier Arcs
+            // 9. Spawn & Render 3D Cubic Bezier Arcs
             const maxConcurrentArcs = spawnDensity * 6;
             if (activeArcs.length < maxConcurrentArcs && Math.random() < spawnDensity * 0.03) {
                 spawnRandomArc(0);
@@ -1051,7 +1024,6 @@
                     continue;
                 }
 
-                // Chiếu toàn bộ các điểm trên đường cong 3D sang 2D
                 const projPts = new Array(arc.points.length);
                 for (let j = 0; j < arc.points.length; j++) {
                     projPts[j] = project3D(arc.points[j], sinX, cosX, sinY, cosY);
@@ -1073,12 +1045,10 @@
                 const endSeg = Math.ceil(headT * arc.segments);
 
                 if (endSeg > startSeg) {
-                    // Lớp hào quang màu bên ngoài tia
                     ctx.strokeStyle = `rgba(${arc.color.r}, ${arc.color.g}, ${arc.color.b}, 0.65)`;
                     ctx.lineWidth = 3.2;
                     drawArcSegmentPath(projPts, startSeg, endSeg, true, globeCenterX, globeCenterY, apparentRadius);
 
-                    // Lõi trắng sáng rực bên trong
                     ctx.strokeStyle = `rgba(255, 255, 255, 0.92)`;
                     ctx.lineWidth = 1.4;
                     drawArcSegmentPath(projPts, startSeg, endSeg, true, globeCenterX, globeCenterY, apparentRadius);
