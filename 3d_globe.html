@@ -28,7 +28,7 @@
         }
 
         /* ==========================================================================
-           MÀN HÌNH LOADING OVERLAY MƯỢT MÀ
+           MÀN HÌNH LOADING OVERLAY MƯỢT MÀ (CHỈ GIỮ THANH %)
            ========================================================================== */
         #loader-overlay {
             position: fixed;
@@ -39,7 +39,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 18px;
             transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.75s ease;
             pointer-events: auto;
         }
@@ -47,39 +46,6 @@
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
-        }
-        .spinner-box {
-            position: relative;
-            width: 68px;
-            height: 68px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .ring-outer {
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 2px solid rgba(56, 189, 248, 0.14);
-            border-top-color: #38bdf8;
-            border-right-color: rgba(168, 85, 247, 0.65);
-            animation: globeSpin 1.15s cubic-bezier(0.5, 0.15, 0.5, 0.85) infinite;
-        }
-        .ring-inner {
-            position: absolute;
-            inset: 10px;
-            border-radius: 50%;
-            border: 1.5px dashed rgba(168, 85, 247, 0.4);
-            border-bottom-color: #a855f7;
-            animation: globeSpinReverse 1.8s linear infinite;
-        }
-        .core-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #38bdf8;
-            box-shadow: 0 0 16px #38bdf8, 0 0 30px #a855f7;
-            animation: globePulse 1.5s ease-in-out infinite;
         }
         .loader-info {
             display: flex;
@@ -117,16 +83,6 @@
             border-radius: 999px;
             transition: width 0.18s ease-out;
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
-        }
-        @keyframes globeSpin {
-            to { transform: rotate(360deg); }
-        }
-        @keyframes globeSpinReverse {
-            to { transform: rotate(-360deg); }
-        }
-        @keyframes globePulse {
-            0%, 100% { transform: scale(0.85); opacity: 0.7; }
-            50% { transform: scale(1.2); opacity: 1; }
         }
 
         /* ==========================================================================
@@ -338,13 +294,8 @@
 </head>
 <body>
 
-    <!-- 1. Màn hình Preloader -->
+    <!-- 1. Màn hình Preloader (Chỉ giữ thanh %) -->
     <div id="loader-overlay">
-        <div class="spinner-box">
-            <div class="ring-outer"></div>
-            <div class="ring-inner"></div>
-            <div class="core-dot"></div>
-        </div>
         <div class="loader-info">
             <div class="loader-text-row">
                 <span>Initializing Globe</span>
@@ -368,7 +319,7 @@
                 <span class="controls-title">Controls</span>
             </div>
 
-            <!-- Nút Rotate và Release Surge (thay vị trí nút Glow) -->
+            <!-- Nút Rotate và Release Surge -->
             <div class="toggle-grid">
                 <button id="btn-autorotate" class="btn-toggle active-sky">
                     <span>🔄 Rotate</span>
