@@ -26,6 +26,112 @@
         .mono {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
+
+        /* ==========================================================================
+           MÀN HÌNH LOADING OVERLAY MƯỢT MÀ
+           ========================================================================== */
+        #loader-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: radial-gradient(circle at 50% 50%, #0d162d 0%, #060913 60%, #020409 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.75s ease;
+            pointer-events: auto;
+        }
+        #loader-overlay.is-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .spinner-box {
+            position: relative;
+            width: 68px;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ring-outer {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid rgba(56, 189, 248, 0.14);
+            border-top-color: #38bdf8;
+            border-right-color: rgba(168, 85, 247, 0.65);
+            animation: globeSpin 1.15s cubic-bezier(0.5, 0.15, 0.5, 0.85) infinite;
+        }
+        .ring-inner {
+            position: absolute;
+            inset: 10px;
+            border-radius: 50%;
+            border: 1.5px dashed rgba(168, 85, 247, 0.4);
+            border-bottom-color: #a855f7;
+            animation: globeSpinReverse 1.8s linear infinite;
+        }
+        .core-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #38bdf8;
+            box-shadow: 0 0 16px #38bdf8, 0 0 30px #a855f7;
+            animation: globePulse 1.5s ease-in-out infinite;
+        }
+        .loader-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 210px;
+        }
+        .loader-text-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+        .loader-percent {
+            color: #38bdf8;
+        }
+        .progress-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(30, 41, 59, 0.85);
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid rgba(56, 189, 248, 0.16);
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9, #a855f7);
+            border-radius: 999px;
+            transition: width 0.18s ease-out;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+        }
+        @keyframes globeSpin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes globeSpinReverse {
+            to { transform: rotate(-360deg); }
+        }
+        @keyframes globePulse {
+            0%, 100% { transform: scale(0.85); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* ==========================================================================
+           CANVAS & BẢNG ĐIỀU KHIỂN
+           ========================================================================== */
         #canvas-container {
             position: absolute;
             inset: 0;
@@ -35,6 +141,13 @@
             background: radial-gradient(circle at 50% 55%, #0d162d 0%, #060913 55%, #020409 100%);
             cursor: grab;
             touch-action: none;
+            opacity: 0;
+            transform: scale(0.96);
+            transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #canvas-container.is-ready {
+            opacity: 1;
+            transform: scale(1);
         }
         #canvas-container:active {
             cursor: grabbing;
@@ -55,6 +168,13 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: opacity 0.6s ease 0.25s, transform 0.6s ease 0.25s;
+        }
+        .controls-wrapper.is-ready {
+            opacity: 1;
+            transform: translateY(0);
         }
         .glass-panel {
             pointer-events: auto;
@@ -223,13 +343,31 @@
 </head>
 <body>
 
-    <!-- Pure 2D Canvas Globe Container -->
+    <!-- 1. Màn hình Preloader -->
+    <div id="loader-overlay">
+        <div class="spinner-box">
+            <div class="ring-outer"></div>
+            <div class="ring-inner"></div>
+            <div class="core-dot"></div>
+        </div>
+        <div class="loader-info">
+            <div class="loader-text-row">
+                <span>Initializing Globe</span>
+                <span id="loader-percent" class="mono loader-percent">0%</span>
+            </div>
+            <div class="progress-track">
+                <div id="loader-bar" class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Pure 2D Canvas Globe Container -->
     <div id="canvas-container">
         <canvas id="globe-canvas"></canvas>
     </div>
 
-    <!-- Interactive Controls -->
-    <aside class="controls-wrapper">
+    <!-- 3. Interactive Controls -->
+    <aside id="controls-wrapper" class="controls-wrapper">
         <div class="glass-panel">
             <div class="controls-header">
                 <span class="controls-title">Controls</span>
@@ -402,7 +540,6 @@
             };
         }
 
-        // Tạo cơ sở trực chuẩn trên mặt phẳng tiếp diện tại vị trí (lat, lng) để vẽ vòng tròn trên mặt cầu
         function createSurfaceRingPoints(lat, lng, radius, ringRadius, segments) {
             const center = latLngToVec3(lat, lng, radius);
             const mag = Math.hypot(center.x, center.y, center.z) || 1;
@@ -440,6 +577,11 @@
         // ============================================================================
         const canvas = document.getElementById('globe-canvas');
         const ctx = canvas.getContext('2d');
+        const loaderOverlay = document.getElementById('loader-overlay');
+        const loaderPercent = document.getElementById('loader-percent');
+        const loaderBar = document.getElementById('loader-bar');
+        const canvasContainer = document.getElementById('canvas-container');
+        const controlsWrapper = document.getElementById('controls-wrapper');
 
         let screenW = window.innerWidth;
         let screenH = window.innerHeight;
@@ -450,7 +592,7 @@
         let previousMousePosition = { x: 0, y: 0 };
         let pinchStartDist = 0;
         let targetRotation = { x: 0.25, y: -1.8 };
-        let currentRotation = { x: 0.25, y: -1.8 };
+        let currentRotation = { x: 0.25, y: -2.4 }; // Bắt đầu lệch nhẹ để khi vào có đà xoay mượt
         let autoRotate = true;
         let showAtmosphere = true;
         let spawnDensity = 4;
@@ -465,7 +607,7 @@
         function getResponsiveView() {
             const w = window.innerWidth;
             const h = window.innerHeight;
-            const aspect = w / h;
+            const aspect = w / Math.max(h, 1);
 
             if (w < 640 || aspect < 0.85) {
                 const mobileZoom = Math.min(650, Math.max(480, Math.round(330 / Math.max(aspect, 0.45))));
@@ -493,10 +635,16 @@
         }
 
         let viewConfig = getResponsiveView();
-        let cameraZoom = viewConfig.zoom;
+        // Bắt đầu từ xa (zoom + 140) để tạo hiệu ứng Zoom-in mượt mà khi vừa load xong
+        let cameraZoom = viewConfig.zoom + 140;
         let targetZoom = viewConfig.zoom;
         let currentOffsetY = viewConfig.offsetY;
         let targetOffsetY = viewConfig.offsetY;
+
+        function setProgressUI(val) {
+            loaderPercent.textContent = val + '%';
+            loaderBar.style.width = val + '%';
+        }
 
         function project3D(pt, sinX, cosX, sinY, cosY) {
             const x1 = pt.x * cosY + pt.z * sinY;
@@ -519,10 +667,12 @@
         }
 
         // ============================================================================
-        // 4. GENERATE GEOMETRY DATA (STARS, CONTINENT DOTS, GRATICULES, CITIES)
+        // 4. CHUNKED ASYNC SCENE GENERATION (KHÔNG GÂY ĐƠ TRÌNH DUYỆT)
         // ============================================================================
-        function buildSceneData() {
-            // 1. Stars (2D screen-space + subtle parallax)
+        async function buildSceneDataAsync() {
+            const yieldFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+
+            // Bước 1: Tạo bầu trời sao & Hệ thống lưới Kinh/Vĩ tuyến (15%)
             for (let i = 0; i < 380; i++) {
                 const tint = Math.random();
                 let color = 'rgba(195, 220, 255, ';
@@ -540,33 +690,6 @@
                 });
             }
 
-            // 2. Continent Dot Matrix (Chỉ tạo chấm ở các lục địa)
-            const totalSamples = 18000;
-            const goldenRatio = (1 + Math.sqrt(5)) / 2;
-
-            for (let i = 0; i < totalSamples; i++) {
-                const y = 1 - (i / (totalSamples - 1)) * 2;
-                const radiusAtY = Math.sqrt(1 - y * y);
-                const theta = (2 * Math.PI * i) / goldenRatio;
-
-                const x = Math.cos(theta) * radiusAtY;
-                const z = Math.sin(theta) * radiusAtY;
-
-                const lat = Math.asin(y) * (180 / Math.PI);
-                const lng = Math.atan2(z, -x) * (180 / Math.PI) - 180;
-                const normLng = ((lng + 540) % 360) - 180;
-
-                if (isLand(normLng, lat)) {
-                    landDots.push({
-                        x: x * GLOBE_RADIUS,
-                        y: y * GLOBE_RADIUS,
-                        z: z * GLOBE_RADIUS
-                    });
-                }
-            }
-
-            // 3. Hệ thống lưới Vĩ tuyến & Kinh tuyến liền mạch, tụ khít vào 2 điểm cực
-            // Vĩ tuyến (Ngang): thêm cả vòng 75 độ gần cực, chia bước mịn 3 độ để khép kín hoàn toàn
             const latitudes = [-75, -60, -30, 0, 30, 60, 75];
             for (let i = 0; i < latitudes.length; i++) {
                 const lat = latitudes[i];
@@ -577,8 +700,6 @@
                 graticuleLines.push(ring);
             }
 
-            // Kinh tuyến (Dọc): chạy xuyên suốt từ đúng cực Nam (-90) tới cực Bắc (90)
-            // Giúp toàn bộ các đường kinh độ giao nhau tại 1 điểm duy nhất ở đỉnh trên và đáy dưới
             for (let lng = -180; lng < 180; lng += 30) {
                 const line = [];
                 for (let lat = -90; lat <= 90; lat += 2) {
@@ -587,7 +708,44 @@
                 graticuleLines.push(line);
             }
 
-            // 4. Tech Hubs
+            setProgressUI(15);
+            await yieldFrame();
+
+            // Bước 2: Chia nhỏ tính toán 18,000 điểm lục địa thành 6 đợt (15% -> 90%)
+            const totalSamples = 18000;
+            const chunkSize = 3000;
+            const goldenRatio = (1 + Math.sqrt(5)) / 2;
+
+            for (let start = 0; start < totalSamples; start += chunkSize) {
+                const end = Math.min(start + chunkSize, totalSamples);
+
+                for (let i = start; i < end; i++) {
+                    const y = 1 - (i / (totalSamples - 1)) * 2;
+                    const radiusAtY = Math.sqrt(1 - y * y);
+                    const theta = (2 * Math.PI * i) / goldenRatio;
+
+                    const x = Math.cos(theta) * radiusAtY;
+                    const z = Math.sin(theta) * radiusAtY;
+
+                    const lat = Math.asin(y) * (180 / Math.PI);
+                    const lng = Math.atan2(z, -x) * (180 / Math.PI) - 180;
+                    const normLng = ((lng + 540) % 360) - 180;
+
+                    if (isLand(normLng, lat)) {
+                        landDots.push({
+                            x: x * GLOBE_RADIUS,
+                            y: y * GLOBE_RADIUS,
+                            z: z * GLOBE_RADIUS
+                        });
+                    }
+                }
+
+                const progress = 15 + Math.round((end / totalSamples) * 75);
+                setProgressUI(progress);
+                await yieldFrame();
+            }
+
+            // Bước 3: Khởi tạo Tech Hubs & Tia năng lượng ban đầu (90% -> 100%)
             TECH_HUBS.forEach((hub, index) => {
                 const isMajor = index % 3 === 0;
                 const surfaceData = createSurfaceRingPoints(hub.lat, hub.lng, GLOBE_RADIUS * 1.004, 1.9, 16);
@@ -600,6 +758,21 @@
                     rgb: isMajor ? '56, 189, 248' : '168, 85, 247'
                 });
             });
+
+            for (let i = 0; i < 16; i++) {
+                spawnRandomArc(Math.random() * 0.85);
+            }
+
+            setProgressUI(100);
+            await yieldFrame();
+
+            // Khởi chạy vòng lặp vẽ và mở khóa giao diện
+            animate();
+            setTimeout(() => {
+                loaderOverlay.classList.add('is-hidden');
+                canvasContainer.classList.add('is-ready');
+                controlsWrapper.classList.add('is-ready');
+            }, 180);
         }
 
         // ============================================================================
@@ -679,9 +852,7 @@
         }
 
         function setupEventListeners() {
-            const container = document.getElementById('canvas-container');
-
-            container.addEventListener('mousedown', (e) => {
+            canvasContainer.addEventListener('mousedown', (e) => {
                 isDragging = true;
                 previousMousePosition = { x: e.clientX, y: e.clientY };
             });
@@ -702,7 +873,7 @@
                 isDragging = false;
             });
 
-            container.addEventListener('touchstart', (e) => {
+            canvasContainer.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 1) {
                     isDragging = true;
                     previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -742,7 +913,7 @@
                 pinchStartDist = 0;
             });
 
-            container.addEventListener('wheel', (e) => {
+            canvasContainer.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 targetZoom += e.deltaY * 0.18;
                 targetZoom = Math.max(viewConfig.minZoom, Math.min(viewConfig.maxZoom, targetZoom));
@@ -826,7 +997,7 @@
             }
             currentRotation.x += (targetRotation.x - currentRotation.x) * 0.08;
             currentRotation.y += (targetRotation.y - currentRotation.y) * 0.08;
-            cameraZoom += (targetZoom - cameraZoom) * 0.08;
+            cameraZoom += (targetZoom - cameraZoom) * 0.06;
             currentOffsetY += (targetOffsetY - currentOffsetY) * 0.08;
 
             const sinX = Math.sin(currentRotation.x);
@@ -902,9 +1073,7 @@
                 ctx.fill();
             }
 
-            // 5. Render Graticule Lines (Kinh tuyến & Vĩ tuyến liền mạch, cắt bằng Clip hình cầu)
-            // Sử dụng ctx.clip() theo viền quả cầu và ngưỡng chân trời chuẩn xác để các đường thẳng
-            // nối liền mạch chạm tới sát mép rìa và hội tụ khít tại 2 điểm cực.
+            // 5. Render Graticule Lines
             const horizonZ = (GLOBE_RADIUS * GLOBE_RADIUS) / cameraZoom;
 
             ctx.save();
@@ -922,7 +1091,6 @@
 
                 for (let j = 0; j < line.length; j++) {
                     const p = project3D(line[j], sinX, cosX, sinY, cosY);
-                    // Cho phép vẽ vượt nhẹ qua ngưỡng tiếp tuyến chân trời (-2.5) để nét vẽ chạm khít viền cầu
                     if (p && p.z >= horizonZ - 2.5) {
                         if (!started) {
                             ctx.moveTo(p.sx, p.sy);
@@ -938,7 +1106,7 @@
             }
             ctx.restore();
 
-            // 6. Render Continent Dot Matrix (Giữ nguyên các chấm lục địa)
+            // 6. Render Continent Dot Matrix
             const baseDotSize = Math.max(1.0, (1.35 * focalLength) / cameraZoom);
 
             ctx.fillStyle = 'rgba(96, 165, 250, 0.42)';
@@ -1101,19 +1269,12 @@
         }
 
         // Khởi chạy ứng dụng
-        window.onload = () => {
+        window.addEventListener('DOMContentLoaded', () => {
             updateCanvasSize();
-            cameraZoom = viewConfig.zoom;
             currentOffsetY = viewConfig.offsetY;
-            buildSceneData();
-
-            for (let i = 0; i < 16; i++) {
-                spawnRandomArc(Math.random() * 0.85);
-            }
-
             setupEventListeners();
-            animate();
-        };
+            buildSceneDataAsync();
+        });
     </script>
 </body>
 </html>
