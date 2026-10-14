@@ -540,7 +540,7 @@
                 });
             }
 
-            // 2. Continent Dot Matrix (Chỉ tạo chấm ở các lục địa, bỏ hoàn toàn chấm đại dương)
+            // 2. Continent Dot Matrix (Chỉ tạo chấm ở các lục địa)
             const totalSamples = 18000;
             const goldenRatio = (1 + Math.sqrt(5)) / 2;
 
@@ -565,18 +565,24 @@
                 }
             }
 
-            // 3. Subtle Graticule Wireframe Lines (Kinh tuyến & Vĩ tuyến)
-            for (let lat = -60; lat <= 60; lat += 30) {
+            // 3. Hệ thống lưới Vĩ tuyến & Kinh tuyến liền mạch, tụ khít vào 2 điểm cực
+            // Vĩ tuyến (Ngang): thêm cả vòng 75 độ gần cực, chia bước mịn 3 độ để khép kín hoàn toàn
+            const latitudes = [-75, -60, -30, 0, 30, 60, 75];
+            for (let i = 0; i < latitudes.length; i++) {
+                const lat = latitudes[i];
                 const ring = [];
-                for (let lng = -180; lng <= 180; lng += 8) {
-                    ring.push(latLngToVec3(lat, lng, GLOBE_RADIUS * 0.996));
+                for (let lng = -180; lng <= 180; lng += 3) {
+                    ring.push(latLngToVec3(lat, lng, GLOBE_RADIUS));
                 }
                 graticuleLines.push(ring);
             }
+
+            // Kinh tuyến (Dọc): chạy xuyên suốt từ đúng cực Nam (-90) tới cực Bắc (90)
+            // Giúp toàn bộ các đường kinh độ giao nhau tại 1 điểm duy nhất ở đỉnh trên và đáy dưới
             for (let lng = -180; lng < 180; lng += 30) {
                 const line = [];
-                for (let lat = -75; lat <= 75; lat += 8) {
-                    line.push(latLngToVec3(lat, lng, GLOBE_RADIUS * 0.996));
+                for (let lat = -90; lat <= 90; lat += 2) {
+                    line.push(latLngToVec3(lat, lng, GLOBE_RADIUS));
                 }
                 graticuleLines.push(line);
             }
@@ -896,16 +902,28 @@
                 ctx.fill();
             }
 
-            // 5. Render Subtle Graticule Lines (Mặt trước quả địa cầu)
-            ctx.strokeStyle = 'rgba(30, 64, 175, 0.14)';
-            ctx.lineWidth = 0.8;
+            // 5. Render Graticule Lines (Kinh tuyến & Vĩ tuyến liền mạch, cắt bằng Clip hình cầu)
+            // Sử dụng ctx.clip() theo viền quả cầu và ngưỡng chân trời chuẩn xác để các đường thẳng
+            // nối liền mạch chạm tới sát mép rìa và hội tụ khít tại 2 điểm cực.
+            const horizonZ = (GLOBE_RADIUS * GLOBE_RADIUS) / cameraZoom;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(globeCenterX, globeCenterY, apparentRadius, 0, Math.PI * 2);
+            ctx.clip();
+
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.16)';
+            ctx.lineWidth = 0.85;
+
             for (let i = 0; i < graticuleLines.length; i++) {
                 const line = graticuleLines[i];
                 ctx.beginPath();
                 let started = false;
+
                 for (let j = 0; j < line.length; j++) {
                     const p = project3D(line[j], sinX, cosX, sinY, cosY);
-                    if (p && p.z > 5) {
+                    // Cho phép vẽ vượt nhẹ qua ngưỡng tiếp tuyến chân trời (-2.5) để nét vẽ chạm khít viền cầu
+                    if (p && p.z >= horizonZ - 2.5) {
                         if (!started) {
                             ctx.moveTo(p.sx, p.sy);
                             started = true;
@@ -918,6 +936,7 @@
                 }
                 ctx.stroke();
             }
+            ctx.restore();
 
             // 6. Render Continent Dot Matrix (Giữ nguyên các chấm lục địa)
             const baseDotSize = Math.max(1.0, (1.35 * focalLength) / cameraZoom);
