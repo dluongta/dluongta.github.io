@@ -30,12 +30,28 @@
     const ctx = canvas.getContext('2d');
     
     let width, height, centerX, centerY;
+    
+    let cameraDistance = 1200; 
+    let coreGlowRadius = 110;  
+    let rotationSpeed = 0.003; // Biến tốc độ xoay mặc định
 
     function resize() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
         centerX = width / 2;
         centerY = height / 2;
+
+        if (width <= 768) {
+            // TRÊN MOBILE: 
+            cameraDistance = 1300; 
+            coreGlowRadius = 85;
+            rotationSpeed = 0.008;
+        } else {
+            // TRÊN PC: 
+            cameraDistance = 1000; 
+            coreGlowRadius = 120;
+            rotationSpeed = 0.003;
+        }
     }
     window.addEventListener('resize', resize);
     resize();
@@ -60,7 +76,6 @@
         let x = Math.cos(angle) * r + Math.cos(randomAngle) * scatterDist;
         let y = Math.sin(angle) * r + Math.sin(randomAngle) * scatterDist;
         
-        // ĐÃ SỬA TẠI ĐÂY: Xóa bỏ "bulge" (độ phình) để tâm không bị tạo thành đường thẳng đứng.
         // Cố định độ dày (trục z) ở mức rất nhỏ để galaxy dẹt hoàn toàn.
         let z = (Math.random() - 0.5) * 8; 
 
@@ -167,7 +182,8 @@
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, width, height);
 
-        rotationZ -= 0.003; 
+        // Sử dụng biến rotationSpeed thay vì số cố định 0.003
+        rotationZ -= rotationSpeed; 
 
         const cosZ = Math.cos(rotationZ);
         const sinZ = Math.sin(rotationZ);
@@ -189,7 +205,7 @@
             let y3 = y2;
             let z3 = -x2 * sinY + z2 * cosY;
 
-            z3 += 800; 
+            z3 += cameraDistance; 
 
             if (z3 > 0) {
                 const scale = (focalLength / z3) * currentZoom;
@@ -206,9 +222,8 @@
             }
         });
 
-        // Ánh sáng lõi bẹt hơn: sử dụng scale dạng ellipse cho quầng sáng nếu cần, 
-        // nhưng với quầng sáng nhẹ như hiện tại thì radial gradient vẫn ổn và giúp tâm nhìn tự nhiên hơn.
-        const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 150 * currentZoom);
+        // Ánh sáng lõi
+        const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, coreGlowRadius * currentZoom);
         coreGradient.addColorStop(0, 'rgba(255, 140, 50, 0.15)');
         coreGradient.addColorStop(0.5, 'rgba(255, 50, 150, 0.05)');
         coreGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
