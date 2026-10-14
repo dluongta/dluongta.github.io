@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GitHub 3D Globe</title>
+    <!-- Three.js r128 -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
+    <script src="three@r128.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #040711;
+            color: #f0f6fc;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            position: relative;
+        }
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        #canvas-container {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(circle at 50% 55%, #0d162d 0%, #060913 55%, #020409 100%);
+            cursor: grab;
+            touch-action: none;
+        }
+        #canvas-container:active {
+            cursor: grabbing;
+        }
+
+        /* Bảng điều khiển gọn gàng ở góc trên bên phải, không che khuất Globe */
+        .controls-wrapper {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .glass-panel {
+            pointer-events: auto;
+            width: 224px;
+            background: rgba(13, 17, 23, 0.68);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(48, 54, 61, 0.6);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+            border-radius: 14px;
+            padding: 11px 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        @media (min-width: 640px) {
+            .controls-wrapper {
+                top: 24px;
+                right: 24px;
+            }
+            .glass-panel {
+                width: 264px;
+                padding: 14px 16px;
+                gap: 11px;
+                border-radius: 16px;
+            }
+        }
+
+        .controls-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+        .controls-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #cbd5e1;
+        }
+
+        /* Nút bấm */
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+        }
+        .btn-burst {
+            padding: 4px 8px;
+            border-radius: 7px;
+            border: none;
+            background: linear-gradient(to right, #0ea5e9, #6366f1);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 500;
+            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2);
+            transition: transform 0.15s ease, filter 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            white-space: nowrap;
+        }
+        .btn-burst:hover {
+            filter: brightness(1.1);
+        }
+        .btn-burst:active {
+            transform: scale(0.95);
+        }
+
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+        .btn-toggle {
+            padding: 5px 8px;
+            border-radius: 7px;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: 1px solid #334155;
+            background: rgba(30, 41, 59, 0.6);
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+        .btn-toggle.active-sky {
+            border-color: rgba(14, 165, 233, 0.4);
+            background: rgba(14, 165, 233, 0.15);
+            color: #7dd3fc;
+        }
+        .btn-toggle.active-purple {
+            border-color: rgba(168, 85, 247, 0.4);
+            background: rgba(168, 85, 247, 0.15);
+            color: #d8b4fe;
+        }
+
+        /* Thanh trượt (Range Slider) */
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10.5px;
+            color: #94a3b8;
+        }
+        .density-val {
+            color: #38bdf8;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            background: rgba(48, 54, 61, 0.8);
+            height: 4px;
+            border-radius: 999px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 10px #38bdf8;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 13px;
+            height: 13px;
+            border: none;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 10px #38bdf8;
+        }
+
+        /* Dòng Reset View */
+        .controls-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-top: 6px;
+            border-top: 1px solid rgba(30, 41, 59, 0.8);
+        }
+        .btn-reset {
+            background: none;
+            border: none;
+            color: #38bdf8;
+            font-size: 10.5px;
+            padding: 0;
+        }
+        .btn-reset:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Globe Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Interactive Controls -->
+    <aside class="controls-wrapper">
+        <div class="glass-panel">
+            <div class="controls-header">
+                <span class="controls-title">Controls</span>
+                <button id="btn-burst" class="btn-burst">
+                    <span>⚡ Release Surge</span>
+                </button>
+            </div>
+
+            <!-- Toggles -->
+            <div class="toggle-grid">
+                <button id="btn-autorotate" class="btn-toggle active-sky">
+                    <span>🔄 Rotate</span>
+                </button>
+                <button id="btn-atmosphere" class="btn-toggle active-purple">
+                    <span>✨ Glow</span>
+                </button>
+            </div>
+
+            <!-- Slider -->
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span>Arc Spawn Rate</span>
+                    <span id="label-density" class="mono density-val">High</span>
+                </div>
+                <input id="slider-density" type="range" min="1" max="5" value="4">
+            </div>
+
+            <!-- Reset Button -->
+            <div class="controls-footer">
+                <button id="btn-reset" class="btn-reset">Reset View</button>
+            </div>
+        </div>
+    </aside>
+
+    <script>
+        // ============================================================================
+        // 1. WORLD TECH HUBS & CONTINENT POLYGONS DATA
+        // ============================================================================
+        const TECH_HUBS = [
+            { lat: 37.7749, lng: -122.4194 },
+            { lat: 40.7128, lng: -74.0060 },
+            { lat: 47.6062, lng: -122.3321 },
+            { lat: 30.2672, lng: -97.7431 },
+            { lat: 43.6532, lng: -79.3832 },
+            { lat: 19.4326, lng: -99.1332 },
+            { lat: -23.5505, lng: -46.6333 },
+            { lat: -34.6037, lng: -58.3816 },
+            { lat: -33.4489, lng: -70.6693 },
+            { lat: 4.7110, lng: -74.0721 },
+            { lat: 51.5074, lng: -0.1278 },
+            { lat: 48.8566, lng: 2.3522 },
+            { lat: 52.5200, lng: 13.4050 },
+            { lat: 52.3676, lng: 4.9041 },
+            { lat: 59.3293, lng: 18.0686 },
+            { lat: 47.3769, lng: 8.5417 },
+            { lat: 40.4168, lng: -3.7038 },
+            { lat: 52.2297, lng: 21.0122 },
+            { lat: 50.4501, lng: 30.5234 },
+            { lat: 41.0082, lng: 28.9784 },
+            { lat: 32.0853, lng: 34.7818 },
+            { lat: 25.2048, lng: 55.2708 },
+            { lat: 6.5244, lng: 3.3792 },
+            { lat: -1.2921, lng: 36.8219 },
+            { lat: 30.0444, lng: 31.2357 },
+            { lat: -33.9249, lng: 18.4241 },
+            { lat: 12.9716, lng: 77.5946 },
+            { lat: 19.0760, lng: 72.8777 },
+            { lat: 28.6139, lng: 77.2090 },
+            { lat: 1.3521, lng: 103.8198 },
+            { lat: 21.0285, lng: 105.8542 },
+            { lat: 10.8231, lng: 106.6297 },
+            { lat: 13.7563, lng: 100.5018 },
+            { lat: -6.2088, lng: 106.8456 },
+            { lat: 14.5995, lng: 120.9842 },
+            { lat: 35.6762, lng: 139.6503 },
+            { lat: 37.5665, lng: 126.9780 },
+            { lat: 39.9042, lng: 116.4074 },
+            { lat: 31.2304, lng: 121.4737 },
+            { lat: 22.3193, lng: 114.1694 },
+            { lat: 25.0330, lng: 121.5654 },
+            { lat: -33.8688, lng: 151.2093 },
+            { lat: -37.8136, lng: 144.9631 },
+            { lat: -36.8485, lng: 174.7633 }
+        ];
+
+        const CONTINENT_POLYGONS = [
+            [[-168,65],[-140,70],[-120,74],[-85,75],[-60,65],[-53,47],[-70,42],[-81,25],[-90,20],[-84,9],[-77,8],[-92,15],[-105,20],[-117,32],[-124,48],[-140,60],[-165,60]],
+            [[-55,60],[-44,60],[-20,70],[-18,81],[-50,82],[-68,76]],
+            [[-80,10],[-62,10],[-50,0],[-35,-6],[-38,-15],[-48,-28],[-58,-38],[-68,-54],[-75,-50],[-72,-35],[-70,-18],[-81,-5]],
+            [[-10,36],[5,36],[15,38],[28,36],[35,45],[60,55],[60,70],[28,71],[10,63],[5,50],[-5,48],[-10,43]],
+            [[-10,51],[2,51],[0,58],[-8,58]],
+            [[-17,15],[-6,35],[11,37],[33,31],[43,12],[51,11],[40,-10],[35,-25],[20,-35],[14,-22],[9,-2],[5,5],[-8,4]],
+            [[44,-13],[50,-13],[48,-25],[43,-25]],
+            [[28,41],[45,40],[55,22],[72,20],[78,8],[88,22],[100,13],[104,1],[109,15],[122,23],[122,38],[132,42],[142,52],[170,66],[178,68],[105,76],[65,72],[60,55],[35,45]],
+            [[130,31],[141,35],[145,44],[139,41],[130,34]],
+            [[95,5],[106,-6],[120,-8],[140,-5],[135,2],[120,18],[115,6]],
+            [[113,-22],[122,-14],[136,-12],[143,-11],[153,-25],[148,-38],[138,-35],[115,-34]],
+            [[166,-46],[178,-37],[175,-41],[168,-46]]
+        ];
+
+        const ARC_COLORS = [0x38bdf8, 0xa855f7, 0x34d399, 0xf472b6, 0xfbbf24];
+
+        function isPointInPolygon(lng, lat, polygon) {
+            let inside = false;
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                const xi = polygon[i][0], yi = polygon[i][1];
+                const xj = polygon[j][0], yj = polygon[j][1];
+                const intersect = ((yi > lat) !== (yj > lat)) &&
+                    (lng < (xj - xi) * (lat - yi) / (yj - yi + 0.00001) + xi);
+                if (intersect) inside = !inside;
+            }
+            return inside;
+        }
+
+        function isLand(lng, lat) {
+            for (let k = 0; k < CONTINENT_POLYGONS.length; k++) {
+                if (isPointInPolygon(lng, lat, CONTINENT_POLYGONS[k])) return true;
+            }
+            return false;
+        }
+
+        function latLngToVector3(lat, lng, radius) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lng + 180) * (Math.PI / 180);
+            const x = -(radius * Math.sin(phi) * Math.cos(theta));
+            const z = (radius * Math.sin(phi) * Math.sin(theta));
+            const y = (radius * Math.cos(phi));
+            return new THREE.Vector3(x, y, z);
+        }
+
+        // ============================================================================
+        // 2. THREE.JS SCENE & RESPONSIVE VIEW CONFIGURATION
+        // ============================================================================
+        const GLOBE_RADIUS = 100;
+        let scene, camera, renderer, globeGroup, worldGroup;
+        let atmosphereMesh, cityNodesGroup;
+        const activeArcs = [];
+        const activeRipples = [];
+
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let pinchStartDist = 0;
+        let targetRotation = { x: 0.25, y: -1.8 };
+        let currentRotation = { x: 0.25, y: -1.8 };
+        let autoRotate = true;
+        let showAtmosphere = true;
+        let spawnDensity = 4;
+
+        // Tính toán khoảng cách nhìn xa & vị trí quả địa cầu để không bao giờ bị che khuất
+        function getResponsiveView() {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const aspect = w / h;
+
+            if (w < 640 || aspect < 0.85) {
+                // Màn hình dọc (Mobile): Lùi camera ra xa và hạ thấp quả cầu xuống dưới bảng điều khiển
+                const mobileZoom = Math.min(650, Math.max(480, Math.round(330 / Math.max(aspect, 0.45))));
+                return {
+                    zoom: mobileZoom,
+                    minZoom: 260,
+                    maxZoom: 780,
+                    offsetY: -28
+                };
+            } else if (w < 1024) {
+                // Tablet / Màn hình vừa
+                return {
+                    zoom: 430,
+                    minZoom: 220,
+                    maxZoom: 650,
+                    offsetY: -10
+                };
+            } else {
+                // PC / Desktop: Nhìn xa vừa vặn, thoáng đãng
+                return {
+                    zoom: 390,
+                    minZoom: 200,
+                    maxZoom: 600,
+                    offsetY: -6
+                };
+            }
+        }
+
+        let viewConfig = getResponsiveView();
+        let cameraZoom = viewConfig.zoom;
+        let targetZoom = viewConfig.zoom;
+        let currentOffsetY = viewConfig.offsetY;
+        let targetOffsetY = viewConfig.offsetY;
+
+        function initGlobe() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2500);
+            camera.position.set(0, 0, cameraZoom);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Nhóm chứa cả quả địa cầu + khí quyển để dịch chuyển tránh bảng Control
+            worldGroup = new THREE.Group();
+            worldGroup.position.y = currentOffsetY;
+            scene.add(worldGroup);
+
+            globeGroup = new THREE.Group();
+            worldGroup.add(globeGroup);
+
+            const ambientLight = new THREE.AmbientLight(0x88b4ff, 0.9);
+            scene.add(ambientLight);
+
+            const dirLight1 = new THREE.DirectionalLight(0x38bdf8, 1.8);
+            dirLight1.position.set(-250, 200, 250);
+            scene.add(dirLight1);
+
+            const dirLight2 = new THREE.DirectionalLight(0xa855f7, 1.4);
+            dirLight2.position.set(250, -180, 150);
+            scene.add(dirLight2);
+
+            createStarfield();
+            createEarthCore();
+            createContinentDotMatrix();
+            createAtmosphereShaders();
+            createCityHubs();
+
+            for (let i = 0; i < 16; i++) {
+                spawnRandomArc(Math.random() * 0.85);
+            }
+
+            setupEventListeners();
+            animate();
+        }
+
+        // ============================================================================
+        // 3. GLOBE VISUAL LAYERS
+        // ============================================================================
+        function createStarfield() {
+            const starCount = 1600;
+            const starGeo = new THREE.BufferGeometry();
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount; i++) {
+                const r = 550 + Math.random() * 800;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+
+                positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = r * Math.cos(phi);
+
+                const tint = Math.random();
+                if (tint < 0.6) {
+                    colors[i * 3] = 0.75; colors[i * 3 + 1] = 0.85; colors[i * 3 + 2] = 1.0;
+                } else if (tint < 0.85) {
+                    colors[i * 3] = 0.45; colors[i * 3 + 1] = 0.75; colors[i * 3 + 2] = 1.0;
+                } else {
+                    colors[i * 3] = 0.80; colors[i * 3 + 1] = 0.60; colors[i * 3 + 2] = 1.0;
+                }
+            }
+
+            starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const starMat = new THREE.PointsMaterial({
+                size: 1.6,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.75
+            });
+
+            scene.add(new THREE.Points(starGeo, starMat));
+        }
+
+        function createEarthCore() {
+            const sphereGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 0.992, 64, 64);
+            const sphereMat = new THREE.MeshPhongMaterial({
+                color: 0x070d1f,
+                emissive: 0x050b1a,
+                specular: 0x1e3a8a,
+                shininess: 18
+            });
+            globeGroup.add(new THREE.Mesh(sphereGeo, sphereMat));
+
+            const wireGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 0.995, 36, 18);
+            const wireMat = new THREE.MeshBasicMaterial({
+                color: 0x1e3a8a,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.08
+            });
+            globeGroup.add(new THREE.Mesh(wireGeo, wireMat));
+        }
+
+        function createContinentDotMatrix() {
+            const totalSamples = 22000;
+            const landPositions = [];
+            const oceanPositions = [];
+            const goldenRatio = (1 + Math.sqrt(5)) / 2;
+
+            for (let i = 0; i < totalSamples; i++) {
+                const y = 1 - (i / (totalSamples - 1)) * 2;
+                const radiusAtY = Math.sqrt(1 - y * y);
+                const theta = 2 * Math.PI * i / goldenRatio;
+
+                const x = Math.cos(theta) * radiusAtY;
+                const z = Math.sin(theta) * radiusAtY;
+
+                const lat = Math.asin(y) * (180 / Math.PI);
+                const lng = Math.atan2(z, -x) * (180 / Math.PI) - 180;
+                const normLng = ((lng + 540) % 360) - 180;
+
+                if (isLand(normLng, lat)) {
+                    landPositions.push(x * GLOBE_RADIUS, y * GLOBE_RADIUS, z * GLOBE_RADIUS);
+                } else if (i % 7 === 0) {
+                    oceanPositions.push(x * GLOBE_RADIUS, y * GLOBE_RADIUS, z * GLOBE_RADIUS);
+                }
+            }
+
+            const landGeo = new THREE.BufferGeometry();
+            landGeo.setAttribute('position', new THREE.Float32BufferAttribute(landPositions, 3));
+            const landMat = new THREE.PointsMaterial({
+                color: 0x60a5fa,
+                size: 1.35,
+                transparent: true,
+                opacity: 0.78,
+                blending: THREE.AdditiveBlending
+            });
+            globeGroup.add(new THREE.Points(landGeo, landMat));
+
+            const oceanGeo = new THREE.BufferGeometry();
+            oceanGeo.setAttribute('position', new THREE.Float32BufferAttribute(oceanPositions, 3));
+            const oceanMat = new THREE.PointsMaterial({
+                color: 0x1e40af,
+                size: 0.85,
+                transparent: true,
+                opacity: 0.25
+            });
+            globeGroup.add(new THREE.Points(oceanGeo, oceanMat));
+        }
+
+        function createAtmosphereShaders() {
+            const vertexShader = `
+                varying vec3 vNormal;
+                void main() {
+                    vNormal = normalize(normalMatrix * normal);
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `;
+
+            const fragmentShader = `
+                varying vec3 vNormal;
+                void main() {
+                    float intensity = pow(0.68 - dot(vNormal, vec3(0, 0, 1.0)), 2.6);
+                    vec3 glowColor = mix(vec3(0.15, 0.55, 1.0), vec3(0.58, 0.28, 0.98), 0.35);
+                    gl_FragColor = vec4(glowColor, 1.0) * intensity * 1.45;
+                }
+            `;
+
+            const atmosGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.14, 64, 64);
+            const atmosMat = new THREE.ShaderMaterial({
+                vertexShader,
+                fragmentShader,
+                blending: THREE.AdditiveBlending,
+                side: THREE.BackSide,
+                transparent: true,
+                depthWrite: false
+            });
+
+            atmosphereMesh = new THREE.Mesh(atmosGeo, atmosMat);
+            worldGroup.add(atmosphereMesh);
+        }
+
+        function createCityHubs() {
+            cityNodesGroup = new THREE.Group();
+            globeGroup.add(cityNodesGroup);
+
+            const dotGeo = new THREE.SphereGeometry(1.15, 12, 12);
+            const ringGeo = new THREE.RingGeometry(1.5, 2.3, 24);
+
+            TECH_HUBS.forEach((hub, index) => {
+                const pos = latLngToVector3(hub.lat, hub.lng, GLOBE_RADIUS * 1.004);
+                const isMajor = index % 3 === 0;
+
+                const dotMat = new THREE.MeshBasicMaterial({
+                    color: isMajor ? 0x38bdf8 : 0xa855f7
+                });
+                const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+                dotMesh.position.copy(pos);
+                cityNodesGroup.add(dotMesh);
+
+                const ringMat = new THREE.MeshBasicMaterial({
+                    color: isMajor ? 0x38bdf8 : 0xa855f7,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.55,
+                    blending: THREE.AdditiveBlending
+                });
+                const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                ringMesh.position.copy(pos);
+                ringMesh.lookAt(pos.clone().multiplyScalar(2));
+                cityNodesGroup.add(ringMesh);
+            });
+        }
+
+        // ============================================================================
+        // 4. ANIMATED 3D ARCS & SURFACE RIPPLE WAVES
+        // ============================================================================
+        function spawnSurfaceRipple(lat, lng, colorHex) {
+            const pos = latLngToVector3(lat, lng, GLOBE_RADIUS * 1.005);
+            const ringGeo = new THREE.RingGeometry(0.6, 1.25, 32);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: colorHex,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.95,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            const mesh = new THREE.Mesh(ringGeo, ringMat);
+            mesh.position.copy(pos);
+            mesh.lookAt(pos.clone().multiplyScalar(2));
+            globeGroup.add(mesh);
+
+            activeRipples.push({
+                mesh,
+                progress: 0,
+                speed: 0.022
+            });
+        }
+
+        function spawnRandomArc(initialProgress = 0) {
+            const startIdx = Math.floor(Math.random() * TECH_HUBS.length);
+            let endIdx = Math.floor(Math.random() * TECH_HUBS.length);
+            while (endIdx === startIdx) {
+                endIdx = Math.floor(Math.random() * TECH_HUBS.length);
+            }
+
+            const startHub = TECH_HUBS[startIdx];
+            const endHub = TECH_HUBS[endIdx];
+            const colorHex = ARC_COLORS[Math.floor(Math.random() * ARC_COLORS.length)];
+
+            const startVec = latLngToVector3(startHub.lat, startHub.lng, GLOBE_RADIUS);
+            const endVec = latLngToVector3(endHub.lat, endHub.lng, GLOBE_RADIUS);
+
+            const distance = startVec.distanceTo(endVec);
+            const altitude = Math.min(Math.max(distance * 0.42, 18), 85);
+
+            const mid1 = startVec.clone().lerp(endVec, 0.28).normalize().multiplyScalar(GLOBE_RADIUS + altitude);
+            const mid2 = startVec.clone().lerp(endVec, 0.72).normalize().multiplyScalar(GLOBE_RADIUS + altitude);
+
+            const curve = new THREE.CubicBezierCurve3(startVec, mid1, mid2, endVec);
+            const segments = 80;
+
+            const tubeGeo = new THREE.TubeGeometry(curve, segments, 0.36, 6, false);
+
+            const bgMat = new THREE.MeshBasicMaterial({
+                color: colorHex,
+                transparent: true,
+                opacity: 0.12,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            const bgTube = new THREE.Mesh(tubeGeo.clone(), bgMat);
+            globeGroup.add(bgTube);
+
+            const pulseMat = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.95,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            pulseMat.color.lerp(new THREE.Color(colorHex), 0.45);
+
+            const pulseTube = new THREE.Mesh(tubeGeo, pulseMat);
+            tubeGeo.setDrawRange(0, 0);
+            globeGroup.add(pulseTube);
+
+            const headGeo = new THREE.SphereGeometry(0.95, 10, 10);
+            const headMat = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 1,
+                blending: THREE.AdditiveBlending
+            });
+            const headMesh = new THREE.Mesh(headGeo, headMat);
+            headMesh.position.copy(startVec);
+            globeGroup.add(headMesh);
+
+            if (initialProgress === 0) {
+                spawnSurfaceRipple(startHub.lat, startHub.lng, colorHex);
+            }
+
+            activeArcs.push({
+                curve,
+                bgTube,
+                pulseTube,
+                headMesh,
+                segments,
+                progress: initialProgress,
+                speed: 0.0055 + Math.random() * 0.0045,
+                tailLength: 0.28,
+                endHub,
+                colorHex,
+                impactTriggered: false
+            });
+        }
+
+        // ============================================================================
+        // 5. INTERACTION & CONTROLS (PC + MOBILE PINCH-TO-ZOOM)
+        // ============================================================================
+        function setupEventListeners() {
+            const container = document.getElementById('canvas-container');
+
+            // Mouse Events
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+
+                targetRotation.y += deltaX * 0.0055;
+                targetRotation.x += deltaY * 0.0055;
+                targetRotation.x = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, targetRotation.x));
+
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            // Touch Events (1 ngón xoay + 2 ngón phóng to/thu nhỏ)
+            container.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                } else if (e.touches.length === 2) {
+                    isDragging = false;
+                    pinchStartDist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches.length === 1) {
+                    const deltaX = e.touches[0].clientX - previousMousePosition.x;
+                    const deltaY = e.touches[0].clientY - previousMousePosition.y;
+
+                    targetRotation.y += deltaX * 0.0055;
+                    targetRotation.x += deltaY * 0.0055;
+                    targetRotation.x = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, targetRotation.x));
+
+                    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                } else if (e.touches.length === 2 && pinchStartDist > 0) {
+                    const dist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    const deltaDist = pinchStartDist - dist;
+                    targetZoom += deltaDist * 0.85;
+                    targetZoom = Math.max(viewConfig.minZoom, Math.min(viewConfig.maxZoom, targetZoom));
+                    pinchStartDist = dist;
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchend', () => {
+                isDragging = false;
+                pinchStartDist = 0;
+            });
+
+            // Scroll Wheel Zoom
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                targetZoom += e.deltaY * 0.18;
+                targetZoom = Math.max(viewConfig.minZoom, Math.min(viewConfig.maxZoom, targetZoom));
+            }, { passive: false });
+
+            // Tự động điều chỉnh lại bố cục khi xoay màn hình hoặc đổi kích thước cửa sổ
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                viewConfig = getResponsiveView();
+                targetZoom = viewConfig.zoom;
+                targetOffsetY = viewConfig.offsetY;
+            });
+
+            // Buttons & Sliders
+            const btnAutoRotate = document.getElementById('btn-autorotate');
+            btnAutoRotate.addEventListener('click', () => {
+                autoRotate = !autoRotate;
+                btnAutoRotate.classList.toggle('active-sky', autoRotate);
+            });
+
+            const btnAtmosphere = document.getElementById('btn-atmosphere');
+            btnAtmosphere.addEventListener('click', () => {
+                showAtmosphere = !showAtmosphere;
+                atmosphereMesh.visible = showAtmosphere;
+                btnAtmosphere.classList.toggle('active-purple', showAtmosphere);
+            });
+
+            document.getElementById('btn-burst').addEventListener('click', () => {
+                for (let i = 0; i < 12; i++) {
+                    spawnRandomArc(0);
+                }
+            });
+
+            document.getElementById('btn-reset').addEventListener('click', () => {
+                viewConfig = getResponsiveView();
+                targetRotation = { x: 0.25, y: -1.8 };
+                targetZoom = viewConfig.zoom;
+                targetOffsetY = viewConfig.offsetY;
+            });
+
+            const sliderDensity = document.getElementById('slider-density');
+            const labelDensity = document.getElementById('label-density');
+            const densityNames = ["Low", "Moderate", "Normal", "High", "Extreme"];
+            sliderDensity.addEventListener('input', (e) => {
+                spawnDensity = parseInt(e.target.value, 10);
+                labelDensity.textContent = densityNames[spawnDensity - 1];
+            });
+        }
+
+        // ============================================================================
+        // 6. MAIN RENDER & ANIMATION LOOP
+        // ============================================================================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (autoRotate && !isDragging) {
+                targetRotation.y += 0.0018;
+            }
+            currentRotation.x += (targetRotation.x - currentRotation.x) * 0.08;
+            currentRotation.y += (targetRotation.y - currentRotation.y) * 0.08;
+
+            globeGroup.rotation.x = currentRotation.x;
+            globeGroup.rotation.y = currentRotation.y;
+
+            cameraZoom += (targetZoom - cameraZoom) * 0.08;
+            camera.position.z = cameraZoom;
+
+            currentOffsetY += (targetOffsetY - currentOffsetY) * 0.08;
+            worldGroup.position.y = currentOffsetY;
+
+            const maxConcurrentArcs = spawnDensity * 6;
+            if (activeArcs.length < maxConcurrentArcs && Math.random() < spawnDensity * 0.03) {
+                spawnRandomArc(0);
+            }
+
+            for (let i = activeArcs.length - 1; i >= 0; i--) {
+                const arc = activeArcs[i];
+                arc.progress += arc.speed;
+
+                const headT = Math.min(arc.progress, 1.0);
+                const tailT = Math.max(arc.progress - arc.tailLength, 0.0);
+
+                const startSegment = Math.floor(tailT * arc.segments);
+                const endSegment = Math.ceil(headT * arc.segments);
+                const indicesPerSegment = 36;
+
+                const startIndex = startSegment * indicesPerSegment;
+                const drawCount = Math.max(0, (endSegment - startSegment) * indicesPerSegment);
+
+                arc.pulseTube.geometry.setDrawRange(startIndex, drawCount);
+
+                if (arc.progress <= 1.0) {
+                    const headPos = arc.curve.getPointAt(headT);
+                    arc.headMesh.position.copy(headPos);
+                } else {
+                    arc.headMesh.visible = false;
+                    if (!arc.impactTriggered) {
+                        arc.impactTriggered = true;
+                        spawnSurfaceRipple(arc.endHub.lat, arc.endHub.lng, arc.colorHex);
+                    }
+                }
+
+                if (arc.progress > 1.0) {
+                    const fade = 1.0 - ((arc.progress - 1.0) / arc.tailLength);
+                    arc.bgTube.material.opacity = Math.max(0, fade * 0.12);
+                }
+
+                if (arc.progress >= 1.0 + arc.tailLength) {
+                    globeGroup.remove(arc.bgTube);
+                    globeGroup.remove(arc.pulseTube);
+                    globeGroup.remove(arc.headMesh);
+                    arc.bgTube.geometry.dispose();
+                    arc.bgTube.material.dispose();
+                    arc.pulseTube.geometry.dispose();
+                    arc.pulseTube.material.dispose();
+                    arc.headMesh.geometry.dispose();
+                    arc.headMesh.material.dispose();
+                    activeArcs.splice(i, 1);
+                }
+            }
+
+            for (let i = activeRipples.length - 1; i >= 0; i--) {
+                const ripple = activeRipples[i];
+                ripple.progress += ripple.speed;
+
+                const scale = 1.0 + ripple.progress * 3.8;
+                ripple.mesh.scale.set(scale, scale, scale);
+                ripple.mesh.material.opacity = Math.max(0, (1.0 - ripple.progress) * 0.9);
+
+                if (ripple.progress >= 1.0) {
+                    globeGroup.remove(ripple.mesh);
+                    ripple.mesh.geometry.dispose();
+                    ripple.mesh.material.dispose();
+                    activeRipples.splice(i, 1);
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = initGlobe;
+    </script>
+</body>
+</html>
