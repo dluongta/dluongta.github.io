@@ -26,8 +26,6 @@
             height: 100vh;
             color: var(--text-color);
             overscroll-behavior: none;
-            user-select: none;
-            -webkit-user-select: none;
         }
 
         /* --- CONTROLS AREA --- */
@@ -85,8 +83,6 @@
             border-radius: 4px;
             font-weight: bold;
             outline: none;
-            user-select: text;
-            -webkit-user-select: text;
         }
 
         input#pageInput:focus {
@@ -122,7 +118,7 @@
             overflow: hidden;
             position: relative;
             touch-action: none;
-            perspective: 2400px;
+            perspective: 2500px;
         }
 
         .side-nav {
@@ -172,17 +168,15 @@
             width: 100%;
             height: 100%;
             will-change: transform;
-            transform-style: preserve-3d;
         }
 
         .book-aligner {
             width: var(--page-width);
             height: var(--page-height);
             position: relative;
-            transition: transform 0.55s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform var(--transition-speed) cubic-bezier(0.25, 1, 0.5, 1);
             transform-origin: center center;
             will-change: transform;
-            transform-style: preserve-3d;
         }
 
         .align-cover {
@@ -207,7 +201,7 @@
             }
 
             .align-cover {
-                transform: scale(1.25);
+                transform: scale(1.35);
             }
         }
 
@@ -224,198 +218,40 @@
             height: 100%;
             top: 0;
             left: 0;
-            pointer-events: none;
-        }
-
-        /* =========================================================
-           1. TỜ ĐẦU TIÊN (TRANG 1 - 2): GẬP PHẲNG 3D (HARDCOVER FOLD)
-           ========================================================= */
-        .page.sheet-cover {
-            transform-origin: left center;
+            transform-origin: left;
             transform-style: preserve-3d;
-            transition: transform 0.68s cubic-bezier(0.32, 0.04, 0.18, 1);
+            transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
             will-change: transform;
         }
 
-        .page.sheet-cover.dragging-cover {
-            transition: none !important;
-        }
-
-        .page.sheet-cover.flipped {
+        .page.flipped {
             transform: rotateY(-180deg);
         }
 
-        .page.sheet-cover .front,
-        .page.sheet-cover .back {
+        .front,
+        .back {
             position: absolute;
             width: 100%;
             height: 100%;
-            top: 0;
-            left: 0;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             background: #fff;
             overflow: hidden;
             pointer-events: auto;
-            cursor: grab;
+            z-index: 10;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
-        .page.sheet-cover .front {
-            border-radius: 1px 5px 5px 1px;
-            box-shadow: inset 12px 0 22px rgba(0, 0, 0, 0.07), 4px 4px 16px rgba(0, 0, 0, 0.28);
-        }
-
-        .page.sheet-cover .back {
-            transform: rotateY(180deg);
-            border-radius: 5px 1px 1px 5px;
-            box-shadow: inset -12px 0 22px rgba(0, 0, 0, 0.07), -4px 4px 16px rgba(0, 0, 0, 0.25);
-        }
-
-        /* =========================================================
-           2. CÁC TRANG SAU (TỜ 2+): KÉO THẢ UỐN CONG 3D NHƯ HEYZINE
-           ========================================================= */
-        .page.sheet-curl {
-            transform: none !important;
-            transform-style: flat;
-        }
-
-        .page.sheet-curl .front,
-        .page.sheet-curl .back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background: #fff;
-            overflow: hidden;
-            pointer-events: auto;
-            cursor: grab;
-            will-change: clip-path, transform;
-        }
-
-        .page.sheet-curl .front {
+        .front {
             border-radius: 1px 4px 4px 1px;
-            box-shadow: inset 12px 0 20px rgba(0, 0, 0, 0.05), 2px 2px 10px rgba(0, 0, 0, 0.14);
+            box-shadow: inset 10px 0 20px rgba(0, 0, 0, 0.04), 2px 0 8px rgba(0, 0, 0, 0.1);
         }
 
-        .page.sheet-curl .back {
+        .back {
+            transform: rotateY(180deg);
             border-radius: 4px 1px 1px 4px;
-            box-shadow: inset -12px 0 20px rgba(0, 0, 0, 0.05), -2px 2px 10px rgba(0, 0, 0, 0.14);
-        }
-
-        /* Trạng thái nghỉ bên phải (chưa lật) */
-        .page.sheet-curl:not(.flipped):not(.curling) .front {
-            display: block;
-            transform: none;
-            clip-path: none;
-        }
-
-        .page.sheet-curl:not(.flipped):not(.curling) .back {
-            display: none;
-        }
-
-        /* Trạng thái nghỉ bên trái (đã lật) */
-        .page.sheet-curl.flipped:not(.curling) .front {
-            display: none;
-        }
-
-        .page.sheet-curl.flipped:not(.curling) .back {
-            display: block;
-            transform: translate3d(-100%, 0, 0);
-            clip-path: none;
-        }
-
-        /* Trạng thái đang kéo / lật 3D (Curling) */
-        .page.sheet-curl.curling {
-            z-index: 1400 !important;
-        }
-
-        .page.sheet-curl.curling .front,
-        .page.sheet-curl.curling .back {
-            display: block;
-            box-shadow: none;
-        }
-
-        /* Lớp ánh sáng ống cuộn 3D trên mặt giấy đang uốn */
-        .curl-lighting {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 25;
-            overflow: hidden;
-            opacity: 0;
-        }
-
-        .curl-strip {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 440px;
-            height: 3200px;
-            margin-left: -220px;
-            margin-top: -1600px;
-            pointer-events: none;
-            will-change: transform, background;
-        }
-
-        /* Lớp bóng đổ dưới nếp gấp lên trang nằm dưới */
-        .fold-shadow-container {
-            position: absolute;
-            top: -2px;
-            left: -100%;
-            width: 200%;
-            height: calc(100% + 4px);
-            pointer-events: none;
-            z-index: 5;
-            overflow: hidden;
-            opacity: 0;
-        }
-
-        .fold-shadow-strip {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 360px;
-            height: 3200px;
-            margin-left: -180px;
-            margin-top: -1600px;
-            pointer-events: none;
-            background: linear-gradient(to right,
-                    rgba(0, 0, 0, 0) 0px,
-                    rgba(0, 0, 0, 0.04) 95px,
-                    rgba(0, 0, 0, 0.28) 172px,
-                    rgba(0, 0, 0, 0.36) 180px,
-                    rgba(0, 0, 0, 0.16) 196px,
-                    rgba(0, 0, 0, 0) 245px);
-            will-change: transform;
-        }
-
-        /* Bóng rãnh gáy sách */
-        .front::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            width: 32px;
-            background: linear-gradient(to right, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.03) 55%, transparent);
-            pointer-events: none;
-            z-index: 15;
-        }
-
-        .back::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            right: 0;
-            width: 32px;
-            background: linear-gradient(to left, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.03) 55%, transparent);
-            pointer-events: none;
-            z-index: 15;
+            box-shadow: inset -10px 0 20px rgba(0, 0, 0, 0.04), -2px 0 8px rgba(0, 0, 0, 0.1);
         }
 
         canvas {
@@ -426,7 +262,6 @@
             -webkit-font-smoothing: antialiased;
             image-rendering: high-quality;
             image-rendering: -webkit-optimize-contrast;
-            pointer-events: none;
         }
 
         .placeholder {
@@ -466,7 +301,9 @@
             animation: spin 1s linear infinite;
             box-sizing: border-box;
             display: inline-block;
+            animation: spin 1s linear infinite;
         }
+
 
         #main-loading {
             position: absolute;
@@ -484,6 +321,47 @@
             align-items: center;
             gap: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .front::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 30px;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.12), transparent);
+            pointer-events: none;
+        }
+
+        .back::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            width: 30px;
+            background: linear-gradient(to left, rgba(0, 0, 0, 0.12), transparent);
+            pointer-events: none;
+        }
+
+        .click-area {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            width: 40%;
+            cursor: pointer;
+            background: transparent;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .click-area.right {
+            right: 0;
+        }
+
+        .click-area.left {
+            left: 0;
         }
     </style>
 </head>
@@ -540,15 +418,11 @@
 
         let zoom = 1;
         let translateX = 0, translateY = 0;
-        let isPanningViewport = false;
-        let panStartX = 0, panStartY = 0;
+        let isDragging = false;
+        let startX, startY;
         let initialPinchDistance = 0, initialZoom = 1;
         let isProcessingPage = false;
-
-        // Kích thước thực tế của 1 trang sách (cập nhật khi resize)
-        let pageW = 300;
-        let pageH = 420;
-
+        
         function updateBookDimensions() {
             const viewport = document.getElementById('viewport');
             const vWidth = viewport.clientWidth;
@@ -557,26 +431,20 @@
             const aspectRatio = 0.707;
 
             if (vWidth < 768) {
-                pWidth = vWidth * 0.46;
+                pWidth = vWidth * 0.48;
                 pHeight = pWidth / aspectRatio;
 
-                if (pHeight > vHeight * 0.65) {
-                    pHeight = vHeight * 0.65;
+                if (pHeight > vHeight * 0.6) {
+                    pHeight = vHeight * 0.6;
                     pWidth = pHeight * aspectRatio;
                 }
             } else {
-                pHeight = vHeight * 0.84;
+                pHeight = vHeight * 0.85;
                 pWidth = pHeight * aspectRatio;
-                if (pWidth * 2 > vWidth * 0.88) {
-                    pWidth = (vWidth * 0.88) / 2;
-                    pHeight = pWidth / aspectRatio;
-                }
             }
 
-            pageW = Math.round(pWidth);
-            pageH = Math.round(pHeight);
-            document.documentElement.style.setProperty('--page-width', `${pageW}px`);
-            document.documentElement.style.setProperty('--page-height', `${pageH}px`);
+            document.documentElement.style.setProperty('--page-width', `${Math.round(pWidth)}px`);
+            document.documentElement.style.setProperty('--page-height', `${Math.round(pHeight)}px`);
         }
 
         async function init() {
@@ -604,16 +472,14 @@
         function buildDOMStructure() {
             const book = document.getElementById('book');
             book.innerHTML = '';
-            sheetsArray.length = 0;
             const totalSheets = Math.ceil(totalPages / 2);
 
             for (let i = 0; i < totalSheets; i++) {
                 const pageNumFront = i * 2 + 1;
                 const pageNumBack = i * 2 + 2;
-                const isCoverSheet = (i === 0); // Tờ 0 (Trang 1-2) gập phẳng, các tờ sau (i >= 1) uốn cong 3D như Heyzine
 
                 const sheetEl = document.createElement('div');
-                sheetEl.className = isCoverSheet ? 'page sheet-cover' : 'page sheet-curl';
+                sheetEl.className = 'page';
                 sheetEl.style.zIndex = totalSheets - i;
 
                 const front = document.createElement('div');
@@ -621,8 +487,9 @@
                 front.dataset.page = pageNumFront;
                 front.innerHTML = `
                     <div class="placeholder" id="placeholder-${pageNumFront}"><div class="loader-spinner"></div></div>
-                    ${!isCoverSheet ? '<div class="curl-lighting"><div class="curl-strip"></div></div>' : ''}
+                    <div class="click-area right" onclick="event.stopPropagation(); nextPage()"></div>
                 `;
+                sheetEl.appendChild(front);
 
                 const back = document.createElement('div');
                 back.className = 'back';
@@ -631,35 +498,16 @@
                 if (pageNumBack <= totalPages) {
                     back.innerHTML = `
                         <div class="placeholder" id="placeholder-${pageNumBack}"><div class="loader-spinner"></div></div>
-                        ${!isCoverSheet ? '<div class="curl-lighting"><div class="curl-strip"></div></div>' : ''}
+                        <div class="click-area left" onclick="event.stopPropagation(); prevPage()"></div>
                     `;
                 } else {
                     back.style.backgroundColor = "#e0e0e0";
-                    if (!isCoverSheet) {
-                        back.innerHTML = `<div class="curl-lighting"><div class="curl-strip"></div></div>`;
-                    }
+                    back.innerHTML = `<div class="click-area left" onclick="event.stopPropagation(); prevPage()"></div>`;
                 }
-
-                if (!isCoverSheet) {
-                    const foldShadowContainer = document.createElement('div');
-                    foldShadowContainer.className = 'fold-shadow-container';
-                    foldShadowContainer.innerHTML = `<div class="fold-shadow-strip"></div>`;
-                    sheetEl.appendChild(foldShadowContainer);
-                }
-
-                sheetEl.appendChild(front);
                 sheetEl.appendChild(back);
-                book.appendChild(sheetEl);
 
-                sheetsArray.push({
-                    index: i,
-                    isCover: isCoverSheet,
-                    element: sheetEl,
-                    frontEl: front,
-                    backEl: back,
-                    frontNum: pageNumFront,
-                    backNum: pageNumBack <= totalPages ? pageNumBack : null
-                });
+                book.appendChild(sheetEl);
+                sheetsArray.push({ element: sheetEl, frontNum: pageNumFront, backNum: pageNumBack <= totalPages ? pageNumBack : null });
             }
         }
 
@@ -670,15 +518,13 @@
                     if (sheetIdx >= 0 && sheetIdx < sheetsArray.length) {
                         const s = sheetsArray[sheetIdx];
                         if (s.frontNum == pageNum || s.backNum == pageNum) {
-                            isSafe = true;
-                            break;
+                            isSafe = true; break;
                         }
                     }
                 }
 
                 if (!isSafe) {
-                    canvas.width = 1;
-                    canvas.height = 1;
+                    canvas.width = 1; canvas.height = 1;
                     canvas.remove();
                     activeCanvases.delete(pageNum);
 
@@ -689,14 +535,12 @@
         }
 
         async function loadVisiblePages(sheetIndex, forceRebuild = false) {
-            // Giữ sẵn cả sheetIndex - 2 để khi kéo lật ngược trang bên trái thì trang dưới luôn hiển thị ngay
-            const safeSheets = [sheetIndex - 2, sheetIndex - 1, sheetIndex, sheetIndex + 1];
+            const safeSheets = [sheetIndex - 1, sheetIndex, sheetIndex + 1];
             garbageCollection(safeSheets);
 
             await renderSheet(sheetIndex, forceRebuild);
-            await renderSheet(sheetIndex - 1, forceRebuild);
             await renderSheet(sheetIndex + 1, forceRebuild);
-            await renderSheet(sheetIndex - 2, forceRebuild);
+            await renderSheet(sheetIndex - 1, forceRebuild);
         }
 
         async function renderSheet(idx, forceRebuild) {
@@ -704,10 +548,10 @@
             const sheetInfo = sheetsArray[idx];
 
             if (sheetInfo.frontNum) {
-                await renderSinglePage(sheetInfo.frontNum, sheetInfo.frontEl, forceRebuild);
+                await renderSinglePage(sheetInfo.frontNum, sheetInfo.element.querySelector('.front'), forceRebuild);
             }
             if (sheetInfo.backNum) {
-                await renderSinglePage(sheetInfo.backNum, sheetInfo.backEl, forceRebuild);
+                await renderSinglePage(sheetInfo.backNum, sheetInfo.element.querySelector('.back'), forceRebuild);
             }
         }
 
@@ -717,9 +561,13 @@
 
             try {
                 const page = await pdfDoc.getPage(pageNum);
+
+                const bookAligner = document.getElementById('book-aligner');
+                const cssWidth = bookAligner.clientWidth;
                 const dpr = window.devicePixelRatio || 1;
+
                 const MIN_CANVAS_WIDTH = 1600;
-                let targetCanvasWidth = pageW * dpr * 2.5;
+                let targetCanvasWidth = cssWidth * dpr * 2.5;
 
                 if (targetCanvasWidth < MIN_CANVAS_WIDTH) {
                     targetCanvasWidth = MIN_CANVAS_WIDTH;
@@ -738,12 +586,12 @@
                 context.imageSmoothingEnabled = true;
                 context.imageSmoothingQuality = 'high';
 
-                await page.render({ canvasContext: context, viewport: viewport }).promise;
+                const renderContext = { canvasContext: context, viewport: viewport };
+                await page.render(renderContext).promise;
 
                 const oldCanvas = container.querySelector('canvas');
                 if (oldCanvas) {
-                    oldCanvas.width = 1;
-                    oldCanvas.remove();
+                    oldCanvas.width = 1; oldCanvas.remove();
                 }
 
                 const placeholder = document.getElementById(`placeholder-${pageNum}`);
@@ -751,453 +599,25 @@
 
                 container.insertBefore(canvas, container.firstChild);
                 activeCanvases.set(pageNum.toString(), canvas);
+
             } catch (e) {
                 console.warn(`Lỗi render trang ${pageNum}`, e);
             }
         }
 
-        // =========================================================================
-        // ENGINE VẬT LÝ LẬT TRANG:
-        // - Sheet 0 (Trang đầu): Gập phẳng 3D (Hardcover rotateY)
-        // - Sheet 1+ (Các trang sau): Kéo thả lật uốn cong 3D như Heyzine
-        // =========================================================================
-
-        const flipState = {
-            mode: 'idle',        // 'idle' | 'dragging' | 'animating' | 'hover-peel'
-            sheetIdx: -1,
-            dir: 'next',         // 'next' (phải -> trái) | 'prev' (trái -> phải)
-            isCover: false,
-            cy: 0,               // Tọa độ góc kéo Y gốc (0: góc trên, pageH: góc dưới)
-            curX: 0,
-            curY: 0,
-            targetX: 0,
-            targetY: 0,
-            coverAngle: 0,       // Dùng cho trang đầu gập 3D (0 -> -180)
-            targetCoverAngle: 0,
-            animRaf: null,
-            pointerStartX: 0,
-            pointerStartY: 0,
-            pointerMoved: false
-        };
-
-        // Chuyển tọa độ chuột màn hình sang hệ tọa độ tâm gáy sách (x: [-pageW, pageW], y: [0, pageH])
-        function screenToBookCoords(clientX, clientY) {
-            const bookEl = document.getElementById('book');
-            const rect = bookEl.getBoundingClientRect();
-            const scaleX = rect.width / pageW || 1;
-            const scaleY = rect.height / pageH || 1;
-            return {
-                x: (clientX - rect.left) / scaleX,
-                y: (clientY - rect.top) / scaleY
-            };
-        }
-
-        // Ràng buộc vật lý gáy sách: giữ trang giấy không bị rách khỏi đầu trên (0,0) và đầu dưới (0,pageH) của gáy sách
-        function constrainToSpine(px, py, cy, dir) {
-            const W = pageW;
-            const H = pageH;
-            if (dir === 'next') {
-                px = Math.min(px, W - 1.5);
-            } else {
-                px = Math.max(px, -W + 1.5);
-            }
-
-            // Ràng buộc 1: khoảng cách tới góc gáy cùng phía (0, cy) <= W
-            let dx1 = px;
-            let dy1 = py - cy;
-            let d1 = Math.hypot(dx1, dy1);
-            if (d1 > W) {
-                px = (dx1 / d1) * W;
-                py = cy + (dy1 / d1) * W;
-            }
-
-            // Ràng buộc 2: khoảng cách tới góc gáy đối diện (0, H - cy) <= đường chéo trang
-            const oppY = H - cy;
-            const diag = Math.hypot(W, H);
-            let dx2 = px;
-            let dy2 = py - oppY;
-            let d2 = Math.hypot(dx2, dy2);
-            if (d2 > diag) {
-                px = (dx2 / d2) * diag;
-                py = oppY + (dy2 / d2) * diag;
-            }
-
-            return { x: px, y: py };
-        }
-
-        // Thuật toán cắt đa giác Sutherland-Hodgman theo đường gập chéo L
-        function clipPageRect(W, H, Mx, My, vx, vy, keepPositive) {
-            const sign = keepPositive ? 1 : -1;
-            const poly = [
-                { x: 0, y: 0 },
-                { x: W, y: 0 },
-                { x: W, y: H },
-                { x: 0, y: H }
-            ];
-            const out = [];
-            const evalF = (pt) => ((pt.x - Mx) * vx + (pt.y - My) * vy) * sign;
-
-            for (let i = 0; i < poly.length; i++) {
-                const cur = poly[i];
-                const prev = poly[(i + poly.length - 1) % poly.length];
-                const fCur = evalF(cur);
-                const fPrev = evalF(prev);
-
-                if (fCur >= 0) {
-                    if (fPrev < 0) {
-                        const t = fPrev / (fPrev - fCur);
-                        out.push({
-                            x: prev.x + t * (cur.x - prev.x),
-                            y: prev.y + t * (cur.y - prev.y)
-                        });
-                    }
-                    out.push(cur);
-                } else if (fPrev >= 0) {
-                    const t = fPrev / (fPrev - fCur);
-                    out.push({
-                        x: prev.x + t * (cur.x - prev.x),
-                        y: prev.y + t * (cur.y - prev.y)
-                    });
-                }
-            }
-            return out;
-        }
-
-        function polyToClipPath(pts) {
-            if (!pts || pts.length < 3) {
-                return 'polygon(0px 0px, 0px 0px, 0px 0px)';
-            }
-            return 'polygon(' + pts.map(p => `${p.x.toFixed(1)}px ${p.y.toFixed(1)}px`).join(', ') + ')';
-        }
-
-        // Render hiệu ứng uốn cong 3D kiểu Heyzine cho các trang sau (sheetIdx >= 1)
-        function renderHeyzineCurl(sheetInfo, px, py, cy, dir) {
-            const W = pageW;
-            const H = pageH;
-            const el = sheetInfo.element;
-            const front = sheetInfo.frontEl;
-            const back = sheetInfo.backEl;
-            const foldShadowContainer = el.querySelector('.fold-shadow-container');
-            const foldShadowStrip = el.querySelector('.fold-shadow-strip');
-
-            el.classList.add('curling');
-
-            const cPt = constrainToSpine(px, py, cy, dir);
-            px = cPt.x;
-            py = cPt.y;
-
-            // Tính tiến độ lật (0 -> 1)
-            const progress = dir === 'next'
-                ? Math.max(0, Math.min(1, (W - px) / (2 * W)))
-                : Math.max(0, Math.min(1, (px + W) / (2 * W)));
-
-            const sinProg = Math.sin(progress * Math.PI);
-            const rollWidth = Math.max(18, 95 * sinProg);
-
-            if (dir === 'next') {
-                // Lật từ Phải sang Trái: .front nằm dưới, .back uốn cong đè lên trên
-                let vx = W - px;
-                let vy = cy - py;
-                if (Math.hypot(vx, vy) < 1) { vx = 1; vy = 0; }
-
-                const Mx = (W + px) / 2;
-                const My = (cy + py) / 2;
-
-                const stayPoly = clipPageRect(W, H, Mx, My, vx, vy, false);
-                const peelPoly = clipPageRect(W, H, Mx, My, vx, vy, true);
-                const backPoly = peelPoly.map(p => ({ x: W - p.x, y: p.y }));
-
-                front.style.zIndex = '10';
-                front.style.transformOrigin = '0px 0px';
-                front.style.transform = 'none';
-                front.style.clipPath = polyToClipPath(stayPoly);
-                front.style.filter = 'none';
-
-                const theta = Math.atan2(vy, vx);
-                const rotRad = 2 * theta;
-
-                back.style.zIndex = '30';
-                back.style.transformOrigin = `0px ${cy}px`;
-                back.style.transform = `translate3d(${px.toFixed(2)}px, ${(py - cy).toFixed(2)}px, 0px) rotate(${rotRad.toFixed(4)}rad)`;
-                back.style.clipPath = polyToClipPath(backPoly);
-                back.style.filter = `drop-shadow(${(-6 * sinProg).toFixed(1)}px ${(5 * sinProg).toFixed(1)}px ${(14 * sinProg + 3).toFixed(1)}px rgba(0,0,0,${(0.38 * sinProg + 0.08).toFixed(2)}))`;
-
-                // Ánh sáng ống cuộn 3D trên mặt .back
-                const backLighting = back.querySelector('.curl-lighting');
-                const backStrip = back.querySelector('.curl-strip');
-                const frontLighting = front.querySelector('.curl-lighting');
-                if (frontLighting) frontLighting.style.opacity = '0';
-
-                if (backLighting && backStrip) {
-                    backLighting.style.opacity = (0.95 * Math.min(1, progress * 5) * Math.min(1, (1 - progress) * 5)).toFixed(2);
-                    const localMx = W - Mx;
-                    const localMy = My;
-                    const localAngle = Math.atan2(vy, -vx);
-                    backStrip.style.transform = `translate3d(${localMx.toFixed(1)}px, ${localMy.toFixed(1)}px, 0) rotate(${localAngle.toFixed(4)}rad)`;
-                    backStrip.style.background = `linear-gradient(to right,
-                        rgba(0,0,0,0) 216px,
-                        rgba(0,0,0,0.20) 220px,
-                        rgba(255,255,255,0.68) ${(220 + rollWidth * 0.22).toFixed(1)}px,
-                        rgba(255,255,255,0.15) ${(220 + rollWidth * 0.42).toFixed(1)}px,
-                        rgba(0,0,0,0.13) ${(220 + rollWidth * 0.72).toFixed(1)}px,
-                        rgba(0,0,0,0) ${(220 + rollWidth * 1.15).toFixed(1)}px)`;
-                }
-
-                // Bóng đổ dưới đường gấp
-                if (foldShadowContainer && foldShadowStrip) {
-                    foldShadowContainer.style.opacity = sinProg.toFixed(2);
-                    foldShadowStrip.style.transform = `translate3d(${(Mx + W).toFixed(1)}px, ${My.toFixed(1)}px, 0) rotate(${theta.toFixed(4)}rad)`;
-                }
-            } else {
-                // Lật ngược từ Trái sang Phải: .back nằm dưới ở [-W, 0], .front uốn cong đè lên trên
-                const pu = px + W;
-                const pv = py;
-                let vu = -pu;
-                let vv = cy - pv;
-                if (Math.hypot(vu, vv) < 1) { vu = -1; vv = 0; }
-
-                const Mu = pu / 2;
-                const Mv = (cy + pv) / 2;
-
-                const stayPoly = clipPageRect(W, H, Mu, Mv, vu, vv, false);
-                const peelPoly = clipPageRect(W, H, Mu, Mv, vu, vv, true);
-                const frontPoly = peelPoly.map(p => ({ x: W - p.x, y: p.y }));
-
-                back.style.zIndex = '10';
-                back.style.transformOrigin = '0px 0px';
-                back.style.transform = 'translate3d(-100%, 0, 0)';
-                back.style.clipPath = polyToClipPath(stayPoly);
-                back.style.filter = 'none';
-
-                const theta = Math.atan2(vv, vu);
-                const rotRad = 2 * theta;
-
-                front.style.zIndex = '30';
-                front.style.transformOrigin = `${W}px ${cy}px`;
-                front.style.transform = `translate3d(${(px - W).toFixed(2)}px, ${(py - cy).toFixed(2)}px, 0px) rotate(${rotRad.toFixed(4)}rad)`;
-                front.style.clipPath = polyToClipPath(frontPoly);
-                front.style.filter = `drop-shadow(${(6 * sinProg).toFixed(1)}px ${(5 * sinProg).toFixed(1)}px ${(14 * sinProg + 3).toFixed(1)}px rgba(0,0,0,${(0.38 * sinProg + 0.08).toFixed(2)}))`;
-
-                // Ánh sáng ống cuộn 3D trên mặt .front
-                const frontLighting = front.querySelector('.curl-lighting');
-                const frontStrip = front.querySelector('.curl-strip');
-                const backLighting = back.querySelector('.curl-lighting');
-                if (backLighting) backLighting.style.opacity = '0';
-
-                if (frontLighting && frontStrip) {
-                    frontLighting.style.opacity = (0.95 * Math.min(1, progress * 5) * Math.min(1, (1 - progress) * 5)).toFixed(2);
-                    const localMx = W - Mu;
-                    const localMy = Mv;
-                    const localAngle = Math.atan2(vv, -vu);
-                    frontStrip.style.transform = `translate3d(${localMx.toFixed(1)}px, ${localMy.toFixed(1)}px, 0) rotate(${localAngle.toFixed(4)}rad)`;
-                    frontStrip.style.background = `linear-gradient(to right,
-                        rgba(0,0,0,0) 216px,
-                        rgba(0,0,0,0.20) 220px,
-                        rgba(255,255,255,0.68) ${(220 + rollWidth * 0.22).toFixed(1)}px,
-                        rgba(255,255,255,0.15) ${(220 + rollWidth * 0.42).toFixed(1)}px,
-                        rgba(0,0,0,0.13) ${(220 + rollWidth * 0.72).toFixed(1)}px,
-                        rgba(0,0,0,0) ${(220 + rollWidth * 1.15).toFixed(1)}px)`;
-                }
-
-                if (foldShadowContainer && foldShadowStrip) {
-                    foldShadowContainer.style.opacity = sinProg.toFixed(2);
-                    foldShadowStrip.style.transform = `translate3d(${Mu.toFixed(1)}px, ${Mv.toFixed(1)}px, 0) rotate(${theta.toFixed(4)}rad)`;
-                }
-            }
-        }
-
-        // Dọn dẹp style inline sau khi kết thúc lật 3D
-        function clearCurlStyles(sheetInfo) {
-            if (!sheetInfo) return;
-            const el = sheetInfo.element;
-            const front = sheetInfo.frontEl;
-            const back = sheetInfo.backEl;
-
-            el.classList.remove('curling', 'dragging-cover');
-            el.style.transform = '';
-
-            [front, back].forEach(face => {
-                if (!face) return;
-                face.style.clipPath = '';
-                face.style.transform = '';
-                face.style.transformOrigin = '';
-                face.style.zIndex = '';
-                face.style.filter = '';
-                const lighting = face.querySelector('.curl-lighting');
-                if (lighting) lighting.style.opacity = '0';
-            });
-
-            const foldShadowContainer = el.querySelector('.fold-shadow-container');
-            if (foldShadowContainer) foldShadowContainer.style.opacity = '0';
-        }
-
-        // Vòng lặp vật lý mượt mà cho cả kéo thả và animation
-        function startFlipLoop() {
-            if (flipState.animRaf) return;
-
-            function step() {
-                if (flipState.mode === 'idle') {
-                    flipState.animRaf = null;
-                    return;
-                }
-
-                const sheetInfo = sheetsArray[flipState.sheetIdx];
-                if (!sheetInfo) {
-                    flipState.mode = 'idle';
-                    flipState.animRaf = null;
-                    return;
-                }
-
-                if (flipState.isCover) {
-                    // TỜ 0 (TRANG ĐẦU): GẬP PHẲNG 3D (rotateY)
-                    const lerpFactor = flipState.mode === 'dragging' ? 0.35 : 0.18;
-                    flipState.coverAngle += (flipState.targetCoverAngle - flipState.coverAngle) * lerpFactor;
-                    sheetInfo.element.style.transform = `rotateY(${flipState.coverAngle.toFixed(2)}deg)`;
-
-                    if (flipState.mode === 'animating' && Math.abs(flipState.targetCoverAngle - flipState.coverAngle) < 0.6) {
-                        const completedFlip = (flipState.targetCoverAngle <= -90);
-                        clearCurlStyles(sheetInfo);
-                        if (completedFlip) {
-                            sheetInfo.element.classList.add('flipped');
-                            currentSheet = 1;
-                        } else {
-                            sheetInfo.element.classList.remove('flipped');
-                            currentSheet = 0;
-                        }
-                        flipState.mode = 'idle';
-                        flipState.animRaf = null;
-                        updateUI();
-                        return;
-                    }
-                } else {
-                    // CÁC TRANG SAU (SHEET >= 1): UỐN CONG 3D NHƯ HEYZINE
-                    const lerpFactor = flipState.mode === 'dragging' ? 0.38 : (flipState.mode === 'hover-peel' ? 0.22 : 0.17);
-                    flipState.curX += (flipState.targetX - flipState.curX) * lerpFactor;
-                    flipState.curY += (flipState.targetY - flipState.curY) * lerpFactor;
-
-                    renderHeyzineCurl(sheetInfo, flipState.curX, flipState.curY, flipState.cy, flipState.dir);
-
-                    const distRemain = Math.hypot(flipState.targetX - flipState.curX, flipState.targetY - flipState.curY);
-                    if (flipState.mode === 'animating' && distRemain < 2.2) {
-                        const completed = (flipState.dir === 'next' && flipState.targetX < 0) ||
-                                          (flipState.dir === 'prev' && flipState.targetX > 0);
-                        clearCurlStyles(sheetInfo);
-                        if (completed) {
-                            if (flipState.dir === 'next') {
-                                sheetInfo.element.classList.add('flipped');
-                                currentSheet = flipState.sheetIdx + 1;
-                            } else {
-                                sheetInfo.element.classList.remove('flipped');
-                                currentSheet = flipState.sheetIdx;
-                            }
-                        }
-                        flipState.mode = 'idle';
-                        flipState.animRaf = null;
-                        updateUI();
-                        return;
-                    }
-
-                    // Nếu đang trả góc hover peel về vị trí đóng
-                    if (flipState.mode === 'hover-peel') {
-                        const homeX = flipState.dir === 'next' ? pageW : -pageW;
-                        if (Math.abs(flipState.targetX - homeX) < 1 && distRemain < 1.5) {
-                            clearCurlStyles(sheetInfo);
-                            flipState.mode = 'idle';
-                            flipState.animRaf = null;
-                            return;
-                        }
-                    }
-                }
-
-                flipState.animRaf = requestAnimationFrame(step);
-            }
-
-            flipState.animRaf = requestAnimationFrame(step);
-        }
-
-        // Lật sang trang tiếp theo (bấm nút hoặc click)
         function nextPage() {
-            if (flipState.mode === 'animating' || flipState.mode === 'dragging') return;
-            if (currentSheet >= sheetsArray.length) return;
-
-            if (flipState.mode === 'hover-peel') {
-                clearCurlStyles(sheetsArray[flipState.sheetIdx]);
-            }
-
-            const sheetInfo = sheetsArray[currentSheet];
-
-            if (sheetInfo.isCover) {
-                // Trang đầu: Gập phẳng 3D qua
-                sheetInfo.element.classList.remove('dragging-cover');
-                sheetInfo.element.style.zIndex = 1400;
-                sheetInfo.element.classList.add('flipped');
+            if (currentSheet < sheetsArray.length) {
+                sheetsArray[currentSheet].element.classList.add('flipped');
                 currentSheet++;
                 updateUI();
-            } else {
-                // Các trang sau: Chạy animation uốn cong 3D như Heyzine
-                flipState.mode = 'animating';
-                flipState.sheetIdx = currentSheet;
-                flipState.dir = 'next';
-                flipState.isCover = false;
-                flipState.cy = pageH;
-                flipState.curX = pageW - 25;
-                flipState.curY = pageH - 45;
-                flipState.targetX = -pageW;
-                flipState.targetY = pageH;
-
-                // Nâng nhẹ theo đường vòng cung ở nửa đầu rồi hạ xuống góc trái
-                setTimeout(() => {
-                    if (flipState.mode === 'animating' && flipState.sheetIdx === currentSheet) {
-                        flipState.targetX = -pageW;
-                        flipState.targetY = pageH;
-                    }
-                }, 90);
-                flipState.targetX = 0;
-                flipState.targetY = pageH * 0.68;
-
-                startFlipLoop();
             }
         }
 
-        // Lật về trang trước (bấm nút hoặc click)
         function prevPage() {
-            if (flipState.mode === 'animating' || flipState.mode === 'dragging') return;
-            if (currentSheet <= 0) return;
-
-            if (flipState.mode === 'hover-peel') {
-                clearCurlStyles(sheetsArray[flipState.sheetIdx]);
-            }
-
-            const targetIdx = currentSheet - 1;
-            const sheetInfo = sheetsArray[targetIdx];
-
-            if (sheetInfo.isCover) {
-                // Trang đầu: Gập phẳng 3D ngược lại
-                sheetInfo.element.classList.remove('dragging-cover');
-                sheetInfo.element.style.zIndex = 1400;
-                sheetInfo.element.classList.remove('flipped');
+            if (currentSheet > 0) {
                 currentSheet--;
+                sheetsArray[currentSheet].element.classList.remove('flipped');
                 updateUI();
-            } else {
-                // Các trang sau: Chạy animation uốn cong 3D từ trái qua phải như Heyzine
-                flipState.mode = 'animating';
-                flipState.sheetIdx = targetIdx;
-                flipState.dir = 'prev';
-                flipState.isCover = false;
-                flipState.cy = pageH;
-                flipState.curX = -pageW + 25;
-                flipState.curY = pageH - 45;
-                flipState.targetX = 0;
-                flipState.targetY = pageH * 0.68;
-
-                setTimeout(() => {
-                    if (flipState.mode === 'animating' && flipState.sheetIdx === targetIdx) {
-                        flipState.targetX = pageW;
-                        flipState.targetY = pageH;
-                    }
-                }, 90);
-
-                startFlipLoop();
             }
         }
 
@@ -1206,12 +626,8 @@
             if (isProcessingPage) return;
             isProcessingPage = true;
 
-            if (flipState.mode !== 'idle' && flipState.sheetIdx >= 0) {
-                clearCurlStyles(sheetsArray[flipState.sheetIdx]);
-                flipState.mode = 'idle';
-            }
-
             const input = document.getElementById('pageInput');
+            // Tách chuỗi loại bỏ phần dấu gạch chéo phụ nếu có
             let valStr = input.value.split('/')[0].trim();
             let p = parseInt(valStr);
 
@@ -1221,7 +637,6 @@
             const targetSheet = Math.floor((p - 1) / 2);
 
             sheetsArray.forEach((sheetInfo, idx) => {
-                clearCurlStyles(sheetInfo);
                 if (idx < targetSheet) sheetInfo.element.classList.add('flipped');
                 else sheetInfo.element.classList.remove('flipped');
             });
@@ -1234,31 +649,36 @@
             }
 
             updateUI();
-            input.blur();
+            input.blur(); // Tự động kích hoạt định dạng lại text dạng X/92
             isProcessingPage = false;
         }
 
+        // Khi người dùng click chọn ô input để điền trang
         function handleInputFocus() {
             const input = document.getElementById('pageInput');
-            input.value = input.dataset.currentPage || "1";
-            input.select();
+            input.value = input.dataset.currentPage || "1"; // Chỉ hiện số trang thuần túy
+            input.select(); // Bôi đen toàn bộ số cũ để gõ đè cho nhanh
         }
 
+        // Khi người dùng bấm lệch chuột ra ngoài ô input
         function handleInputBlur() {
             setTimeout(() => {
                 const input = document.getElementById('pageInput');
                 if (document.activeElement !== input) {
                     let valStr = input.value.split('/')[0].trim();
                     let p = parseInt(valStr);
+                    // Nếu người dùng đổi số rồi bấm ra ngoài (không nhấn Enter) -> tự nhảy trang luôn
                     if (!isNaN(p) && p !== parseInt(input.dataset.currentPage) && p >= 1 && p <= totalPages) {
                         goToPage();
                     } else {
+                        // Trả lại cấu trúc hiển thị X/Tổng trang ban đầu
                         input.value = (input.dataset.currentPage || "1") + "/" + totalPages;
                     }
                 }
             }, 120);
         }
 
+        // Bắt phím Enter tức thì cho cả Mobile và PC
         function handleInputKeyDown(e) {
             if (e.key === 'Enter' || e.keyCode === 13) {
                 goToPage();
@@ -1279,32 +699,33 @@
             let currentInputPage = 1;
 
             if (currentSheet === 0) {
-                display.innerText = `1/${totalPages}`;
+                display.innerText = `1/${totalPages}`; // Sửa lỗi hiển thị ban đầu
                 currentInputPage = 1;
             } else if (currentSheet === sheetsArray.length) {
-                display.innerText = `${totalPages}/${totalPages}`;
+                display.innerText = `${totalPages}/${totalPages}`; // Hiện trang cuối thay vì chữ "Hết"
                 currentInputPage = totalPages;
             } else {
+                // Sửa lỗi hiển thị nút bên trái: 2-3 thành 2-3/92
                 display.innerText = `${pLeft}-${pRight > totalPages ? pLeft : pRight}/${totalPages}`;
                 currentInputPage = pLeft;
             }
 
+            // Đồng bộ dữ liệu vào ô hiển thị Trang bên phải
             const input = document.getElementById('pageInput');
             input.dataset.currentPage = currentInputPage;
 
             if (document.activeElement !== input) {
-                input.value = `${currentInputPage}/${totalPages}`;
+                input.value = `${currentInputPage}/${totalPages}`; // Sửa lỗi ô trang chỉ ghi số -> đổi thành 2/92
             }
 
             sheetsArray.forEach((sheetInfo, index) => {
-                if (index < currentSheet) sheetInfo.element.style.zIndex = index + 1;
-                else sheetInfo.element.style.zIndex = sheetsArray.length - index + currentSheet + 1;
+                if (index < currentSheet) sheetInfo.element.style.zIndex = index;
+                else sheetInfo.element.style.zIndex = sheetsArray.length - index + currentSheet;
             });
 
             loadVisiblePages(currentSheet);
         }
 
-        // --- XỬ LÝ ZOOM & TƯƠNG TÁC KÉO THẢ 3D ---
         const zoomContainer = document.getElementById('zoom-container');
         const viewportEl = document.getElementById('viewport');
 
@@ -1328,257 +749,42 @@
             updateZoomText();
         }, { passive: false });
 
-        // Khởi tạo phiên kéo lật trang (tương thích cả Chuột & Cảm ứng)
-        function beginPageInteraction(clientX, clientY) {
-            if (flipState.mode === 'animating' || !pdfDoc) return false;
-
-            const pt = screenToBookCoords(clientX, clientY);
-            // Kiểm tra xem người dùng có bấm trong phạm vi cuốn sách không
-            const inRightPage = (pt.x >= 0 && pt.x <= pageW && pt.y >= 0 && pt.y <= pageH && currentSheet < sheetsArray.length);
-            const inLeftPage = (pt.x >= -pageW && pt.x < 0 && pt.y >= 0 && pt.y <= pageH && currentSheet > 0);
-
-            if (!inRightPage && !inLeftPage) return false;
-
-            // Khi đang phóng to (zoom > 1.08), chỉ lật trang khi kéo ở vùng mép ngoài (28% chiều rộng trang), còn kéo ở giữa là pan
-            if (zoom > 1.08) {
-                const nearOuterEdge = (inRightPage && pt.x > pageW * 0.72) || (inLeftPage && pt.x < -pageW * 0.72);
-                if (!nearOuterEdge) return false;
-            }
-
-            if (flipState.mode === 'hover-peel' && flipState.sheetIdx >= 0) {
-                const prevHoverSheet = sheetsArray[flipState.sheetIdx];
-                const targetIdx = inRightPage ? currentSheet : currentSheet - 1;
-                if (flipState.sheetIdx !== targetIdx) {
-                    clearCurlStyles(prevHoverSheet);
-                }
-            }
-
-            const dir = inRightPage ? 'next' : 'prev';
-            const sheetIdx = inRightPage ? currentSheet : currentSheet - 1;
-            const sheetInfo = sheetsArray[sheetIdx];
-
-            flipState.mode = 'dragging';
-            flipState.sheetIdx = sheetIdx;
-            flipState.dir = dir;
-            flipState.isCover = sheetInfo.isCover;
-            flipState.cy = (pt.y < pageH * 0.5) ? 0 : pageH; // Kéo nửa trên thì uốn từ góc trên, kéo nửa dưới thì uốn từ góc dưới
-            flipState.pointerStartX = clientX;
-            flipState.pointerStartY = clientY;
-            flipState.pointerMoved = false;
-
-            if (sheetInfo.isCover) {
-                // Tờ 0 (Trang đầu): Gập phẳng 3D theo chuột
-                sheetInfo.element.classList.add('dragging-cover');
-                sheetInfo.element.style.zIndex = 1400;
-                flipState.coverAngle = (dir === 'next') ? 0 : -180;
-                flipState.targetCoverAngle = flipState.coverAngle;
-            } else {
-                // Các trang sau: Uốn cong 3D theo vị trí chuột
-                const startCornerX = (dir === 'next') ? pageW - 12 : -pageW + 12;
-                const startCornerY = (flipState.cy === 0) ? 12 : pageH - 12;
-                flipState.curX = startCornerX;
-                flipState.curY = startCornerY;
-                flipState.targetX = startCornerX;
-                flipState.targetY = startCornerY;
-            }
-
-            return true;
-        }
-
-        function movePageInteraction(clientX, clientY) {
-            if (flipState.mode !== 'dragging') return;
-
-            const moveDist = Math.hypot(clientX - flipState.pointerStartX, clientY - flipState.pointerStartY);
-            if (moveDist > 5) {
-                flipState.pointerMoved = true;
-            }
-            if (!flipState.pointerMoved) return;
-
-            const pt = screenToBookCoords(clientX, clientY);
-
-            if (flipState.isCover) {
-                // Tính góc gập phẳng 3D cho trang đầu từ vị trí X của chuột
-                const clampedX = Math.max(-pageW, Math.min(pageW, pt.x));
-                const ratio = (pageW - clampedX) / (2 * pageW); // 0 (phải) -> 1 (trái)
-                flipState.targetCoverAngle = -180 * ratio;
-
-                // Dịch chuyển mượt tâm sách khi đang mở/đóng bìa đầu
-                const aligner = document.getElementById('book-aligner');
-                aligner.style.transform = `translateX(${(ratio * pageW * 0.5).toFixed(1)}px)`;
-            } else {
-                // Cập nhật tọa độ kéo 3D cho các trang sau (thêm độ lệch dọc nhẹ nếu người dùng kéo ngang ở giữa mép để tạo độ phồng 3D đẹp mắt)
-                let targetY = pt.y;
-                if (Math.abs(targetY - flipState.cy) < 18) {
-                    targetY = (flipState.cy === 0) ? 26 : pageH - 26;
-                }
-                const cPt = constrainToSpine(pt.x, targetY, flipState.cy, flipState.dir);
-                flipState.targetX = cPt.x;
-                flipState.targetY = cPt.y;
-            }
-
-            startFlipLoop();
-        }
-
-        function endPageInteraction(clientX, clientY) {
-            if (flipState.mode !== 'dragging') return;
-
-            const aligner = document.getElementById('book-aligner');
-            aligner.style.transform = '';
-
-            // Nếu người dùng chỉ click/chạm nhẹ mà không kéo -> kích hoạt lật trang tự động
-            if (!flipState.pointerMoved) {
-                const dir = flipState.dir;
-                clearCurlStyles(sheetsArray[flipState.sheetIdx]);
-                flipState.mode = 'idle';
-                if (dir === 'next') nextPage();
-                else prevPage();
-                return;
-            }
-
-            flipState.mode = 'animating';
-
-            if (flipState.isCover) {
-                // Trang đầu: nếu kéo quá 25% hành trình thì gập qua luôn, ngược lại đàn hồi về chỗ cũ
-                if (flipState.dir === 'next') {
-                    flipState.targetCoverAngle = (flipState.coverAngle < -42) ? -180 : 0;
-                } else {
-                    flipState.targetCoverAngle = (flipState.coverAngle > -138) ? 0 : -180;
-                }
-            } else {
-                // Các trang sau: nếu kéo qua ngưỡng 25% chiều rộng trang thì lật hẳn sang bên kia
-                if (flipState.dir === 'next') {
-                    const shouldComplete = (flipState.curX < pageW * 0.45);
-                    flipState.targetX = shouldComplete ? -pageW : pageW;
-                    flipState.targetY = flipState.cy;
-                } else {
-                    const shouldComplete = (flipState.curX > -pageW * 0.45);
-                    flipState.targetX = shouldComplete ? pageW : -pageW;
-                    flipState.targetY = flipState.cy;
-                }
-            }
-
-            startFlipLoop();
-        }
-
-        // Hiệu ứng Hover Peel (nhấc hé góc trang khi rê chuột vào góc trên/dưới của các trang sau như Heyzine)
-        function handleCornerHover(clientX, clientY) {
-            if (flipState.mode === 'dragging' || flipState.mode === 'animating' || !pdfDoc || zoom > 1.08) return;
-
-            const pt = screenToBookCoords(clientX, clientY);
-            const cornerZone = 65; // Bán kính vùng góc nhạy hover
-
-            let hoverDir = null;
-            let hoverCy = pageH;
-            let sheetIdx = -1;
-
-            // Kiểm tra 2 góc bên phải (trên & dưới) cho các trang sau (currentSheet >= 1)
-            if (currentSheet >= 1 && currentSheet < sheetsArray.length && pt.x >= pageW - cornerZone && pt.x <= pageW + 10) {
-                if (pt.y >= 0 && pt.y <= cornerZone) {
-                    hoverDir = 'next';
-                    hoverCy = 0;
-                    sheetIdx = currentSheet;
-                } else if (pt.y >= pageH - cornerZone && pt.y <= pageH) {
-                    hoverDir = 'next';
-                    hoverCy = pageH;
-                    sheetIdx = currentSheet;
-                }
-            }
-            // Kiểm tra 2 góc bên trái (trên & dưới) cho các trang sau (currentSheet - 1 >= 1)
-            else if (currentSheet - 1 >= 1 && pt.x >= -pageW - 10 && pt.x <= -pageW + cornerZone) {
-                if (pt.y >= 0 && pt.y <= cornerZone) {
-                    hoverDir = 'prev';
-                    hoverCy = 0;
-                    sheetIdx = currentSheet - 1;
-                } else if (pt.y >= pageH - cornerZone && pt.y <= pageH) {
-                    hoverDir = 'prev';
-                    hoverCy = pageH;
-                    sheetIdx = currentSheet - 1;
-                }
-            }
-
-            if (hoverDir && sheetIdx >= 1) {
-                if (flipState.mode === 'hover-peel' && flipState.sheetIdx !== sheetIdx) {
-                    clearCurlStyles(sheetsArray[flipState.sheetIdx]);
-                }
-                flipState.mode = 'hover-peel';
-                flipState.sheetIdx = sheetIdx;
-                flipState.dir = hoverDir;
-                flipState.isCover = false;
-                flipState.cy = hoverCy;
-
-                if (Math.abs(flipState.curX) < 1 && Math.abs(flipState.curY) < 1) {
-                    flipState.curX = hoverDir === 'next' ? pageW : -pageW;
-                    flipState.curY = hoverCy;
-                }
-
-                flipState.targetX = hoverDir === 'next' ? (pageW - 38) : (-pageW + 38);
-                flipState.targetY = (hoverCy === 0) ? 34 : (pageH - 34);
-                startFlipLoop();
-            } else if (flipState.mode === 'hover-peel') {
-                // Trả góc giấy về vị trí phẳng khi chuột rời khỏi góc
-                flipState.targetX = (flipState.dir === 'next') ? pageW : -pageW;
-                flipState.targetY = flipState.cy;
-                startFlipLoop();
-            }
-        }
-
-        // --- SỰ KIỆN CHUỘT (DESKTOP) ---
         viewportEl.addEventListener('mousedown', e => {
-            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('.side-nav')) return;
-
-            const startedFlip = beginPageInteraction(e.clientX, e.clientY);
-            if (!startedFlip) {
-                isPanningViewport = true;
-                panStartX = e.clientX - translateX;
-                panStartY = e.clientY - translateY;
-                viewportEl.style.cursor = 'grabbing';
-            }
+            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('.click-area')) return;
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            viewportEl.style.cursor = 'grabbing';
         });
 
         window.addEventListener('mousemove', e => {
-            if (flipState.mode === 'dragging') {
-                movePageInteraction(e.clientX, e.clientY);
-                return;
-            }
-            if (isPanningViewport) {
-                translateX = e.clientX - panStartX;
-                translateY = e.clientY - panStartY;
-                applyTransform();
-                return;
-            }
-            handleCornerHover(e.clientX, e.clientY);
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            applyTransform();
         });
 
-        window.addEventListener('mouseup', e => {
-            if (flipState.mode === 'dragging') {
-                endPageInteraction(e.clientX, e.clientY);
-            }
-            isPanningViewport = false;
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
             viewportEl.style.cursor = 'default';
         });
 
-        // --- SỰ KIỆN CẢM ỨNG (MOBILE / TABLET) ---
+        let touchStartX = 0, touchStartY = 0;
         function getDistance(touches) {
             return Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY);
         }
 
         viewportEl.addEventListener('touchstart', e => {
-            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('.side-nav')) return;
-
             if (e.touches.length === 2) {
-                if (flipState.mode === 'dragging' && flipState.sheetIdx >= 0) {
-                    clearCurlStyles(sheetsArray[flipState.sheetIdx]);
-                    flipState.mode = 'idle';
-                }
                 initialPinchDistance = getDistance(e.touches);
                 initialZoom = zoom;
             } else if (e.touches.length === 1) {
-                const t = e.touches[0];
-                const startedFlip = beginPageInteraction(t.clientX, t.clientY);
-                if (!startedFlip && zoom > 1.05) {
-                    isPanningViewport = true;
-                    panStartX = t.clientX - translateX;
-                    panStartY = t.clientY - translateY;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                if (zoom > 1.05) {
+                    startX = e.touches[0].clientX - translateX;
+                    startY = e.touches[0].clientY - translateY;
+                    isDragging = true;
                 }
             }
         }, { passive: false });
@@ -1590,42 +796,45 @@
                 const pinchScale = currentDistance / initialPinchDistance;
                 zoom = Math.min(Math.max(0.5, initialZoom * pinchScale), 3);
                 updateZoomText();
-            } else if (e.touches.length === 1) {
-                const t = e.touches[0];
-                if (flipState.mode === 'dragging') {
-                    e.preventDefault();
-                    movePageInteraction(t.clientX, t.clientY);
-                } else if (isPanningViewport && zoom > 1.05) {
-                    e.preventDefault();
-                    translateX = t.clientX - panStartX;
-                    translateY = t.clientY - panStartY;
-                    applyTransform();
-                }
+            } else if (zoom > 1.05 && isDragging && e.touches.length === 1) {
+                e.preventDefault();
+                translateX = e.touches[0].clientX - startX;
+                translateY = e.touches[0].clientY - startY;
+                applyTransform();
             }
         }, { passive: false });
 
         viewportEl.addEventListener('touchend', e => {
-            if (flipState.mode === 'dragging') {
-                const t = e.changedTouches[0];
-                endPageInteraction(t.clientX, t.clientY);
+            if (e.touches.length < 2 && zoom <= 1.05) {
+                const touchEndX = e.changedTouches[0].clientX;
+                const diffX = touchEndX - touchStartX;
+                const diffY = Math.abs(e.changedTouches[0].clientY - touchStartY);
+
+                if (Math.abs(diffX) > 60 && diffY < 50) {
+                    if (diffX > 0) prevPage();
+                    else nextPage();
+                }
             }
-            isPanningViewport = false;
+            isDragging = false;
         });
 
-        // --- PHÍM TẮT BÀN PHÍM ---
         window.addEventListener('keydown', (e) => {
-            if (document.activeElement.id === 'pageInput') return;
+            if (document.activeElement.id === 'pageInput') {
+                return; // Tránh xung đột phím điều hướng hệ thống khi đang gõ
+            }
 
             if (e.key === 'ArrowRight') nextPage();
             if (e.key === 'ArrowLeft') prevPage();
 
+            // Thêm chức năng: phím Lên / phím + / = / NumpadAdd để Zoom In
             if (e.key === 'ArrowUp' || e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') {
-                e.preventDefault();
+                e.preventDefault(); // Ngăn trình duyệt cuộn trang
                 zoomIn();
             }
-
+            
+            // Thêm chức năng: phím Xuống / phím - / _ / NumpadSubtract để Zoom Out
             if (e.key === 'ArrowDown' || e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract') {
-                e.preventDefault();
+                e.preventDefault(); // Ngăn trình duyệt cuộn trang
                 zoomOut();
             }
         });
