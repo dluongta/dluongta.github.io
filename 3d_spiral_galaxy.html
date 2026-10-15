@@ -32,7 +32,7 @@
     let width, height, centerX, centerY;
     
     let cameraDistance = 1200; 
-    let coreGlowRadius = 110;  
+    let coreGlowRadius = 180;  
     let rotationSpeed = 0.003; // Biến tốc độ xoay mặc định
 
     function resize() {
@@ -43,9 +43,9 @@
 
         if (width <= 768) {
             // TRÊN MOBILE: 
-            cameraDistance = 1300; 
+            cameraDistance = 1500; 
             coreGlowRadius = 85;
-            rotationSpeed = 0.008;
+            rotationSpeed = 0.01;
         } else {
             // TRÊN PC: 
             cameraDistance = 900; 
