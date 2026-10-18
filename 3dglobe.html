@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -13,6 +14,7 @@
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #040711;
@@ -23,6 +25,7 @@
             height: 100dvh;
             position: relative;
         }
+
         .mono {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
@@ -42,11 +45,13 @@
             transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.75s ease;
             pointer-events: auto;
         }
+
         #loader-overlay.is-hidden {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
+
         .loader-info {
             display: flex;
             flex-direction: column;
@@ -54,6 +59,7 @@
             gap: 8px;
             width: 220px;
         }
+
         .loader-text-row {
             width: 100%;
             display: flex;
@@ -65,9 +71,11 @@
             text-transform: uppercase;
             color: #94a3b8;
         }
+
         .loader-percent {
             color: #38bdf8;
         }
+
         .progress-track {
             width: 100%;
             height: 4px;
@@ -76,6 +84,7 @@
             overflow: hidden;
             border: 1px solid rgba(56, 189, 248, 0.16);
         }
+
         .progress-fill {
             width: 0%;
             height: 100%;
@@ -101,13 +110,16 @@
             transform: scale(0.96);
             transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
         }
+
         #canvas-container.is-ready {
             opacity: 1;
             transform: scale(1);
         }
+
         #canvas-container:active {
             cursor: grabbing;
         }
+
         canvas {
             display: block;
             width: 100%;
@@ -128,10 +140,12 @@
             transform: translateY(-8px);
             transition: opacity 0.6s ease 0.25s, transform 0.6s ease 0.25s;
         }
+
         .controls-wrapper.is-ready {
             opacity: 1;
             transform: translateY(0);
         }
+
         .glass-panel {
             pointer-events: auto;
             width: 224px;
@@ -152,6 +166,7 @@
                 top: 24px;
                 right: 24px;
             }
+
             .glass-panel {
                 width: 264px;
                 padding: 14px 16px;
@@ -166,6 +181,7 @@
             justify-content: space-between;
             gap: 6px;
         }
+
         .controls-title {
             font-size: 11px;
             font-weight: 600;
@@ -180,11 +196,13 @@
             cursor: pointer;
             outline: none;
         }
+
         .toggle-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 6px;
         }
+
         .btn-toggle {
             padding: 6px 8px;
             border-radius: 7px;
@@ -200,11 +218,13 @@
             color: #94a3b8;
             white-space: nowrap;
         }
+
         .btn-toggle.active-sky {
             border-color: rgba(14, 165, 233, 0.4);
             background: rgba(14, 165, 233, 0.15);
             color: #7dd3fc;
         }
+
         .btn-burst {
             padding: 6px 8px;
             border-radius: 7px;
@@ -221,9 +241,11 @@
             gap: 4px;
             white-space: nowrap;
         }
+
         .btn-burst:hover {
             filter: brightness(1.12);
         }
+
         .btn-burst:active {
             transform: scale(0.95);
         }
@@ -234,15 +256,18 @@
             flex-direction: column;
             gap: 6px;
         }
+
         .slider-header {
             display: flex;
             justify-content: space-between;
             font-size: 10.5px;
             color: #94a3b8;
         }
+
         .density-val {
             color: #38bdf8;
         }
+
         input[type=range] {
             -webkit-appearance: none;
             appearance: none;
@@ -252,6 +277,7 @@
             border-radius: 999px;
             outline: none;
         }
+
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -262,6 +288,7 @@
             cursor: pointer;
             box-shadow: 0 0 10px #38bdf8;
         }
+
         input[type=range]::-moz-range-thumb {
             width: 13px;
             height: 13px;
@@ -281,6 +308,7 @@
             margin-top: 2px;
             border-top: 1px solid rgba(51, 65, 85, 0.45);
         }
+
         .btn-reset {
             background: none;
             border: none;
@@ -289,12 +317,14 @@
             padding: 0;
             transition: color 0.15s ease;
         }
+
         .btn-reset:hover {
             text-decoration: underline;
             text-underline-offset: 3px;
         }
     </style>
 </head>
+
 <body>
 
     <!-- 1. Màn hình Preloader (Chỉ giữ thanh %) -->
@@ -324,12 +354,25 @@
 
             <!-- Nút Rotate và Release Surge -->
             <div class="toggle-grid">
+
                 <button id="btn-autorotate" type="button" class="btn-toggle active-sky">
-                    <span>🔄</span> Rotate
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 512 512"
+                        fill="currentColor" aria-hidden="true">
+                        <path
+                            d="M370.7 133.3C339.5 104.5 299.6 88 256 88c-71.4 0-132.5 45.8-155.1 110.3-4.7 13.4-19.3 20.4-32.6 15.7s-20.4-19.3-15.7-32.6C82 98.1 162.1 40 256 40c57.1 0 109.6 21.5 151.4 58.1L448 57.5V192H313.5l59.2-58.7zM141.3 378.7C172.5 407.5 212.4 424 256 424c71.4 0 132.5-45.8 155.1-110.3 4.7-13.4 19.3-20.4 32.6-15.7s20.4 19.3 15.7 32.6C430 413.9 349.9 472 256 472c-57.1 0-109.6-21.5-151.4-58.1L64 454.5V320h134.5l-57.2 58.7z" />
+                    </svg>
+                    Rotate
                 </button>
+
+
                 <button id="btn-burst" type="button" class="btn-burst">
-                    <span>⚡</span> Release Surge
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                        fill="currentColor" aria-hidden="true">
+                        <path d="M13 2 3 14h7l-1 8 12-14h-8l1-6z" />
+                    </svg>
+                    Release Surge
                 </button>
+
             </div>
 
             <!-- Slider -->
@@ -354,29 +397,29 @@
         // ============================================================================
         const CONTINENT_POLYGONS = [
             // Bắc Mỹ
-            [[-168,65],[-140,70],[-120,74],[-85,75],[-60,65],[-53,47],[-70,42],[-81,25],[-90,20],[-84,9],[-77,8],[-92,15],[-105,20],[-117,32],[-124,48],[-140,60],[-165,60]],
+            [[-168, 65], [-140, 70], [-120, 74], [-85, 75], [-60, 65], [-53, 47], [-70, 42], [-81, 25], [-90, 20], [-84, 9], [-77, 8], [-92, 15], [-105, 20], [-117, 32], [-124, 48], [-140, 60], [-165, 60]],
             // Greenland
-            [[-55,60],[-44,60],[-20,70],[-18,81],[-50,82],[-68,76]],
+            [[-55, 60], [-44, 60], [-20, 70], [-18, 81], [-50, 82], [-68, 76]],
             // Nam Mỹ
-            [[-80,10],[-62,10],[-50,0],[-35,-6],[-38,-15],[-48,-28],[-58,-38],[-68,-54],[-75,-50],[-72,-35],[-70,-18],[-81,-5]],
+            [[-80, 10], [-62, 10], [-50, 0], [-35, -6], [-38, -15], [-48, -28], [-58, -38], [-68, -54], [-75, -50], [-72, -35], [-70, -18], [-81, -5]],
             // Châu Âu
-            [[-10,36],[5,36],[15,38],[28,36],[35,45],[60,55],[60,70],[28,71],[10,63],[5,50],[-5,48],[-10,43]],
+            [[-10, 36], [5, 36], [15, 38], [28, 36], [35, 45], [60, 55], [60, 70], [28, 71], [10, 63], [5, 50], [-5, 48], [-10, 43]],
             // Vương quốc Anh
-            [[-10,51],[2,51],[0,58],[-8,58]],
+            [[-10, 51], [2, 51], [0, 58], [-8, 58]],
             // Châu Phi
-            [[-17,15],[-6,35],[11,37],[33,31],[43,12],[51,11],[40,-10],[35,-25],[20,-35],[14,-22],[9,-2],[5,5],[-8,4]],
+            [[-17, 15], [-6, 35], [11, 37], [33, 31], [43, 12], [51, 11], [40, -10], [35, -25], [20, -35], [14, -22], [9, -2], [5, 5], [-8, 4]],
             // Madagascar
-            [[44,-13],[50,-13],[48,-25],[43,-25]],
+            [[44, -13], [50, -13], [48, -25], [43, -25]],
             // Châu Á
-            [[28,41],[45,40],[55,22],[72,20],[78,8],[88,22],[100,13],[104,1],[109,15],[122,23],[122,38],[132,42],[142,52],[170,66],[178,68],[105,76],[65,72],[60,55],[35,45]],
+            [[28, 41], [45, 40], [55, 22], [72, 20], [78, 8], [88, 22], [100, 13], [104, 1], [109, 15], [122, 23], [122, 38], [132, 42], [142, 52], [170, 66], [178, 68], [105, 76], [65, 72], [60, 55], [35, 45]],
             // Nhật Bản
-            [[130,31],[141,35],[145,44],[139,41],[130,34]],
+            [[130, 31], [141, 35], [145, 44], [139, 41], [130, 34]],
             // Đông Nam Á / Indonesia
-            [[95,5],[106,-6],[120,-8],[140,-5],[135,2],[120,18],[115,6]],
+            [[95, 5], [106, -6], [120, -8], [140, -5], [135, 2], [120, 18], [115, 6]],
             // Châu Úc
-            [[113,-22],[122,-14],[136,-12],[143,-11],[153,-25],[148,-38],[138,-35],[115,-34]],
+            [[113, -22], [122, -14], [136, -12], [143, -11], [153, -25], [148, -38], [138, -35], [115, -34]],
             // New Zealand
-            [[166,-46],[178,-37],[175,-41],[168,-46]]
+            [[166, -46], [178, -37], [175, -41], [168, -46]]
         ];
 
         // Tọa độ các Hub đã được tinh chỉnh nằm sâu bên trong đa giác lục địa
@@ -1311,4 +1354,5 @@
         });
     </script>
 </body>
+
 </html>
