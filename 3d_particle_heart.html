@@ -95,7 +95,7 @@
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance on high-density displays
         container.appendChild(renderer.domElement);
 
-        // Function to create a radial gradient texture for soft, glowing particles
+        // Function to create a radial gradient texture for soft, glowing particles (dùng cho trái tim)
         function createGlowingParticleTexture() {
             const canvas = document.createElement('canvas');
             canvas.width = 64;
@@ -116,7 +116,23 @@
             return texture;
         }
 
+        // Hàm tạo texture hình tròn đặc, rõ nét cho các hạt bay lên
+        function createSolidCircleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const context = canvas.getContext('2d');
+
+            context.beginPath();
+            context.arc(32, 32, 28, 0, Math.PI * 2);
+            context.fillStyle = '#ffffff';
+            context.fill();
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
         const particleTexture = createGlowingParticleTexture();
+        const solidCircleTexture = createSolidCircleTexture();
 
         // Number of particles
         const particleCount = 20000;
@@ -202,6 +218,51 @@
         particleHeart.position.y = -2;
         scene.add(particleHeart);
 
+        // ============================================================
+        // CÁC HẠT HÌNH TRÒN TRẮNG & HỒNG NHẠT NHỎ BAY TỪ DƯỚI LÊN
+        // ============================================================
+        const floatCount = 350;
+        const floatGeometry = new THREE.BufferGeometry();
+        const floatPositions = new Float32Array(floatCount * 3);
+        const floatColors = new Float32Array(floatCount * 3);
+        const floatSpeeds = new Float32Array(floatCount);
+        const floatOffsets = new Float32Array(floatCount);
+
+        const colorWhite = new THREE.Color(0xffffff);     // Trắng tinh
+        const colorLightPink = new THREE.Color(0xffb3d9); // Hồng nhạt (Pastel Pink)
+
+        for (let j = 0; j < floatCount; j++) {
+            floatPositions[j * 3] = (Math.random() - 0.5) * 120;     // X
+            floatPositions[j * 3 + 1] = (Math.random() - 0.5) * 100; // Y
+            floatPositions[j * 3 + 2] = (Math.random() - 0.5) * 80;  // Z (giới hạn chiều sâu để hạt không quá gần camera)
+
+            floatSpeeds[j] = 0.05 + Math.random() * 0.15;
+            floatOffsets[j] = Math.random() * Math.PI * 2;
+
+            // Chọn ngẫu nhiên 1 trong 2 màu: Trắng hoặc Hồng nhạt
+            const c = Math.random() > 0.5 ? colorWhite : colorLightPink;
+            floatColors[j * 3] = c.r;
+            floatColors[j * 3 + 1] = c.g;
+            floatColors[j * 3 + 2] = c.b;
+        }
+
+        floatGeometry.setAttribute('position', new THREE.BufferAttribute(floatPositions, 3));
+        floatGeometry.setAttribute('color', new THREE.BufferAttribute(floatColors, 3));
+
+        const floatMaterial = new THREE.PointsMaterial({
+            size: 0.55,
+            map: solidCircleTexture,
+            vertexColors: true,
+            blending: THREE.NormalBlending,
+            transparent: true,
+            alphaTest: 0.5,
+            opacity: 1.0
+        });
+
+        const floatingParticles = new THREE.Points(floatGeometry, floatMaterial);
+        scene.add(floatingParticles);
+        // ============================================================
+
         // OrbitControls for mouse interaction (zoom, pan, rotate)
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
@@ -261,6 +322,19 @@
 
             // Gentle float up and down
             particleHeart.position.y = -2 + Math.sin(elapsedTime * 1.5) * 1.5;
+
+            // 2. Cập nhật chuyển động bay lên cho các hạt tròn
+            const floatPosAttr = floatingParticles.geometry.attributes.position;
+            for (let j = 0; j < floatCount; j++) {
+                floatPosAttr.array[j * 3 + 1] += floatSpeeds[j];
+                floatPosAttr.array[j * 3] += Math.sin(elapsedTime * 1.5 + floatOffsets[j]) * 0.02;
+
+                if (floatPosAttr.array[j * 3 + 1] > 50) {
+                    floatPosAttr.array[j * 3 + 1] = -50;
+                    floatPosAttr.array[j * 3] = (Math.random() - 0.5) * 120;
+                }
+            }
+            floatPosAttr.needsUpdate = true;
 
             // Update controls
             controls.update();
