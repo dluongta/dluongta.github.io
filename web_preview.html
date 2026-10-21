@@ -1563,7 +1563,8 @@ function animate() {
       const p2 = particles[j];
       const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
       if (dist < 110) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, ' + (1 - dist / 110) + ')';        ctx.moveTo(p.x, p.y);
+        ctx.strokeStyle = 'rgba(0, 245, 212, ' + (1 - dist / 110) + ')';
+        ctx.moveTo(p.x, p.y);
         ctx.lineTo(p2.x, p2.y);
         ctx.stroke();
       }
