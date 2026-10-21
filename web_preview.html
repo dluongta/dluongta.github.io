@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Preview</title>
+  <style>
+    :root {
+      --bg-deep: #090b14;
+      --bg-panel: #111526;
+      --bg-header: #161b30;
+      --bg-editor: #0b0e1a;
+      --bg-Control: #181e36;
+      --bg-Control-hover: #222a4a;
+      --border-subtle: rgba(255, 255, 255, 0.09);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --neon-orange: #ff6b35;
+      --neon-pink: #f72585;
+      --neon-purple: #7209b7;
+      --neon-cyan: #00f5d4;
+      --neon-blue: #4cc9f0;
+      --neon-green: #10b981;
+      --neon-red: #f43f5e;
+      --neon-amber: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
+      font-variant-ligatures: none;
+    }
+
+    /* Thanh Neon trên cùng */
+    .neon-top-bar {
+      height: 3px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--neon-orange) 0%, var(--neon-pink) 35%, var(--neon-purple) 70%, var(--neon-blue) 100%);
+      flex-shrink: 0;
+    }
+
+    /* Header chính */
+    .app-header {
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      padding: 2px;
+      background: linear-gradient(135deg, var(--neon-orange), var(--neon-pink));
+      box-shadow: 0 0 16px rgba(247, 37, 133, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo-inner {
+      width: 100%;
+      height: 100%;
+      background: var(--bg-editor);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--neon-blue);
+    }
+
+    .brand-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: #ffffff;
+    }
+
+    .badge-vn {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: rgba(247, 37, 133, 0.18);
+      color: #ff70b8;
+      border: 1px solid rgba(247, 37, 133, 0.35);
+    }
+
+    .badge-saved {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .dot-green {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #34d399;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* Cụm nút điều khiển trên Header */
+    .header-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-Control);
+      color: var(--text-main);
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .btn:hover {
+      background: var(--bg-Control-hover);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-run {
+      background: linear-gradient(135deg, var(--neon-orange) 0%, var(--neon-pink) 55%, var(--neon-purple) 100%);
+      border: none;
+      color: #fff;
+      padding: 8px 15px;
+      box-shadow: 0 0 18px rgba(247, 37, 133, 0.45);
+    }
+
+    .btn-run:hover {
+      background: linear-gradient(135deg, var(--neon-orange) 0%, var(--neon-pink) 55%, var(--neon-purple) 100%);
+      filter: brightness(1.1);
+    }
+
+    .kbd-tag {
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-cyan {
+      color: var(--neon-cyan);
+      border-color: rgba(0, 245, 212, 0.3);
+    }
+
+    .btn-cyan:hover {
+      border-color: var(--neon-cyan);
+      background: rgba(0, 245, 212, 0.1);
+    }
+
+    .btn-danger-icon:hover {
+      background: rgba(244, 63, 94, 0.18);
+      color: #fda4af;
+      border-color: rgba(244, 63, 94, 0.4);
+    }
+
+    /* Công tắc Auto-Run */
+    .autorun-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-Control);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 11px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .autorun-switch:hover {
+      background: var(--bg-Control-hover);
+    }
+
+    .autorun-switch input {
+      display: none;
+    }
+
+    .switch-track {
+      width: 32px;
+      height: 17px;
+      background: #334155;
+      border-radius: 999px;
+      position: relative;
+      transition: background 0.25s ease;
+    }
+
+    .switch-thumb {
+      width: 13px;
+      height: 13px;
+      background: #ffffff;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.25s ease;
+    }
+
+    .autorun-switch input:checked + .switch-track {
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-blue));
+    }
+
+    .autorun-switch input:checked + .switch-track .switch-thumb {
+      transform: translateX(15px);
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--neon-cyan);
+      box-shadow: 0 0 8px var(--neon-cyan);
+      animation: pulseAnim 1.8s infinite ease-in-out;
+    }
+
+    .pulse-dot.off {
+      background: #64748b;
+      box-shadow: none;
+      animation: none;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Select Mẫu có sẵn */
+    .template-select {
+      background: var(--bg-Control);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .template-select:hover, .template-select:focus {
+      border-color: var(--neon-cyan);
+    }
+
+    /* Thanh Tab trên Mobile */
+    .mobile-tabs {
+      display: none;
+      background: #0e1222;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 6px 8px 0;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .mob-tab-btn {
+      flex: 1;
+      padding: 8px 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .mob-tab-btn.active {
+      background: #161c33;
+      color: #ffffff;
+    }
+
+    /* Không gian làm việc chính (Workspace) */
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+
+    .workspace.split-horizontal {
+      flex-direction: column;
+    }
+
+    /* Khung chứa 3 ô nhập code (HTML, CSS, JS) */
+    .editors-pane {
+      width: 50%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px;
+      background: var(--bg-deep);
+      overflow: hidden;
+      flex-shrink: 0;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    .workspace.split-horizontal .editors-pane {
+      width: 100%;
+      height: 50%;
+      flex-direction: row;
+    }
+
+    /* Từng thẻ Editor */
+    .editor-card {
+      flex: 1;
+      min-height: 38px;
+      min-width: 0;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .editor-card.collapsed {
+      flex: 0 0 38px !important;
+    }
+
+    .editor-card.card-html:focus-within {
+      border-color: rgba(255, 107, 53, 0.7);
+      box-shadow: 0 0 18px rgba(255, 107, 53, 0.14);
+    }
+
+    .editor-card.card-css:focus-within {
+      border-color: rgba(76, 201, 240, 0.7);
+      box-shadow: 0 0 18px rgba(76, 201, 240, 0.14);
+    }
+
+    .editor-card.card-js:focus-within {
+      border-color: rgba(247, 37, 133, 0.7);
+      box-shadow: 0 0 18px rgba(247, 37, 133, 0.14);
+    }
+
+    .editor-header {
+      height: 36px;
+      background: var(--bg-header);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .editor-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lang-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 5px;
+    }
+
+    .lang-html {
+      background: rgba(255, 107, 53, 0.18);
+      color: var(--neon-orange);
+      border: 1px solid rgba(255, 107, 53, 0.4);
+    }
+
+    .lang-css {
+      background: rgba(76, 201, 240, 0.18);
+      color: var(--neon-blue);
+      border: 1px solid rgba(76, 201, 240, 0.4);
+    }
+
+    .lang-js {
+      background: rgba(247, 37, 133, 0.18);
+      color: var(--neon-pink);
+      border: 1px solid rgba(247, 37, 133, 0.4);
+    }
+
+    .file-name {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .code-stats {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .editor-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .mini-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 4px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .mini-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .mini-btn.danger:hover {
+      color: var(--neon-red);
+    }
+
+    /* Vùng soạn thảo code & số dòng */
+    .code-body {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-editor);
+      min-height: 0;
+    }
+
+    .line-numbers {
+      width: 42px;
+      padding: 10px 6px 10px 0;
+      text-align: right;
+      background: #080a14;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      color: #475569;
+      font-size: 13px;
+      line-height: 20px;
+      overflow: hidden;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .code-textarea {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      color: #f8fafc;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 13px;
+      line-height: 20px;
+      tab-size: 2;
+      white-space: pre;
+      overflow: auto;
+      user-select: text;
+    }
+
+    .code-textarea::selection {
+      background: rgba(247, 37, 133, 0.35);
+      color: #fff;
+    }
+
+    /* Thanh kéo chia đôi màn hình (Splitter) */
+    .splitter {
+      width: 6px;
+      background: #151a2e;
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.2s;
+      z-index: 20;
+    }
+
+    .workspace.split-horizontal .splitter {
+      width: 100%;
+      height: 6px;
+      cursor: row-resize;
+    }
+
+    .splitter:hover, .splitter.dragging {
+      background: linear-gradient(180deg, var(--neon-orange), var(--neon-pink), var(--neon-blue));
+    }
+
+    /* Khung bên phải: Preview + Console */
+    .preview-pane {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px;
+      background: var(--bg-deep);
+      overflow: hidden;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .preview-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .preview-header {
+      height: 38px;
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .preview-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .traffic-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .t-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .preview-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--neon-cyan);
+    }
+
+    .last-run-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .preview-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vp-group {
+      display: flex;
+      background: var(--bg-editor);
+      padding: 2px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .vp-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .vp-btn.active {
+      background: rgba(0, 245, 212, 0.2);
+      color: var(--neon-cyan);
+    }
+
+    .iframe-stage {
+      flex: 1;
+      background: #0d101f;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      overflow: auto;
+      position: relative;
+      min-height: 0;
+    }
+
+    #previewIframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #ffffff;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+      transition: width 0.2s ease;
+    }
+
+    /* Bảng điều khiển Console */
+    .console-drawer {
+      height: 155px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+      transition: height 0.2s ease;
+    }
+
+    .console-drawer.collapsed {
+      height: 36px !important;
+    }
+
+    .console-header {
+      height: 36px;
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .console-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-count {
+      font-size: 10px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: rgba(0, 245, 212, 0.18);
+      color: var(--neon-cyan);
+      border: 1px solid rgba(0, 245, 212, 0.3);
+    }
+
+    .badge-err {
+      font-size: 10px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: rgba(244, 63, 94, 0.2);
+      color: #fda4af;
+      border: 1px solid rgba(244, 63, 94, 0.4);
+    }
+
+    .console-logs {
+      flex: 1;
+      padding: 8px;
+      overflow-y: auto;
+      background: var(--bg-editor);
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      user-select: text;
+    }
+
+    .log-row {
+      padding: 4px 8px;
+      border-radius: 5px;
+      border-left: 3px solid var(--neon-green);
+      background: rgba(255, 255, 255, 0.03);
+      display: flex;
+      gap: 8px;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .log-row.warn {
+      border-left-color: var(--neon-amber);
+      background: rgba(245, 158, 11, 0.1);
+      color: #fcd34d;
+    }
+
+    .log-row.error {
+      border-left-color: var(--neon-red);
+      background: rgba(244, 63, 94, 0.12);
+      color: #fda4af;
+    }
+
+    .log-row.info {
+      border-left-color: var(--neon-cyan);
+      background: rgba(0, 245, 212, 0.08);
+      color: #67e8f9;
+    }
+
+    .log-time {
+      font-size: 10px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .console-input-bar {
+      height: 30px;
+      background: #0e1222;
+      border-top: 1px solid var(--border-subtle);
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .console-input-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 12px;
+    }
+
+    /* Hộp thoại Modal xác nhận Reset */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #151a30;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      max-width: 420px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .modal-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* Toast thông báo góc dưới */
+    .toast-container {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast-item {
+      padding: 9px 14px;
+      border-radius: 10px;
+      background: #13192e;
+      border: 1px solid var(--neon-cyan);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      transition: all 0.25s ease;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Scrollbar tinh chỉnh */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090b14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #263052;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3a4878;
+    }
+
+    /* Responsive trên màn hình nhỏ (< 960px) */
+    @media (max-width: 960px) {
+      .mobile-tabs {
+        display: flex;
+      }
+      .editors-pane {
+        width: 100% !important;
+        height: 100% !important;
+      }
+      .splitter, #btnLayoutToggle, .vp-group, .code-stats, .badge-saved {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Thanh dải màu Neon trên cùng -->
+  <div class="neon-top-bar"></div>
+
+  <!-- Thanh điều hướng & công cụ chính -->
+  <header class="app-header">
+    <div class="brand-box">
+      <div class="brand-logo">
+        <div class="brand-logo-inner font-mono">&lt;/&gt;</div>
+      </div>
+      <div>
+        <div class="brand-title-row">
+          <span class="brand-title">WEBPREVIEW</span>
+          <span class="badge-vn">VN</span>
+          <span class="badge-saved">
+            <span class="dot-green"></span> Đã lưu tự động
+          </span>
+        </div>
+        <div class="brand-sub">HTML • CSS • JS Live Playground</div>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Nút Run (Chạy) -->
+      <button id="btnRun" class="btn btn-run" onclick="runCode(true)" title="Chạy code ngay (Ctrl + Enter)">
+        <span>▶ Chạy (Run)</span>
+        <span class="kbd-tag font-mono">Ctrl+Enter</span>
+      </button>
+
+      <!-- Công tắc Tự động chạy (Auto-run) -->
+      <label class="autorun-switch" title="Tự động chạy code sau 400ms khi ngừng gõ">
+        <input type="checkbox" id="toggleAutoRun" checked onchange="handleAutoRunToggle(this.checked)" />
+        <div class="switch-track">
+          <div class="switch-thumb"></div>
+        </div>
+        <span>Tự động chạy</span>
+        <span id="autoRunDot" class="pulse-dot"></span>
+      </label>
+
+      <!-- Chọn mẫu code có sẵn -->
+      <select id="templateSelect" class="template-select" onchange="handleTemplateChange(this.value)">
+        <option value="" disabled selected>✨ Mẫu có sẵn...</option>
+        <option value="neonCard">1. Thẻ Neon 3D & Bộ đếm</option>
+        <option value="cyberClock">2. Đồng hồ Số Cyberpunk</option>
+        <option value="todoApp">3. Ứng dụng Ghi chú Nhanh</option>
+        <option value="canvasParticles">4. Hiệu ứng Hạt Mạng Lưới</option>
+      </select>
+
+      <!-- Đổi bố cục Chia dọc / Chia ngang -->
+      <button id="btnLayoutToggle" class="btn" onclick="toggleDesktopLayout()" title="Đổi bố cục khung nhìn">
+        <span>◫</span>
+        <span id="layoutLabel">Chia dọc</span>
+      </button>
+
+      <!-- Nút tải file HTML -->
+      <button class="btn btn-cyan" onclick="downloadCombinedHTML()" title="Tải toàn bộ code thành 1 file .html">
+        <span>Tải HTML</span>
+      </button>
+
+      <!-- Nút Khôi phục mặc định -->
+      <button class="btn btn-danger-icon" onclick="openResetModal()" title="Đặt lại code mẫu mặc định">
+        <span>Đặt lại</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Thanh chuyển Tab dành cho màn hình nhỏ / điện thoại -->
+  <nav class="mobile-tabs">
+    <button id="mobTab-html" class="mob-tab-btn active" onclick="switchMobileTab('html')">HTML</button>
+    <button id="mobTab-css" class="mob-tab-btn" onclick="switchMobileTab('css')">CSS</button>
+    <button id="mobTab-js" class="mob-tab-btn" onclick="switchMobileTab('js')">JS</button>
+    <button id="mobTab-preview" class="mob-tab-btn" onclick="switchMobileTab('preview')">⚡ Xem trước</button>
+  </nav>
+
+  <!-- Khu vực làm việc chính -->
+  <main id="workspaceContainer" class="workspace">
+
+    <!-- BÊN TRÁI: 3 Ô NHẬP CODE HTML, CSS, JS -->
+    <section id="editorsPane" class="editors-pane">
+
+      <!-- 1. Ô nhập HTML -->
+      <div id="panel-html" class="editor-card card-html">
+        <div class="editor-header">
+          <div class="editor-title-group">
+            <span class="lang-badge lang-html font-mono">HTML5</span>
+            <span class="file-name font-mono">index.html</span>
+            <span id="stats-html" class="code-stats">(1 dòng)</span>
+          </div>
+          <div class="editor-actions">
+            <button class="mini-btn" onclick="formatSimpleIndent('html')">Căn lề</button>
+            <button class="mini-btn" onclick="copyEditorCode('html')">Chép</button>
+            <button class="mini-btn danger" onclick="clearEditorCode('html')">Xóa</button>
+            <button class="mini-btn" onclick="toggleCollapsePanel('html')" title="Thu gọn / Mở rộng">▾</button>
+          </div>
+        </div>
+        <div id="body-html" class="code-body">
+          <div id="lines-html" class="line-numbers font-mono">1</div>
+          <textarea id="code-html" class="code-textarea font-mono" spellcheck="false" autocomplete="off"
+            placeholder="<!-- Nhập code HTML vào đây... -->"></textarea>
+        </div>
+      </div>
+
+      <!-- 2. Ô nhập CSS -->
+      <div id="panel-css" class="editor-card card-css">
+        <div class="editor-header">
+          <div class="editor-title-group">
+            <span class="lang-badge lang-css font-mono">CSS3</span>
+            <span class="file-name font-mono">style.css</span>
+            <span id="stats-css" class="code-stats">(1 dòng)</span>
+          </div>
+          <div class="editor-actions">
+            <button class="mini-btn" onclick="formatSimpleIndent('css')">Căn lề</button>
+            <button class="mini-btn" onclick="copyEditorCode('css')">Chép</button>
+            <button class="mini-btn danger" onclick="clearEditorCode('css')">Xóa</button>
+            <button class="mini-btn" onclick="toggleCollapsePanel('css')" title="Thu gọn / Mở rộng">▾</button>
+          </div>
+        </div>
+        <div id="body-css" class="code-body">
+          <div id="lines-css" class="line-numbers font-mono">1</div>
+          <textarea id="code-css" class="code-textarea font-mono" spellcheck="false" autocomplete="off"
+            placeholder="/* Nhập code CSS vào đây... */"></textarea>
+        </div>
+      </div>
+
+      <!-- 3. Ô nhập JavaScript -->
+      <div id="panel-js" class="editor-card card-js">
+        <div class="editor-header">
+          <div class="editor-title-group">
+            <span class="lang-badge lang-js font-mono">JS ES6+</span>
+            <span class="file-name font-mono">script.js</span>
+            <span id="stats-js" class="code-stats">(1 dòng)</span>
+          </div>
+          <div class="editor-actions">
+            <button class="mini-btn" onclick="formatSimpleIndent('js')">Căn lề</button>
+            <button class="mini-btn" onclick="copyEditorCode('js')">Chép</button>
+            <button class="mini-btn danger" onclick="clearEditorCode('js')">Xóa</button>
+            <button class="mini-btn" onclick="toggleCollapsePanel('js')" title="Thu gọn / Mở rộng">▾</button>
+          </div>
+        </div>
+        <div id="body-js" class="code-body">
+          <div id="lines-js" class="line-numbers font-mono">1</div>
+          <textarea id="code-js" class="code-textarea font-mono" spellcheck="false" autocomplete="off"
+            placeholder="// Nhập code JavaScript vào đây..."></textarea>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Thanh kéo điều chỉnh kích thước -->
+    <div id="splitterBar" class="splitter" title="Kéo để thay đổi kích thước khung"></div>
+
+    <!-- BÊN PHẢI: KHUNG XEM TRƯỚC (PREVIEW) & CONSOLE -->
+    <section id="previewPane" class="preview-pane">
+
+      <!-- Khung chạy kết quả Live Preview -->
+      <div class="preview-card">
+        <div class="preview-header">
+          <div class="preview-header-left">
+            <div class="traffic-dots">
+              <span class="t-dot" style="background:#f43f5e"></span>
+              <span class="t-dot" style="background:#f59e0b"></span>
+              <span class="t-dot" style="background:#10b981"></span>
+            </div>
+            <span class="preview-label">⚡ Kết quả chạy (Live Preview)</span>
+            <span id="lastRunTime" class="last-run-time font-mono">Vừa cập nhật</span>
+          </div>
+
+          <div class="preview-toolbar">
+            <div class="vp-group">
+              <button class="vp-btn active" onclick="setPreviewWidth('100%', this)">Đầy đủ</button>
+              <button class="vp-btn" onclick="setPreviewWidth('768px', this)">Tablet</button>
+              <button class="vp-btn" onclick="setPreviewWidth('375px', this)">Mobile</button>
+            </div>
+            <button class="mini-btn" onclick="openPreviewInNewTab()" title="Mở kết quả sang Tab mới">↗ Tab mới</button>
+            <button class="mini-btn" onclick="toggleFullscreenPreview()" title="Phóng to / Thu nhỏ khung xem trước">⛶ Phóng to</button>
+          </div>
+        </div>
+
+        <div class="iframe-stage">
+          <iframe id="previewIframe" title="Khung chạy kết quả HTML CSS JS"
+            sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"></iframe>
+        </div>
+      </div>
+
+      <!-- Ngăn Console bắt log và lỗi -->
+      <div id="consoleDrawer" class="console-drawer">
+        <div class="console-header" onclick="toggleConsoleDrawer()">
+          <div class="console-title font-mono">
+            <span style="color:var(--neon-pink)">&gt;_</span>
+            <span>Console (Bảng điều khiển)</span>
+            <span id="consoleCountBadge" class="badge-count">0</span>
+            <span id="consoleErrorBadge" class="badge-err hidden">0 lỗi</span>
+          </div>
+          <div onclick="event.stopPropagation()">
+            <button class="mini-btn" onclick="clearConsoleLogs()">Xóa log</button>
+            <button class="mini-btn" onclick="toggleConsoleDrawer()">▾</button>
+          </div>
+        </div>
+
+        <div id="consoleOutput" class="console-logs font-mono">
+          <div style="color:var(--text-dim);font-style:italic">// Sẵn sàng ghi nhận console.log, console.warn, console.error...</div>
+        </div>
+
+        <div id="consoleInputRow" class="console-input-bar font-mono">
+          <span style="color:var(--neon-pink);font-weight:bold">&gt;</span>
+          <input id="consoleEvalInput" type="text" class="font-mono"
+            placeholder="Nhập biểu thức JS để chạy thử trong iframe (Nhấn Enter)..."
+            onkeydown="handleConsoleEvalKey(event)" />
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Hộp thoại xác nhận đặt lại code -->
+  <div id="resetModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-title">Khôi phục code mẫu mặc định?</div>
+      <div class="modal-desc">
+        Toàn bộ nội dung bạn đang viết trong 3 ô HTML, CSS và JS sẽ được thay thế bằng mẫu mặc định ban đầu.
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeResetModal()">Hủy bỏ</button>
+        <button class="btn btn-run" onclick="confirmResetDefault()">Đồng ý khôi phục</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Khung chứa thông báo Toast -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>
+    /*************************************************************************
+     * 1. KHO MẪU CODE CÓ SẴN (TEMPLATES)
+     *************************************************************************/
+    const TEMPLATES = {
+      neonCard: {
+        html: `<div class="playground-card">
+  <div class="badge">✨ TRÌNH CHẠY CODE TRỰC TIẾP</div>
+  <h1>Xin chào <span class="gradient-text">VIỆT NAM!</span></h1>
+  <p>Chỉnh sửa HTML, CSS hoặc JS ở 3 ô bên trái để thấy giao diện biến đổi tức thì.</p>
+
+  <div class="counter-box">
+    <div class="count-number" id="counterValue">0</div>
+    <div class="btn-group">
+      <button id="btnDecrease" class="btn btn-sub">- Giảm</button>
+      <button id="btnReset" class="btn btn-reset">Đặt lại</button>
+      <button id="btnIncrease" class="btn btn-add">+ Tăng</button>
+    </div>
+  </div>
+
+  <button id="btnConfetti" class="btn-magic">🚀 Đổi màu chủ đạo & Ghi Log</button>
+</div>`,
+        css: `* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top right, #1e1b4b, #090b14 70%);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #f8fafc;
+  padding: 20px;
+}
+
+.playground-card {
+  max-width: 430px;
+  width: 100%;
+  background: rgba(22, 27, 48, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  padding: 28px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55),
+              0 0 30px rgba(247, 37, 133, 0.18);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.playground-card:hover {
+  transform: translateY(-4px);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(0, 245, 212, 0.12);
+  color: #00f5d4;
+  border: 1px solid rgba(0, 245, 212, 0.3);
+  margin-bottom: 14px;
+}
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #ff6b35, #f72585);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+p {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.counter-box {
+  background: rgba(9, 11, 20, 0.75);
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 18px;
+}
+
+.count-number {
+  font-size: 48px;
+  font-weight: 800;
+  color: #00f5d4;
+  text-shadow: 0 0 20px rgba(0, 245, 212, 0.45);
+  margin-bottom: 14px;
+  transition: transform 0.15s ease;
+}
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s;
+}
+
+.btn-sub { background: #334155; }
+.btn-sub:hover { background: #475569; }
+
+.btn-reset { background: #475569; }
+.btn-reset:hover { background: #64748b; }
+
+.btn-add {
+  background: linear-gradient(135deg, #ff6b35, #f72585);
+}
+.btn-add:hover { filter: brightness(1.15); }
+
+.btn-magic {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(76, 201, 240, 0.4);
+  background: linear-gradient(90deg, #7209b7, #f72585);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(247, 37, 133, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-magic:hover {
+  transform: scale(1.02);
+}`,
+        js: `let count = 0;
+const counterEl = document.getElementById('counterValue');
+const cardEl = document.querySelector('.playground-card');
+
+function updateDisplay() {
+  counterEl.textContent = count;
+  counterEl.style.transform = 'scale(1.18)';
+  setTimeout(() => {
+    counterEl.style.transform = 'scale(1)';
+  }, 140);
+}
+
+document.getElementById('btnIncrease').addEventListener('click', () => {
+  count++;
+  updateDisplay();
+  console.log('Đã tăng bộ đếm lên:', count);
+});
+
+document.getElementById('btnDecrease').addEventListener('click', () => {
+  count--;
+  updateDisplay();
+  console.log('Đã giảm bộ đếm xuống:', count);
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  count = 0;
+  updateDisplay();
+  console.warn('Bộ đếm đã được đặt lại về 0');
+});
+
+document.getElementById('btnConfetti').addEventListener('click', () => {
+  const hues = ['#00f5d4', '#ff6b35', '#f72585', '#4cc9f0', '#a855f7'];
+  const pick = hues[Math.floor(Math.random() * hues.length)];
+  counterEl.style.color = pick;
+  cardEl.style.borderColor = pick;
+  console.log('🎨 Đã đổi màu chủ đạo sang:', pick);
+});
+
+console.log('✅ Ứng dụng mẫu đã khởi tạo thành công!');`
+      },
+
+      cyberClock: {
+        html: `<div class="clock-wrap">
+  <div class="cyber-title">CYBERPUNK TIME // HANOI GMT+7</div>
+  <div id="clockDisplay" class="clock-digits">00:00:00</div>
+  <div id="dateDisplay" class="date-text">Đang tải ngày...</div>
+</div>`,
+        css: `body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #070913;
+  font-family: 'Courier New', monospace;
+  color: #00f5d4;
+}
+.clock-wrap {
+  padding: 36px 48px;
+  border-radius: 20px;
+  background: rgba(17, 21, 38, 0.9);
+  border: 2px solid #f72585;
+  box-shadow: 0 0 35px rgba(247, 37, 133, 0.35), inset 0 0 20px rgba(0, 245, 212, 0.15);
+  text-align: center;
+}
+.cyber-title {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #ff6b35;
+  margin-bottom: 12px;
+}
+.clock-digits {
+  font-size: 56px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  text-shadow: 0 0 20px #00f5d4;
+}
+.date-text {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #94a3b8;
+}`,
+        js: `function updateClock() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('vi-VN', { hour12: false });
+  const dateStr = now.toLocaleDateString('vi-VN', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  document.getElementById('clockDisplay').textContent = timeStr;
+  document.getElementById('dateDisplay').textContent = dateStr;
+}
+setInterval(updateClock, 1000);
+updateClock();
+console.log('⏰ Đồng hồ Cyberpunk đang chạy...');`
+      },
+
+      todoApp: {
+        html: `<div class="todo-card">
+  <h2>📝 Danh sách Việc cần làm</h2>
+  <form id="todoForm" class="input-row">
+    <input id="todoInput" type="text" placeholder="Nhập công việc mới..." required />
+    <button type="submit">Thêm</button>
+  </form>
+  <ul id="todoList"></ul>
+</div>`,
+        css: `body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0f172a, #1e1b4b);
+  font-family: system-ui, sans-serif;
+  color: #fff;
+  padding: 20px;
+}
+.todo-card {
+  width: 100%;
+  max-width: 400px;
+  background: #161b30;
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+}
+h2 { margin-top: 0; margin-bottom: 14px; color: #4cc9f0; }
+.input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0b0e1a;
+  color: #fff;
+  outline: none;
+}
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ff6b35, #f72585);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+ul { list-style: none; padding: 0; margin: 0; }
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #0d1120;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  border-left: 3px solid #00f5d4;
+}`,
+        js: `const items = ['Học HTML5 & CSS3 Neon', 'Thực hành JavaScript DOM', 'Xây dựng dự án cá nhân'];
+const listEl = document.getElementById('todoList');
+const formEl = document.getElementById('todoForm');
+const inputEl = document.getElementById('todoInput');
+
+function render() {
+  listEl.innerHTML = '';
+  items.forEach((text, idx) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<span>' + text + '</span><button style="background:#ef4444;padding:4px 10px;font-size:12px">Xóa</button>';
+    li.querySelector('button').onclick = () => {
+      console.log('Đã xóa mục:', items[idx]);
+      items.splice(idx, 1);
+      render();
+    };
+    listEl.appendChild(li);
+  });
+}
+
+formEl.onsubmit = (e) => {
+  e.preventDefault();
+  items.push(inputEl.value.trim());
+  console.log('Đã thêm công việc:', inputEl.value.trim());
+  inputEl.value = '';
+  render();
+};
+
+render();`
+      },
+
+      canvasParticles: {
+        html: `<canvas id="canvas"></canvas>
+<div class="overlay">Hiệu ứng mạng lưới hạt ánh sáng Neon</div>`,
+        css: `body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #070913;
+  font-family: sans-serif;
+}
+canvas { display: block; }
+.overlay {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #00f5d4;
+  background: rgba(17, 21, 38, 0.85);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  border: 1px solid rgba(0, 245, 212, 0.3);
+  pointer-events: none;
+}`,
+        js: `const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let w = canvas.width = window.innerWidth;
+let h = canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+});
+
+const particles = Array.from({ length: 50 }, () => ({
+  x: Math.random() * w,
+  y: Math.random() * h,
+  vx: (Math.random() - 0.5) * 1.5,
+  vy: (Math.random() - 0.5) * 1.5,
+  color: ['#ff6b35', '#f72585', '#00f5d4', '#4cc9f0'][Math.floor(Math.random() * 4)]
+}));
+
+function animate() {
+  ctx.fillStyle = 'rgba(7, 9, 19, 0.25)';
+  ctx.fillRect(0, 0, w, h);
+
+  particles.forEach((p, i) => {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0 || p.x > w) p.vx *= -1;
+    if (p.y < 0 || p.y > h) p.vy *= -1;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+
+    for (let j = i + 1; j < particles.length; j++) {
+      const p2 = particles[j];
+      const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+      if (dist < 110) {
+        ctx.strokeStyle = 'rgba(0, 245, 212, ' + (1 - dist / 110) + ')';
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+      }
+    }
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
+      }
+    };
+
+    /*************************************************************************
+     * 2. TRẠNG THÁI ỨNG DỤNG & THAM CHIẾU DOM
+     *************************************************************************/
+    const STORAGE_KEY = 'codeplay_vn_saved_state_v2';
+    let autoRunEnabled = true;
+    let debounceTimer = null;
+    let isVerticalSplit = true;
+    let isFullscreenPreview = false;
+    let totalLogs = 0;
+    let totalErrors = 0;
+
+    const editors = {
+      html: document.getElementById('code-html'),
+      css: document.getElementById('code-css'),
+      js: document.getElementById('code-js')
+    };
+
+    const lineContainers = {
+      html: document.getElementById('lines-html'),
+      css: document.getElementById('lines-css'),
+      js: document.getElementById('lines-js')
+    };
+
+    const statsLabels = {
+      html: document.getElementById('stats-html'),
+      css: document.getElementById('stats-css'),
+      js: document.getElementById('stats-js')
+    };
+
+    /*************************************************************************
+     * 3. ĐÁNH SỐ DÒNG, PHÍM TAB & SỰ KIỆN TRÊN 3 Ô EDITOR
+     *************************************************************************/
+    function updateLineNumbers(lang) {
+      const textarea = editors[lang];
+      const lineBox = lineContainers[lang];
+      const statsEl = statsLabels[lang];
+      const linesCount = textarea.value.split('\n').length;
+
+      let numbersHTML = '';
+      for (let i = 1; i <= linesCount; i++) {
+        numbersHTML += i + '<br>';
+      }
+      lineBox.innerHTML = numbersHTML;
+      statsEl.textContent = '(' + linesCount + ' dòng • ' + textarea.value.length + ' ký tự)';
+    }
+
+    function setupEditors() {
+      ['html', 'css', 'js'].forEach((lang) => {
+        const textarea = editors[lang];
+        const lineBox = lineContainers[lang];
+
+        textarea.addEventListener('scroll', () => {
+          lineBox.scrollTop = textarea.scrollTop;
+        });
+
+        textarea.addEventListener('input', () => {
+          updateLineNumbers(lang);
+          saveStateToStorage();
+          if (autoRunEnabled) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+              runCode(false);
+            }, 400);
+          }
+        });
+
+        textarea.addEventListener('keydown', (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            runCode(true);
+            return;
+          }
+
+          if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const spaces = '  ';
+            textarea.value = textarea.value.substring(0, start) + spaces + textarea.value.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + spaces.length;
+            updateLineNumbers(lang);
+            if (autoRunEnabled) {
+              clearTimeout(debounceTimer);
+              debounceTimer = setTimeout(() => runCode(false), 400);
+            }
+          }
+        });
+      });
+    }
+
+    /*************************************************************************
+     * 4. TỔNG HỢP CODE & CHẠY TRONG IFRAME (AN TOÀN TUYỆT ĐỐI KHI CHẠY LOCAL)
+     *************************************************************************/
+    function buildCombinedHTML(includeConsoleBridge) {
+      const htmlCode = editors.html.value;
+      const cssCode = editors.css.value;
+      const jsCode = editors.js.value;
+
+      // Sử dụng nối chuỗi cho các thẻ đóng để trình duyệt KHÔNG BAO GIỜ cắt nhầm thẻ script chính
+      const T_STYLE_OPEN = '<style>';
+      const T_STYLE_CLOSE = '<' + '/style>';
+      const T_SCRIPT_OPEN = '<script>';
+      const T_SCRIPT_CLOSE = '<' + '/script>';
+      const T_HEAD_CLOSE = '<' + '/head>';
+      const T_BODY_CLOSE = '<' + '/body>';
+      const T_HTML_CLOSE = '<' + '/html>';
+
+      const consoleBridgeScript = includeConsoleBridge
+        ? T_SCRIPT_OPEN + `
+          (function() {
+            function sendToParent(level, args) {
+              try {
+                var serialized = Array.prototype.slice.call(args).map(function(item) {
+                  if (item instanceof Error) return item.stack || item.message;
+                  if (typeof item === 'object' && item !== null) {
+                    try { return JSON.stringify(item, null, 2); } catch (e) { return String(item); }
+                  }
+                  return String(item);
+                }).join(' ');
+                window.parent.postMessage({ source: 'codeplay-iframe', level: level, message: serialized }, '*');
+              } catch (err) {}
+            }
+
+            var origLog = console.log;
+            var origWarn = console.warn;
+            var origError = console.error;
+            var origInfo = console.info;
+
+            console.log = function() { sendToParent('log', arguments); origLog.apply(console, arguments); };
+            console.warn = function() { sendToParent('warn', arguments); origWarn.apply(console, arguments); };
+            console.error = function() { sendToParent('error', arguments); origError.apply(console, arguments); };
+            console.info = function() { sendToParent('info', arguments); origInfo.apply(console, arguments); };
+
+            window.addEventListener('error', function(e) {
+              sendToParent('error', ['Lỗi Runtime: ' + e.message + ' (Dòng ' + (e.lineno || '?') + ')']);
+            });
+
+            window.addEventListener('unhandledrejection', function(e) {
+              sendToParent('error', ['Promise bị từ chối: ' + (e.reason ? e.reason.message || e.reason : 'Không rõ')]);
+            });
+
+            window.addEventListener('message', function(e) {
+              if (e.data && e.data.source === 'codeplay-eval') {
+                try {
+                  var result = eval(e.data.expr);
+                  sendToParent('info', ['< ' + (typeof result === 'object' ? JSON.stringify(result) : result)]);
+                } catch (err) {
+                  sendToParent('error', [err.toString()]);
+                }
+              }
+            });
+          })();
+        ` + T_SCRIPT_CLOSE
+        : '';
+
+      return '<!DOCTYPE html>\n<html lang="vi">\n<head>\n' +
+        '  <meta charset="UTF-8" />\n' +
+        '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
+        '  <title>WEBPREVIEW VN — Kết Quả</title>\n' +
+        '  ' + T_STYLE_OPEN + '\n' + cssCode + '\n  ' + T_STYLE_CLOSE + '\n' +
+        consoleBridgeScript + '\n' +
+        T_HEAD_CLOSE + '\n<body>\n' +
+        htmlCode + '\n' +
+        '  ' + T_SCRIPT_OPEN + '\n' +
+        '  try {\n' + jsCode + '\n  } catch (err) {\n    console.error(err);\n  }\n' +
+        '  ' + T_SCRIPT_CLOSE + '\n' +
+        T_BODY_CLOSE + '\n' + T_HTML_CLOSE;
+    }
+
+    function runCode(isManual) {
+      clearConsoleLogs();
+      const iframe = document.getElementById('previewIframe');
+      iframe.srcdoc = buildCombinedHTML(true);
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('vi-VN', { hour12: false });
+      document.getElementById('lastRunTime').textContent = 'Cập nhật lúc ' + timeStr;
+
+      if (isManual) {
+        showToast('⚡ Đã biên dịch và chạy code!');
+      }
+    }
+
+    /*************************************************************************
+     * 5. BẢNG ĐIỀU KHIỂN CONSOLE & CHẠY LỆNH NHANH
+     *************************************************************************/
+    window.addEventListener('message', (event) => {
+      if (!event.data || event.data.source !== 'codeplay-iframe') return;
+      appendConsoleMessage(event.data.level, event.data.message);
+    });
+
+    function appendConsoleMessage(level, text) {
+      const out = document.getElementById('consoleOutput');
+      totalLogs++;
+
+      const time = new Date().toLocaleTimeString('vi-VN', { hour12: false });
+      const row = document.createElement('div');
+      row.className = 'log-row';
+
+      if (level === 'error') {
+        totalErrors++;
+        row.classList.add('error');
+      } else if (level === 'warn') {
+        row.classList.add('warn');
+      } else if (level === 'info') {
+        row.classList.add('info');
+      }
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'log-time';
+      timeSpan.textContent = '[' + time + ']';
+
+      const msgSpan = document.createElement('span');
+      msgSpan.textContent = text;
+
+      row.appendChild(timeSpan);
+      row.appendChild(msgSpan);
+      out.appendChild(row);
+      out.scrollTop = out.scrollHeight;
+
+      updateConsoleBadges();
+    }
+
+    function updateConsoleBadges() {
+      document.getElementById('consoleCountBadge').textContent = totalLogs;
+      const errBadge = document.getElementById('consoleErrorBadge');
+      if (totalErrors > 0) {
+        errBadge.textContent = totalErrors + ' lỗi';
+        errBadge.classList.remove('hidden');
+      } else {
+        errBadge.classList.add('hidden');
+      }
+    }
+
+    function clearConsoleLogs() {
+      totalLogs = 0;
+      totalErrors = 0;
+      updateConsoleBadges();
+      const out = document.getElementById('consoleOutput');
+      out.innerHTML = '<div style="color:var(--text-dim);font-style:italic">// Bảng điều khiển đã sẵn sàng...</div>';
+    }
+
+    function handleConsoleEvalKey(e) {
+      if (e.key === 'Enter') {
+        const input = e.target;
+        const expr = input.value.trim();
+        if (!expr) return;
+        appendConsoleMessage('log', '> ' + expr);
+        const iframe = document.getElementById('previewIframe');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ source: 'codeplay-eval', expr: expr }, '*');
+        }
+        input.value = '';
+      }
+    }
+
+    function toggleConsoleDrawer() {
+      const drawer = document.getElementById('consoleDrawer');
+      drawer.classList.toggle('collapsed');
+    }
+
+    /*************************************************************************
+     * 6. CÁC TIỆN ÍCH: CHÉP, XÓA, CĂN LỀ, TẢI FILE, MỞ TAB MỚI
+     *************************************************************************/
+    function copyEditorCode(lang) {
+      const textarea = editors[lang];
+      textarea.select();
+      document.execCommand('copy');
+      window.getSelection().removeAllRanges();
+      showToast('📋 Đã sao chép code ' + lang.toUpperCase() + ' vào bộ nhớ tạm!');
+    }
+
+    function clearEditorCode(lang) {
+      editors[lang].value = '';
+      updateLineNumbers(lang);
+      saveStateToStorage();
+      if (autoRunEnabled) runCode(false);
+      showToast('🧹 Đã xóa nội dung ô ' + lang.toUpperCase());
+    }
+
+    function formatSimpleIndent(lang) {
+      const raw = editors[lang].value;
+      const lines = raw.split('\n').map(l => l.trimEnd());
+      editors[lang].value = lines.join('\n').trim();
+      updateLineNumbers(lang);
+      saveStateToStorage();
+      showToast('✨ Đã căn chỉnh khoảng trắng ô ' + lang.toUpperCase());
+    }
+
+    function toggleCollapsePanel(lang) {
+      const panel = document.getElementById('panel-' + lang);
+      panel.classList.toggle('collapsed');
+    }
+
+    function handleAutoRunToggle(checked) {
+      autoRunEnabled = checked;
+      const dot = document.getElementById('autoRunDot');
+      if (checked) {
+        dot.classList.remove('off');
+        runCode(false);
+        showToast('🔄 Đã bật chế độ Tự động chạy (Auto-run)');
+      } else {
+        dot.classList.add('off');
+        showToast('⏸️ Đã tắt Tự động chạy. Nhấn "Chạy (Run)" để cập nhật.');
+      }
+    }
+
+    function handleTemplateChange(templateKey) {
+      const tpl = TEMPLATES[templateKey];
+      if (!tpl) return;
+      editors.html.value = tpl.html;
+      editors.css.value = tpl.css;
+      editors.js.value = tpl.js;
+      ['html', 'css', 'js'].forEach(updateLineNumbers);
+      saveStateToStorage();
+      runCode(true);
+      document.getElementById('templateSelect').selectedIndex = 0;
+    }
+
+    function downloadCombinedHTML() {
+      const fullHTML = buildCombinedHTML(false);
+      const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'codeplay-project.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('💾 Đã tải xuống file codeplay-project.html!');
+    }
+
+    function openPreviewInNewTab() {
+      const fullHTML = buildCombinedHTML(false);
+      const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
+
+    function setPreviewWidth(widthVal, btnEl) {
+      const iframe = document.getElementById('previewIframe');
+      iframe.style.width = widthVal;
+      document.querySelectorAll('.vp-btn').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+    }
+
+    function toggleFullscreenPreview() {
+      const editorsPane = document.getElementById('editorsPane');
+      const splitter = document.getElementById('splitterBar');
+      isFullscreenPreview = !isFullscreenPreview;
+
+      if (isFullscreenPreview) {
+        editorsPane.classList.add('hidden');
+        splitter.classList.add('hidden');
+        showToast('🖥️ Đang xem trước toàn màn hình');
+      } else {
+        editorsPane.classList.remove('hidden');
+        splitter.classList.remove('hidden');
+      }
+    }
+
+    /*************************************************************************
+     * 7. CHUYỂN TAB TRÊN MOBILE & CHIA ĐÔI KHUNG HÌNH TRÊN DESKTOP
+     *************************************************************************/
+    function switchMobileTab(tab) {
+      const panels = {
+        html: document.getElementById('panel-html'),
+        css: document.getElementById('panel-css'),
+        js: document.getElementById('panel-js')
+      };
+      const editorsPane = document.getElementById('editorsPane');
+      const previewPane = document.getElementById('previewPane');
+
+      ['html', 'css', 'js', 'preview'].forEach(t => {
+        document.getElementById('mobTab-' + t).classList.remove('active');
+      });
+      document.getElementById('mobTab-' + tab).classList.add('active');
+
+      if (tab === 'preview') {
+        editorsPane.classList.add('hidden');
+        previewPane.classList.remove('hidden');
+        runCode(false);
+      } else {
+        editorsPane.classList.remove('hidden');
+        previewPane.classList.add('hidden');
+        Object.keys(panels).forEach(k => {
+          if (k === tab) {
+            panels[k].classList.remove('hidden');
+          } else {
+            panels[k].classList.add('hidden');
+          }
+        });
+      }
+    }
+
+    function toggleDesktopLayout() {
+      const workspace = document.getElementById('workspaceContainer');
+      const editorsPane = document.getElementById('editorsPane');
+      const label = document.getElementById('layoutLabel');
+
+      isVerticalSplit = !isVerticalSplit;
+
+      if (isVerticalSplit) {
+        workspace.classList.remove('split-horizontal');
+        editorsPane.style.width = '50%';
+        editorsPane.style.height = '100%';
+        label.textContent = 'Chia dọc';
+      } else {
+        workspace.classList.add('split-horizontal');
+        editorsPane.style.width = '100%';
+        editorsPane.style.height = '50%';
+        label.textContent = 'Chia ngang';
+      }
+    }
+
+    // Kéo thanh Splitter để thay đổi độ rộng / cao
+    (function initDraggableSplitter() {
+      const splitter = document.getElementById('splitterBar');
+      const workspace = document.getElementById('workspaceContainer');
+      const editorsPane = document.getElementById('editorsPane');
+      const iframe = document.getElementById('previewIframe');
+      let isDragging = false;
+
+      splitter.addEventListener('mousedown', () => {
+        isDragging = true;
+        splitter.classList.add('dragging');
+        iframe.style.pointerEvents = 'none';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = workspace.getBoundingClientRect();
+        if (isVerticalSplit) {
+          let newWidthPct = ((e.clientX - rect.left) / rect.width) * 100;
+          newWidthPct = Math.max(20, Math.min(80, newWidthPct));
+          editorsPane.style.width = newWidthPct + '%';
+        } else {
+          let newHeightPct = ((e.clientY - rect.top) / rect.height) * 100;
+          newHeightPct = Math.max(20, Math.min(80, newHeightPct));
+          editorsPane.style.height = newHeightPct + '%';
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          splitter.classList.remove('dragging');
+          iframe.style.pointerEvents = 'auto';
+        }
+      });
+    })();
+
+    /*************************************************************************
+     * 8. LƯU TRỮ LOCALSTORAGE & HỘP THOẠI XÁC NHẬN
+     *************************************************************************/
+    function saveStateToStorage() {
+      try {
+        const data = {
+          html: editors.html.value,
+          css: editors.css.value,
+          js: editors.js.value
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    function loadInitialState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          editors.html.value = parsed.html !== undefined ? parsed.html : TEMPLATES.neonCard.html;
+          editors.css.value = parsed.css !== undefined ? parsed.css : TEMPLATES.neonCard.css;
+          editors.js.value = parsed.js !== undefined ? parsed.js : TEMPLATES.neonCard.js;
+          return;
+        }
+      } catch (e) {}
+
+      editors.html.value = TEMPLATES.neonCard.html;
+      editors.css.value = TEMPLATES.neonCard.css;
+      editors.js.value = TEMPLATES.neonCard.js;
+    }
+
+    function openResetModal() {
+      document.getElementById('resetModal').classList.add('open');
+    }
+
+    function closeResetModal() {
+      document.getElementById('resetModal').classList.remove('open');
+    }
+
+    function confirmResetDefault() {
+      editors.html.value = TEMPLATES.neonCard.html;
+      editors.css.value = TEMPLATES.neonCard.css;
+      editors.js.value = TEMPLATES.neonCard.js;
+      ['html', 'css', 'js'].forEach(updateLineNumbers);
+      saveStateToStorage();
+      runCode(true);
+      closeResetModal();
+      showToast('🔄 Đã khôi phục code mẫu mặc định!');
+    }
+
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast-item';
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 250);
+      }, 2200);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        runCode(true);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadInitialState();
+      setupEditors();
+      ['html', 'css', 'js'].forEach(updateLineNumbers);
+      runCode(false);
+    });
+  </script>
+</body>
+</html>
