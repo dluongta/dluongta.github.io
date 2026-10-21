@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,7 +33,8 @@
       padding: 0;
     }
 
-    html, body {
+    html,
+    body {
       width: 100vw;
       height: 100vh;
       overflow: hidden;
@@ -263,11 +265,11 @@
       transition: transform 0.25s ease;
     }
 
-    .autorun-switch input:checked + .switch-track {
+    .autorun-switch input:checked+.switch-track {
       background: linear-gradient(90deg, var(--neon-pink), var(--neon-blue));
     }
 
-    .autorun-switch input:checked + .switch-track .switch-thumb {
+    .autorun-switch input:checked+.switch-track .switch-thumb {
       transform: translateX(15px);
     }
 
@@ -287,8 +289,17 @@
     }
 
     @keyframes pulseAnim {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.85);
+      }
     }
 
     /* Select Mẫu có sẵn */
@@ -305,7 +316,8 @@
       font-family: inherit;
     }
 
-    .template-select:hover, .template-select:focus {
+    .template-select:hover,
+    .template-select:focus {
       border-color: var(--neon-cyan);
     }
 
@@ -554,7 +566,8 @@
       cursor: row-resize;
     }
 
-    .splitter:hover, .splitter.dragging {
+    .splitter:hover,
+    .splitter.dragging {
       background: linear-gradient(180deg, var(--neon-orange), var(--neon-pink), var(--neon-blue));
     }
 
@@ -876,13 +889,16 @@
       width: 7px;
       height: 7px;
     }
+
     ::-webkit-scrollbar-track {
       background: #090b14;
     }
+
     ::-webkit-scrollbar-thumb {
       background: #263052;
       border-radius: 4px;
     }
+
     ::-webkit-scrollbar-thumb:hover {
       background: #3a4878;
     }
@@ -892,16 +908,23 @@
       .mobile-tabs {
         display: flex;
       }
+
       .editors-pane {
         width: 100% !important;
         height: 100% !important;
       }
-      .splitter, #btnLayoutToggle, .vp-group, .code-stats, .badge-saved {
+
+      .splitter,
+      #btnLayoutToggle,
+      .vp-group,
+      .code-stats,
+      .badge-saved {
         display: none !important;
       }
     }
   </style>
 </head>
+
 <body>
 
   <!-- Thanh dải màu Neon trên cùng -->
@@ -946,7 +969,7 @@
       <select id="templateSelect" class="template-select" onchange="handleTemplateChange(this.value)">
         <option value="" disabled selected>✨ Mẫu có sẵn...</option>
         <option value="neonCard">1. Thẻ Neon 3D & Bộ đếm</option>
-        <option value="cyberClock">2. Đồng hồ Số Cyberpunk</option>
+        <option value="cyberClock">2. Đồng hồ Số</option>
         <option value="todoApp">3. Ứng dụng Ghi chú Nhanh</option>
         <option value="canvasParticles">4. Hiệu ứng Hạt Mạng Lưới</option>
       </select>
@@ -1077,7 +1100,8 @@
               <button class="vp-btn" onclick="setPreviewWidth('375px', this)">Mobile</button>
             </div>
             <button class="mini-btn" onclick="openPreviewInNewTab()" title="Mở kết quả sang Tab mới">↗ Tab mới</button>
-            <button class="mini-btn" onclick="toggleFullscreenPreview()" title="Phóng to / Thu nhỏ khung xem trước">⛶ Phóng to</button>
+            <button class="mini-btn" onclick="toggleFullscreenPreview()" title="Phóng to / Thu nhỏ khung xem trước">⛶
+              Phóng to</button>
           </div>
         </div>
 
@@ -1103,7 +1127,8 @@
         </div>
 
         <div id="consoleOutput" class="console-logs font-mono">
-          <div style="color:var(--text-dim);font-style:italic">// Sẵn sàng ghi nhận console.log, console.warn, console.error...</div>
+          <div style="color:var(--text-dim);font-style:italic">// Sẵn sàng ghi nhận console.log, console.warn,
+            console.error...</div>
         </div>
 
         <div id="consoleInputRow" class="console-input-bar font-mono">
@@ -1143,7 +1168,7 @@
       neonCard: {
         html: `<div class="playground-card">
   <div class="badge">✨ TRÌNH CHẠY CODE TRỰC TIẾP</div>
-  <h1>Xin chào <span class="gradient-text">VIỆT NAM!</span></h1>
+  <h1>Xin chào <span class="gradient-text">BẠN!</span></h1>
   <p>Chỉnh sửa HTML, CSS hoặc JS ở 3 ô bên trái để thấy giao diện biến đổi tức thì.</p>
 
   <div class="counter-box">
@@ -1312,12 +1337,18 @@ document.getElementById('btnReset').addEventListener('click', () => {
   console.warn('Bộ đếm đã được đặt lại về 0');
 });
 
+const hues = ['#00f5d4', '#ff6b35', '#f72585', '#4cc9f0', '#a855f7'];
+let currentIndex = 0;
+
 document.getElementById('btnConfetti').addEventListener('click', () => {
-  const hues = ['#00f5d4', '#ff6b35', '#f72585', '#4cc9f0', '#a855f7'];
-  const pick = hues[Math.floor(Math.random() * hues.length)];
+  const pick = hues[currentIndex];
+
   counterEl.style.color = pick;
   cardEl.style.borderColor = pick;
+
   console.log('🎨 Đã đổi màu chủ đạo sang:', pick);
+
+  currentIndex = (currentIndex + 1) % hues.length;
 });
 
 console.log('✅ Ứng dụng mẫu đã khởi tạo thành công!');`
@@ -1325,7 +1356,7 @@ console.log('✅ Ứng dụng mẫu đã khởi tạo thành công!');`
 
       cyberClock: {
         html: `<div class="clock-wrap">
-  <div class="cyber-title">CYBERPUNK TIME // HANOI GMT+7</div>
+  <div class="cyber-title">HANOI GMT+7</div>
   <div id="clockDisplay" class="clock-digits">00:00:00</div>
   <div id="dateDisplay" class="date-text">Đang tải ngày...</div>
 </div>`,
@@ -1532,10 +1563,7 @@ function animate() {
       const p2 = particles[j];
       const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
       if (dist < 110) {
-        ctx.strokeStyle = 'rgba(0, 245, 212, ' + (1 - dist / 110) + ')';
-        ctx.lineWidth = 0.6;
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
+        ctx.strokeStyle = 'rgba(255, 255, 255, ' + (1 - dist / 110) + ')';        ctx.moveTo(p.x, p.y);
         ctx.lineTo(p2.x, p2.y);
         ctx.stroke();
       }
@@ -2012,7 +2040,7 @@ console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
           js: editors.js.value
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      } catch (e) {}
+      } catch (e) { }
     }
 
     function loadInitialState() {
@@ -2025,7 +2053,7 @@ console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
           editors.js.value = parsed.js !== undefined ? parsed.js : TEMPLATES.neonCard.js;
           return;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       editors.html.value = TEMPLATES.neonCard.html;
       editors.css.value = TEMPLATES.neonCard.css;
@@ -2080,4 +2108,5 @@ console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
     });
   </script>
 </body>
+
 </html>
