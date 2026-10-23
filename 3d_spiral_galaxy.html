@@ -6,10 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Spiral Galaxy</title>
     <!-- Three.js r128 & OrbitControls -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script> -->
-    <script src="three.min.js"></script>
-    <script src="OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
         :root {
             color-scheme: dark;
@@ -422,7 +420,7 @@
 
         .preset-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: minmax(0, 1fr);
             gap: 0.5rem;
         }
         .preset-btn {
@@ -582,10 +580,10 @@
             </div>
             <div style="min-width: 0; flex: 1;">
                 <div class="title-row">
-                    <h1 id="hud-preset-title" class="preset-title">Aurora Seraph</h1>
-                    <span id="hud-class-badge" class="badge">NGC 4945 • Solar Flare SBcd</span>
+                    <h1 id="hud-preset-title" class="preset-title">Spiral Galaxy</h1>
+                    <span id="hud-class-badge" class="badge">SA(s)b • Multi-Arm</span>
                 </div>
-                <p id="hud-preset-subtitle" class="preset-sub">Incandescent white-gold core transitioning into blazing solar-orange and deep crimson-violet trailing arms</p>
+                <p id="hud-preset-subtitle" class="preset-sub">Majestic multi-arm disk with luminous orange-to-pink spectral color gradients</p>
             </div>
         </div>
 
@@ -599,12 +597,12 @@
             <div class="divider-v"></div>
             <div>
                 <span style="color: var(--text-muted);">STARS:</span>
-                <span id="stat-particles" style="color: #a5b4fc; font-weight: 600;">195,000</span>
+                <span id="stat-particles" style="color: #a5b4fc; font-weight: 600;">250,000</span>
             </div>
-            <div class="divider-v" style="display: none;" id="span-divider"></div>
-            <div id="span-container">
+            <div class="divider-v"></div>
+            <div>
                 <span style="color: var(--text-muted);">SPAN:</span>
-                <span id="stat-diameter" style="color: #fcd34d;">122 kly</span>
+                <span id="stat-diameter" style="color: #fcd34d;">151 kly</span>
             </div>
         </div>
     </div>
@@ -673,66 +671,20 @@
         </div>
 
         <div class="panel-body custom-scroll">
-            <!-- Section 1: 6 Poetic Spiral Galaxy Presets (2x3 Grid) -->
+            <!-- Section 1: Single Spiral Galaxy Model Archetype -->
             <div>
                 <div class="section-label">
                     <!-- Star SVG -->
                     <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    Celestial Spiral Archetypes
+                    Celestial Spiral Model
                 </div>
                 <div class="preset-grid" id="preset-grid">
-                    <!-- 1. Aurora Seraph (Active by default) -->
-                    <button data-preset="auroraSeraph" class="preset-btn active">
+                    <button data-preset="spiralGalaxy" class="preset-btn active">
                         <div class="preset-btn-title">
-                            <span>Aurora Seraph</span>
-                            <span class="dot-indicator" style="background: #fb923c; box-shadow: 0 0 8px #fb923c;"></span>
+                            <span>Spiral Galaxy</span>
+                            <span class="dot-indicator" style="background: #ff7b00; box-shadow: 0 0 8px #ff7b00;"></span>
                         </div>
-                        <div class="preset-btn-sub">NGC 4945 • SBcd</div>
-                    </button>
-
-                    <!-- 2. Golden Sovereign -->
-                    <button data-preset="goldenSovereign" class="preset-btn">
-                        <div class="preset-btn-title">
-                            <span>Golden Sovereign</span>
-                            <span class="dot-indicator" style="background: #fbbf24; box-shadow: 0 0 8px #fbbf24;"></span>
-                        </div>
-                        <div class="preset-btn-sub">NGC 1300 • SBb</div>
-                    </button>
-
-                    <!-- 3. Andromeda Crown -->
-                    <button data-preset="andromedaCrown" class="preset-btn">
-                        <div class="preset-btn-title">
-                            <span>Andromeda Crown</span>
-                            <span class="dot-indicator" style="background: #a5b4fc; box-shadow: 0 0 8px #a5b4fc;"></span>
-                        </div>
-                        <div class="preset-btn-sub">M31 • SA(s)b</div>
-                    </button>
-
-                    <!-- 4. Ruby Supernova -->
-                    <button data-preset="rubySupernova" class="preset-btn">
-                        <div class="preset-btn-title">
-                            <span>Ruby Supernova</span>
-                            <span class="dot-indicator" style="background: #f43f5e; box-shadow: 0 0 8px #f43f5e;"></span>
-                        </div>
-                        <div class="preset-btn-sub">M83 • SABc</div>
-                    </button>
-
-                    <!-- 5. Amethyst Vortex -->
-                    <button data-preset="amethystVortex" class="preset-btn">
-                        <div class="preset-btn-title">
-                            <span>Amethyst Vortex</span>
-                            <span class="dot-indicator" style="background: #c084fc; box-shadow: 0 0 8px #c084fc;"></span>
-                        </div>
-                        <div class="preset-btn-sub">NGC 6946 • SABcd</div>
-                    </button>
-
-                    <!-- 6. Celestial Whirlpool -->
-                    <button data-preset="celestialWhirlpool" class="preset-btn">
-                        <div class="preset-btn-title">
-                            <span>Celestial Whirlpool</span>
-                            <span class="dot-indicator" style="background: #22d3ee; box-shadow: 0 0 8px #22d3ee;"></span>
-                        </div>
-                        <div class="preset-btn-sub">M51 • Grand Design Sc</div>
+                        <div class="preset-btn-sub">SA(s)b • Orange-Purple-Pink</div>
                     </button>
                 </div>
             </div>
@@ -749,19 +701,19 @@
                 <div id="gradient-preview" class="gradient-preview"></div>
                 <div class="color-pickers-grid">
                     <div class="color-card">
-                        <input id="ctrl-coreColor" type="color" value="#ffbe55" class="astro-color">
+                        <input id="ctrl-coreColor" type="color" value="#ff7b00" class="astro-color">
                         <span class="color-label">Core</span>
-                        <span id="hex-core" class="color-hex">#FFBE55</span>
+                        <span id="hex-core" class="color-hex">#FF7B00</span>
                     </div>
                     <div class="color-card">
-                        <input id="ctrl-midColor" type="color" value="#22d3ee" class="astro-color">
+                        <input id="ctrl-midColor" type="color" value="#9333ea" class="astro-color">
                         <span class="color-label">Mid-Disk</span>
-                        <span id="hex-mid" class="color-hex">#22D3EE</span>
+                        <span id="hex-mid" class="color-hex">#9333EA</span>
                     </div>
                     <div class="color-card">
-                        <input id="ctrl-outerColor" type="color" value="#1d4ed8" class="astro-color">
+                        <input id="ctrl-outerColor" type="color" value="#ec4899" class="astro-color">
                         <span class="color-label">Outer Halo</span>
-                        <span id="hex-outer" class="color-hex">#1D4ED8</span>
+                        <span id="hex-outer" class="color-hex">#EC4899</span>
                     </div>
                 </div>
             </div>
@@ -779,41 +731,41 @@
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Star Count</span>
-                        <span id="val-count" class="control-value">195,000</span>
+                        <span id="val-count" class="control-value">250,000</span>
                     </div>
-                    <input id="ctrl-count" type="range" min="30000" max="320000" step="10000" value="195000" class="astro-slider">
+                    <input id="ctrl-count" type="range" min="30000" max="320000" step="10000" value="250000" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Galaxy Radius</span>
-                        <span id="val-radius" class="control-value">10.2</span>
+                        <span id="val-radius" class="control-value">12.6</span>
                     </div>
-                    <input id="ctrl-radius" type="range" min="4.0" max="16.0" step="0.2" value="10.2" class="astro-slider">
+                    <input id="ctrl-radius" type="range" min="4.0" max="16.0" step="0.2" value="12.6" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Spiral Arms</span>
-                        <span id="val-branches" class="control-value">3</span>
+                        <span id="val-branches" class="control-value">4</span>
                     </div>
-                    <input id="ctrl-branches" type="range" min="1" max="10" step="1" value="3" class="astro-slider">
+                    <input id="ctrl-branches" type="range" min="1" max="10" step="1" value="4" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Arm Twist / Spin</span>
-                        <span id="val-spin" class="control-value">1.65</span>
+                        <span id="val-spin" class="control-value">2.35</span>
                     </div>
-                    <input id="ctrl-spin" type="range" min="-4.0" max="4.0" step="0.05" value="1.65" class="astro-slider">
+                    <input id="ctrl-spin" type="range" min="-4.0" max="4.0" step="0.05" value="2.35" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Bar Structure Ratio</span>
-                        <span id="val-bar" class="control-value">0.24</span>
+                        <span id="val-bar" class="control-value">0.10</span>
                     </div>
-                    <input id="ctrl-bar" type="range" min="0.0" max="0.65" step="0.02" value="0.24" class="astro-slider">
+                    <input id="ctrl-bar" type="range" min="0.0" max="0.65" step="0.02" value="0.10" class="astro-slider">
                 </div>
             </div>
 
@@ -830,41 +782,41 @@
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Radial Scatter</span>
-                        <span id="val-randomness" class="control-value">0.36</span>
+                        <span id="val-randomness" class="control-value">0.46</span>
                     </div>
-                    <input id="ctrl-randomness" type="range" min="0.05" max="1.5" step="0.02" value="0.36" class="astro-slider">
+                    <input id="ctrl-randomness" type="range" min="0.05" max="1.5" step="0.02" value="0.46" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Core Concentration Power</span>
-                        <span id="val-randomnessPower" class="control-value">3.4</span>
+                        <span id="val-randomnessPower" class="control-value">2.9</span>
                     </div>
-                    <input id="ctrl-randomnessPower" type="range" min="1.2" max="6.5" step="0.1" value="3.4" class="astro-slider">
+                    <input id="ctrl-randomnessPower" type="range" min="1.2" max="6.5" step="0.1" value="2.9" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Core Bulge Size</span>
-                        <span id="val-coreConcentration" class="control-value">0.30</span>
+                        <span id="val-coreConcentration" class="control-value">0.42</span>
                     </div>
-                    <input id="ctrl-coreConcentration" type="range" min="0.08" max="0.75" step="0.02" value="0.30" class="astro-slider">
+                    <input id="ctrl-coreConcentration" type="range" min="0.08" max="0.75" step="0.02" value="0.42" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Disk Thickness</span>
-                        <span id="val-thickness" class="control-value">0.27</span>
+                        <span id="val-thickness" class="control-value">0.24</span>
                     </div>
-                    <input id="ctrl-thickness" type="range" min="0.06" max="1.00" step="0.02" value="0.27" class="astro-slider">
+                    <input id="ctrl-thickness" type="range" min="0.06" max="1.00" step="0.02" value="0.24" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Nebula H-II Density</span>
-                        <span id="val-nebula" class="control-value">0.38</span>
+                        <span id="val-nebula" class="control-value">0.20</span>
                     </div>
-                    <input id="ctrl-nebula" type="range" min="0.0" max="0.75" step="0.02" value="0.38" class="astro-slider">
+                    <input id="ctrl-nebula" type="range" min="0.0" max="0.75" step="0.02" value="0.20" class="astro-slider">
                 </div>
             </div>
 
@@ -881,32 +833,32 @@
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Star Size</span>
-                        <span id="val-starSize" class="control-value">35</span>
+                        <span id="val-starSize" class="control-value">32</span>
                     </div>
-                    <input id="ctrl-starSize" type="range" min="12" max="75" step="1" value="35" class="astro-slider">
+                    <input id="ctrl-starSize" type="range" min="12" max="75" step="1" value="32" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Rotation Speed</span>
-                        <span id="val-rotationSpeed" class="control-value">0.17</span>
+                        <span id="val-rotationSpeed" class="control-value">0.14</span>
                     </div>
-                    <input id="ctrl-rotationSpeed" type="range" min="0.0" max="1.0" step="0.02" value="0.17" class="astro-slider">
+                    <input id="ctrl-rotationSpeed" type="range" min="0.0" max="1.0" step="0.02" value="0.14" class="astro-slider">
                 </div>
 
                 <div class="control-group">
                     <div class="control-header">
                         <span class="control-title">Keplerian Shear</span>
-                        <span id="val-differential" class="control-value">0.46</span>
+                        <span id="val-differential" class="control-value">0.52</span>
                     </div>
-                    <input id="ctrl-differential" type="range" min="0.0" max="1.0" step="0.05" value="0.46" class="astro-slider">
+                    <input id="ctrl-differential" type="range" min="0.0" max="1.0" step="0.05" value="0.52" class="astro-slider">
                 </div>
             </div>
         </div>
 
         <div class="panel-footer">
             <span>Drag: Orbit • Scroll: Zoom</span>
-            <span class="font-mono-tech" style="color: #818cf8;">GLSL Keplerian</span>
+            <span class="font-mono-tech" style="color: #818cf8;">Dinh Luong Ta</span>
         </div>
     </aside>
 
@@ -914,63 +866,19 @@
     <div id="toast" class="toast-banner">
         <!-- Sparkle SVG -->
         <svg viewBox="0 0 24 24"><path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18.5l1.9-5.8 5.8-1.9-5.8-1.9z"></path></svg>
-        <span id="toast-msg">Loaded Aurora Seraph</span>
+        <span id="toast-msg">Loaded Spiral Galaxy</span>
     </div>
 
     <script>
         // ============================================================================
-        // 1. SIX POETIC SPIRAL GALAXY PRESET DEFINITIONS
+        // 1. SINGLE SPIRAL GALAXY MODEL DEFINITION
         // ============================================================================
         const PRESETS = {
-            auroraSeraph: {
-                key: "auroraSeraph",
-                title: "Aurora Seraph",
-                badge: "NGC 4945 • SBcd",
-                subtitle: "Incandescent white-gold core transitioning into blazing solar-orange and deep crimson-violet trailing arms",
-                count: 195000,
-                radius: 10.2,
-                branches: 3,
-                spin: 1.65,
-                barFactor: 0.24,
-                randomness: 0.36,
-                randomnessPower: 3.4,
-                coreConcentration: 0.30,
-                thickness: 0.27,
-                nebula: 0.38,
-                coreColor: "#fff3c4",
-                midColor: "#ff6b1a",
-                outerColor: "#7e22ce",
-                starSize: 35,
-                rotationSpeed: 0.17,
-                differential: 0.46
-            },
-            goldenSovereign: {
-                key: "goldenSovereign",
-                title: "Golden Sovereign",
-                badge: "NGC 1300 • SBb",
-                subtitle: "Prominent luminous golden galactic bar feeding two wide velvet-azure spiral arms",
-                count: 190000,
-                radius: 10.4,
-                branches: 2,
-                spin: 1.48,
-                barFactor: 0.46,
-                randomness: 0.34,
-                randomnessPower: 3.5,
-                coreConcentration: 0.34,
-                thickness: 0.25,
-                nebula: 0.24,
-                coreColor: "#ffe074",
-                midColor: "#f59e0b",
-                outerColor: "#2563eb",
-                starSize: 36,
-                rotationSpeed: 0.16,
-                differential: 0.34
-            },
-            andromedaCrown: {
-                key: "andromedaCrown",
-                title: "Andromeda Crown",
-                badge: "M31 • SA(s)b",
-                subtitle: "Massive 240k+ star disk with an alabaster-gold core and misty periwinkle outer arms",
+            spiralGalaxy: {
+                key: "spiralGalaxy",
+                title: "3D Spiral Galaxy",
+                badge: "SA(s)b • Multi-Arm",
+                subtitle: "Magnificent spiral galaxy with luminous orange-to-pink spectral color gradients",
                 count: 250000,
                 radius: 12.6,
                 branches: 4,
@@ -981,83 +889,17 @@
                 coreConcentration: 0.42,
                 thickness: 0.24,
                 nebula: 0.20,
-                coreColor: "#fff0c2",
-                midColor: "#93c5fd",
-                outerColor: "#4f46e5",
+                coreColor: "#ff7b00",
+                midColor: "#9333ea",
+                outerColor: "#ec4899",
                 starSize: 32,
                 rotationSpeed: 0.14,
                 differential: 0.52
-            },
-            rubySupernova: {
-                key: "rubySupernova",
-                title: "Ruby Supernova",
-                badge: "M83 • SABc",
-                subtitle: "6-arm starburst galaxy rich in glowing rose-magenta H-II nebulae and blue supergiants",
-                count: 210000,
-                radius: 9.8,
-                branches: 6,
-                spin: 1.25,
-                barFactor: 0.18,
-                randomness: 0.42,
-                randomnessPower: 3.3,
-                coreConcentration: 0.26,
-                thickness: 0.34,
-                nebula: 0.58,
-                coreColor: "#ffe49e",
-                midColor: "#ff2a85",
-                outerColor: "#38bdf8",
-                starSize: 38,
-                rotationSpeed: 0.22,
-                differential: 0.56
-            },
-            amethystVortex: {
-                key: "amethystVortex",
-                title: "Amethyst Vortex",
-                badge: "NGC 6946 • SABcd",
-                subtitle: "Ethereal violet-orchid and turquoise spiral arms with high nebula density and bright supergiants",
-                count: 200000,
-                radius: 9.6,
-                branches: 5,
-                spin: 1.55,
-                barFactor: 0.08,
-                randomness: 0.40,
-                randomnessPower: 3.2,
-                coreConcentration: 0.28,
-                thickness: 0.30,
-                nebula: 0.50,
-                coreColor: "#fae8ff",
-                midColor: "#a855f7",
-                outerColor: "#06b6d4",
-                starSize: 37,
-                rotationSpeed: 0.20,
-                differential: 0.50
-            },
-            celestialWhirlpool: {
-                key: "celestialWhirlpool",
-                title: "Celestial Whirlpool",
-                badge: "M51 • Sc",
-                subtitle: "Radiant amber-gold core sweeping into electric cyan and sapphire twin arms",
-                count: 180000,
-                radius: 9.5,
-                branches: 2,
-                spin: 1.85,
-                barFactor: 0.00,
-                randomness: 0.38,
-                randomnessPower: 3.2,
-                coreConcentration: 0.30,
-                thickness: 0.28,
-                nebula: 0.28,
-                coreColor: "#ffbe55",
-                midColor: "#22d3ee",
-                outerColor: "#1d4ed8",
-                starSize: 35,
-                rotationSpeed: 0.18,
-                differential: 0.48
             }
         };
 
-        let currentPresetKey = "auroraSeraph";
-        const params = { ...PRESETS.auroraSeraph };
+        let currentPresetKey = "spiralGalaxy";
+        const params = { ...PRESETS.spiralGalaxy };
         let isPaused = false;
         let simTime = 0;
 
@@ -1267,8 +1109,8 @@
             const ctx = canvas.getContext('2d');
             const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
             grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
-            grad.addColorStop(0.18, 'rgba(255, 240, 210, 0.78)');
-            grad.addColorStop(0.48, 'rgba(255, 190, 130, 0.24)');
+            grad.addColorStop(0.18, 'rgba(255, 220, 180, 0.78)');
+            grad.addColorStop(0.48, 'rgba(255, 120, 50, 0.24)');
             grad.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 256, 256);
@@ -1276,13 +1118,13 @@
             const tex = new THREE.CanvasTexture(canvas);
 
             const outerHaloMat = new THREE.SpriteMaterial({
-                map: tex, color: new THREE.Color(params.coreColor), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.82
+                map: tex, color: new THREE.Color(params.coreColor), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.85
             });
             coreHaloSprite = new THREE.Sprite(outerHaloMat);
             scene.add(coreHaloSprite);
 
             const innerMat = new THREE.SpriteMaterial({
-                map: tex, color: new THREE.Color('#ffffff'), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.9
+                map: tex, color: new THREE.Color('#ffffff'), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.95
             });
             innerNucleusSprite = new THREE.Sprite(innerMat);
             scene.add(innerNucleusSprite);
@@ -1308,7 +1150,7 @@
             const colorMid = new THREE.Color(params.midColor);
             const colorOuter = new THREE.Color(params.outerColor);
 
-            const colorNebula = new THREE.Color(params.midColor).lerp(new THREE.Color('#ff2a85'), 0.55);
+            const colorNebula = new THREE.Color(params.midColor).lerp(new THREE.Color('#ec4899'), 0.55);
             const tempColor = new THREE.Color();
 
             const maxR = params.radius;
@@ -1585,7 +1427,7 @@
             });
 
             document.getElementById('btn-reset-preset').addEventListener('click', () => {
-                const targetPreset = PRESETS[currentPresetKey] || PRESETS.auroraSeraph;
+                const targetPreset = PRESETS[currentPresetKey] || PRESETS.spiralGalaxy;
                 Object.assign(params, targetPreset);
                 updateUIValues();
                 generateGalaxy();
@@ -1593,7 +1435,7 @@
                 showToast(`Reset to ${params.title}`);
             });
 
-            const camButtons = document.querySelectorAll('.cam-btn');
+            const camButtons = document.querySelectorAll('.dock-btn');
             camButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     camButtons.forEach(b => b.classList.remove('active-cam'));
