@@ -8,21 +8,24 @@
     <!-- Three.js r128 & OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <style>
+<style>
         :root {
             color-scheme: dark;
             --bg-deep: #02040a;
-            --panel-bg: rgba(8, 12, 24, 0.82);
+            --panel-bg: rgba(8, 12, 24, 0.84);
             --border-glass: rgba(148, 163, 184, 0.18);
             --accent-indigo: #818cf8;
             --text-main: #e2e8f0;
             --text-muted: #94a3b8;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
@@ -46,6 +49,7 @@
             width: 100%;
             height: 100%;
             z-index: 1;
+            touch-action: none;
         }
 
         canvas {
@@ -96,8 +100,8 @@
         input[type="range"].astro-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 15px;
-            height: 15px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: var(--accent-indigo);
             cursor: pointer;
@@ -130,10 +134,10 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
-        /* Layout HUD Containers */
+        /* Top Left HUD Container */
         .hud-top-left {
             position: fixed;
-            top: 1rem;
+            top: calc(1rem + var(--safe-top));
             left: 1rem;
             z-index: 20;
             display: flex;
@@ -199,6 +203,7 @@
             color: #c7d2fe;
             border: 1px solid rgba(129, 140, 248, 0.35);
             border-radius: 999px;
+            white-space: nowrap;
         }
         .preset-sub {
             font-size: 0.75rem;
@@ -212,12 +217,19 @@
         .telemetry-bar {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            justify-content: space-between;
+            gap: 0.75rem;
             padding: 0.6rem 0.85rem;
             border-radius: 0.75rem;
             font-size: 0.7rem;
             font-family: ui-monospace, monospace;
             color: #cbd5e1;
+        }
+        .telemetry-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            white-space: nowrap;
         }
         .pulse-dot {
             width: 8px;
@@ -226,17 +238,19 @@
             background: #34d399;
             box-shadow: 0 0 8px #34d399;
             display: inline-block;
+            flex-shrink: 0;
         }
         .divider-v {
             width: 1px;
             height: 0.85rem;
             background: rgba(148, 163, 184, 0.25);
+            flex-shrink: 0;
         }
 
-        /* Bottom Camera Dock */
+        /* Bottom Camera & Action HUD Dock */
         .hud-bottom-dock {
             position: fixed;
-            bottom: 1rem;
+            bottom: calc(1rem + var(--safe-bottom));
             left: 50%;
             transform: translateX(-50%);
             z-index: 20;
@@ -246,20 +260,32 @@
             padding: 0.5rem 0.75rem;
             border-radius: 1rem;
             pointer-events: auto;
+            max-width: calc(100vw - 1.5rem);
+        }
+        .dock-group {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .dock-divider {
+            height: 1.25rem;
+            margin: 0 0.2rem;
         }
         .dock-btn {
             background: transparent;
-            border: none;
+            border: 1px solid transparent;
             color: #cbd5e1;
             font-size: 0.75rem;
             font-weight: 500;
-            padding: 0.4rem 0.65rem;
+            padding: 0.42rem 0.65rem;
             border-radius: 0.75rem;
             cursor: pointer;
             transition: all 0.15s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.4rem;
+            white-space: nowrap;
         }
         .dock-btn svg {
             width: 0.95rem;
@@ -269,6 +295,7 @@
             stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
+            flex-shrink: 0;
         }
         .dock-btn:hover {
             background: rgba(255, 255, 255, 0.08);
@@ -277,13 +304,16 @@
         .dock-btn.active-cam {
             background: rgba(129, 140, 248, 0.22);
             color: #ffffff;
-            border: 1px solid rgba(129, 140, 248, 0.45);
+            border-color: rgba(129, 140, 248, 0.45);
+        }
+        .pause-label {
+            display: none;
         }
 
         /* Toggle Control Button */
         .toggle-gui-btn {
             position: fixed;
-            top: 1rem;
+            top: calc(1rem + var(--safe-top));
             right: 1rem;
             z-index: 30;
             display: flex;
@@ -307,6 +337,7 @@
             stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
+            flex-shrink: 0;
         }
         .toggle-gui-btn:hover {
             color: #ffffff;
@@ -316,20 +347,28 @@
         /* Right Control Drawer */
         .gui-panel {
             position: fixed;
-            top: 4.2rem;
+            top: calc(4.2rem + var(--safe-top));
             right: 1rem;
-            bottom: 4.8rem;
+            bottom: calc(4.8rem + var(--safe-bottom));
             width: 340px;
             max-width: calc(100vw - 2rem);
-            z-index: 20;
+            z-index: 25;
             border-radius: 1rem;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
         }
+        .gui-panel.closed {
+            transform: translateX(calc(100% + 2rem));
+            pointer-events: none;
+        }
+
         @media (min-width: 1024px) {
-            .gui-panel { bottom: 1rem; width: 370px; }
+            .gui-panel {
+                bottom: calc(1rem + var(--safe-bottom));
+                width: 370px;
+            }
         }
 
         .panel-header {
@@ -339,6 +378,7 @@
             align-items: center;
             justify-content: space-between;
             background: rgba(15, 23, 42, 0.4);
+            flex-shrink: 0;
         }
         .panel-title {
             font-size: 0.75rem;
@@ -391,6 +431,8 @@
         .panel-body {
             flex: 1;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
             padding: 1rem;
             display: flex;
             flex-direction: column;
@@ -513,6 +555,7 @@
             height: 1px;
             width: 100%;
             background: rgba(148, 163, 184, 0.12);
+            flex-shrink: 0;
         }
 
         .panel-footer {
@@ -524,18 +567,19 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
 
         /* Toast Banner */
         .toast-banner {
             position: fixed;
-            top: 5rem;
+            top: calc(5rem + var(--safe-top));
             left: 50%;
             transform: translateX(-50%);
             z-index: 40;
-            background: rgba(8, 12, 24, 0.9);
+            background: rgba(8, 12, 24, 0.92);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(129, 140, 248, 0.3);
+            border: 1px solid rgba(129, 140, 248, 0.35);
             padding: 0.5rem 1rem;
             border-radius: 999px;
             font-size: 0.75rem;
@@ -548,6 +592,8 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            max-width: calc(100vw - 2rem);
+            white-space: nowrap;
         }
         .toast-banner svg {
             width: 0.9rem;
@@ -557,8 +603,153 @@
             stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
+            flex-shrink: 0;
         }
         .toast-banner.show { opacity: 1; }
+
+        /* ============================================================================
+           RESPONSIVE BREAKPOINTS (MOBILE & TABLET)
+           ============================================================================ */
+        @media (max-width: 680px) {
+            .hud-top-left {
+                top: calc(0.65rem + var(--safe-top));
+                left: 0.65rem;
+                right: 0.65rem;
+                width: auto;
+                max-width: none;
+                gap: 0.45rem;
+            }
+
+            /* Chừa chỗ bên phải cho nút Toggle Controls để không đè lên nhau */
+            .preset-header-card {
+                margin-right: 7.4rem;
+                padding: 0.6rem 0.75rem;
+                gap: 0.65rem;
+                border-radius: 0.85rem;
+            }
+
+            .icon-box {
+                width: 2.1rem;
+                height: 2.1rem;
+                border-radius: 0.6rem;
+            }
+            .icon-box svg {
+                width: 1.15rem;
+                height: 1.15rem;
+            }
+            .preset-title {
+                font-size: 0.85rem;
+            }
+            .badge {
+                font-size: 0.58rem;
+                padding: 0.08rem 0.4rem;
+            }
+            .preset-sub {
+                font-size: 0.68rem;
+            }
+
+            .toggle-gui-btn {
+                top: calc(0.65rem + var(--safe-top));
+                right: 0.65rem;
+                height: 3.1rem;
+                padding: 0 0.75rem;
+                border-radius: 0.85rem;
+                font-size: 0.72rem;
+            }
+
+            .telemetry-bar {
+                padding: 0.45rem 0.75rem;
+                font-size: 0.65rem;
+                gap: 0.5rem;
+            }
+
+            /* Thanh điều khiển dưới cùng chuyển thành 2 dòng rõ ràng */
+            .hud-bottom-dock {
+                bottom: calc(0.65rem + var(--safe-bottom));
+                width: calc(100vw - 1.3rem);
+                max-width: 440px;
+                flex-direction: column;
+                align-items: stretch;
+                padding: 0.45rem;
+                gap: 0.35rem;
+                border-radius: 0.95rem;
+            }
+
+            .dock-divider {
+                display: none;
+            }
+
+            .dock-group-cam {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.28rem;
+                width: 100%;
+            }
+
+            .dock-group-actions {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.28rem;
+                width: 100%;
+                padding-top: 0.35rem;
+                border-top: 1px solid rgba(148, 163, 184, 0.16);
+            }
+
+            .dock-btn {
+                padding: 0.45rem 0.3rem;
+                font-size: 0.7rem;
+                gap: 0.3rem;
+                border-radius: 0.6rem;
+            }
+
+            .pause-label {
+                display: inline;
+            }
+
+            /* Bảng điều khiển nằm gọn giữa Header trên và Dock 2 dòng dưới */
+            .gui-panel {
+                top: calc(6.8rem + var(--safe-top));
+                bottom: calc(6.2rem + var(--safe-bottom));
+                right: 0.65rem;
+                left: 0.65rem;
+                width: auto;
+                max-width: 420px;
+                margin-left: auto;
+            }
+
+            .toast-banner {
+                top: auto;
+                bottom: calc(6.4rem + var(--safe-bottom));
+                font-size: 0.7rem;
+                padding: 0.42rem 0.85rem;
+            }
+
+            input[type="range"].astro-slider::-webkit-slider-thumb {
+                width: 18px;
+                height: 18px;
+            }
+        }
+
+        /* Màn hình siêu nhỏ (<= 380px) */
+        @media (max-width: 380px) {
+            .preset-header-card {
+                margin-right: 6.4rem;
+                padding: 0.5rem 0.6rem;
+            }
+            .toggle-gui-btn {
+                padding: 0 0.6rem;
+                font-size: 0.68rem;
+            }
+            .dock-btn {
+                font-size: 0.65rem;
+                padding: 0.4rem 0.2rem;
+                gap: 0.22rem;
+            }
+            .dock-btn svg {
+                width: 0.85rem;
+                height: 0.85rem;
+            }
+        }
     </style>
 </head>
 
@@ -571,7 +762,6 @@
     <div class="hud-top-left">
         <div class="glass-panel preset-header-card pointer-auto">
             <div class="icon-box" title="Globe Observatory">
-                <!-- 2D Flat Globe SVG Icon -->
                 <svg viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10"></circle>
                     <path d="M2 12h20"></path>
@@ -589,68 +779,67 @@
 
         <!-- Live Telemetry Bar -->
         <div class="glass-panel telemetry-bar pointer-auto">
-            <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <div class="telemetry-item">
                 <span class="pulse-dot"></span>
                 <span style="color: var(--text-muted);">FPS:</span>
                 <span id="stat-fps" style="color: #ffffff; font-weight: 600;">60</span>
             </div>
             <div class="divider-v"></div>
-            <div>
+            <div class="telemetry-item">
                 <span style="color: var(--text-muted);">STARS:</span>
                 <span id="stat-particles" style="color: #a5b4fc; font-weight: 600;">250,000</span>
             </div>
             <div class="divider-v"></div>
-            <div>
+            <div class="telemetry-item">
                 <span style="color: var(--text-muted);">SPAN:</span>
                 <span id="stat-diameter" style="color: #fcd34d;">151 kly</span>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Center Camera & Action HUD Dock -->
+    <!-- Bottom Center Camera & Action HUD Dock (2 Rows on Mobile, 1 Row on Desktop) -->
     <div class="glass-panel hud-bottom-dock">
-        <button data-cam="oblique" class="dock-btn active-cam" title="Oblique Observatory View">
-            <!-- Cube SVG -->
-            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-            <span>Oblique</span>
-        </button>
-        <button data-cam="top" class="dock-btn" title="Top-Down Galactic Zenith">
-            <!-- Compass SVG -->
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-            <span>Zenith</span>
-        </button>
-        <button data-cam="edge" class="dock-btn" title="Edge-On Galactic Horizon">
-            <!-- Layers / Horizon SVG -->
-            <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-            <span>Horizon</span>
-        </button>
-        <button data-cam="core" class="dock-btn" title="Galactic Nucleus Dive">
-            <!-- Sun SVG -->
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-            <span>Core Dive</span>
-        </button>
+        <!-- Row 1 on Mobile: Camera Viewpoints -->
+        <div class="dock-group dock-group-cam">
+            <button data-cam="oblique" class="dock-btn active-cam" title="Oblique Observatory View">
+                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <span>Oblique</span>
+            </button>
+            <button data-cam="top" class="dock-btn" title="Top-Down Galactic Zenith">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                <span>Zenith</span>
+            </button>
+            <button data-cam="edge" class="dock-btn" title="Edge-On Galactic Horizon">
+                <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                <span>Horizon</span>
+            </button>
+            <button data-cam="core" class="dock-btn" title="Galactic Nucleus Dive">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <span>Core Dive</span>
+            </button>
+        </div>
 
-        <div class="divider-v" style="height: 1.25rem; margin: 0 0.25rem;"></div>
+        <div class="divider-v dock-divider"></div>
 
-        <button id="btn-pause" class="dock-btn" title="Pause / Resume Orbital Time">
-            <!-- Pause SVG -->
-            <svg id="icon-pause" viewBox="0 0 24 24" style="stroke: #34d399;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-        </button>
-        <button id="btn-randomize" class="dock-btn" title="Random Cosmic Mutator">
-            <!-- Sparkles SVG -->
-            <svg viewBox="0 0 24 24" style="stroke: #e879f9;"><path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18.5l1.9-5.8 5.8-1.9-5.8-1.9z"></path><path d="m5 3 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"></path><path d="m19 15 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"></path></svg>
-            <span>Mutate</span>
-        </button>
-        <button id="btn-screenshot" class="dock-btn" title="Export PNG Snapshot">
-            <!-- Camera SVG -->
-            <svg viewBox="0 0 24 24" style="stroke: #38bdf8;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-            <span>Snapshot</span>
-        </button>
+        <!-- Row 2 on Mobile: Simulation & Export Actions -->
+        <div class="dock-group dock-group-actions">
+            <button id="btn-pause" class="dock-btn" title="Pause / Resume Orbital Time">
+                <svg id="icon-pause" viewBox="0 0 24 24" style="stroke: #34d399;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                <span id="label-pause" class="pause-label">Pause</span>
+            </button>
+            <button id="btn-randomize" class="dock-btn" title="Random Cosmic Mutator">
+                <svg viewBox="0 0 24 24" style="stroke: #e879f9;"><path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18.5l1.9-5.8 5.8-1.9-5.8-1.9z"></path><path d="m5 3 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"></path><path d="m19 15 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"></path></svg>
+                <span>Mutate</span>
+            </button>
+            <button id="btn-screenshot" class="dock-btn" title="Export PNG Snapshot">
+                <svg viewBox="0 0 24 24" style="stroke: #38bdf8;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <span>Snapshot</span>
+            </button>
+        </div>
     </div>
 
     <!-- Floating Toggle Button for Control Panel -->
     <button id="btn-toggle-gui" class="glass-panel toggle-gui-btn" title="Toggle Astrophysics Control Panel">
-        <!-- Chevron Right SVG -->
         <svg id="icon-toggle-gui" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         <span id="label-toggle-gui">Hide Controls</span>
     </button>
@@ -659,12 +848,10 @@
     <aside id="gui-panel" class="glass-panel gui-panel">
         <div class="panel-header">
             <h2 class="panel-title">
-                <!-- Sliders / Settings SVG -->
                 <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
                 Astrophysics Synthesizer
             </h2>
             <button id="btn-reset-preset" class="reset-btn">
-                <!-- Reset SVG -->
                 <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
                 Reset
             </button>
@@ -674,7 +861,6 @@
             <!-- Section 1: Single Spiral Galaxy Model Archetype -->
             <div>
                 <div class="section-label">
-                    <!-- Star SVG -->
                     <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                     Celestial Spiral Model
                 </div>
@@ -694,7 +880,6 @@
             <!-- Section 2: 3-Stop Spectral Color Gradient -->
             <div>
                 <div class="section-label">
-                    <!-- Palette SVG -->
                     <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.504 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>
                     3-Stop Spectral Color Gradient
                 </div>
@@ -723,7 +908,6 @@
             <!-- Section 3: Spiral Architecture & Bar Geometry -->
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                 <div class="section-label">
-                    <!-- Atom SVG -->
                     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z"></path><path d="M15.7 3.8c4.52 4.54 6.54 9.87 4.5 11.9-2.03 2.04-7.36.02-11.9-4.5C3.78 6.66 1.76 1.33 3.8-.7c2.03-2.04 7.36-.02 11.9 4.5Z"></path></svg>
                     Spiral Structure & Geometry
                 </div>
@@ -774,7 +958,6 @@
             <!-- Section 4: Radial Distribution, Bulge & Nebulae -->
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                 <div class="section-label">
-                    <!-- Chart SVG -->
                     <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                     Radial Distribution & Bulge
                 </div>
@@ -825,7 +1008,6 @@
             <!-- Section 5: Orbital Kinematics & Star Optics -->
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                 <div class="section-label">
-                    <!-- Zap SVG -->
                     <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                     Orbital Kinematics & Optics
                 </div>
@@ -857,14 +1039,13 @@
         </div>
 
         <div class="panel-footer">
-            <span>Drag: Orbit • Scroll: Zoom</span>
+            <span>Drag: Orbit • Pinch/Scroll: Zoom</span>
             <span class="font-mono-tech" style="color: #818cf8;">Dinh Luong Ta</span>
         </div>
     </aside>
 
     <!-- Toast Notification Banner -->
     <div id="toast" class="toast-banner">
-        <!-- Sparkle SVG -->
         <svg viewBox="0 0 24 24"><path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18.5l1.9-5.8 5.8-1.9-5.8-1.9z"></path></svg>
         <span id="toast-msg">Loaded Spiral Galaxy</span>
     </div>
@@ -1023,6 +1204,11 @@
             progress: 0
         };
 
+        function getAspectDistanceMultiplier() {
+            const aspect = window.innerWidth / Math.max(window.innerHeight, 1);
+            return aspect < 1 ? Math.min(1.55, 1 / Math.pow(aspect, 0.45)) : 1.0;
+        }
+
         function initScene() {
             const container = document.getElementById('canvas-container');
 
@@ -1030,7 +1216,8 @@
             scene.fog = new THREE.FogExp2(0x02040a, 0.010);
 
             camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.05, 280);
-            camera.position.set(0, 7.6, 14.2);
+            const mult = getAspectDistanceMultiplier();
+            camera.position.set(0, 7.6 * mult, 14.2 * mult);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1041,7 +1228,7 @@
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.maxDistance = 68;
+            controls.maxDistance = 85;
             controls.minDistance = 0.4;
             controls.target.set(0, 0, 0);
 
@@ -1297,7 +1484,7 @@
         }
 
         // ============================================================================
-        // 5. UI SYNCHRONIZATION, EVENT LISTENERS & CAMERA TRANSITIONS
+        // 4. UI SYNCHRONIZATION, EVENT LISTENERS & CAMERA TRANSITIONS
         // ============================================================================
         function updateUIValues() {
             const sliderMap = [
@@ -1431,11 +1618,14 @@
                 Object.assign(params, targetPreset);
                 updateUIValues();
                 generateGalaxy();
+                const camButtons = document.querySelectorAll('.dock-btn[data-cam]');
+                camButtons.forEach(b => b.classList.toggle('active-cam', b.getAttribute('data-cam') === 'oblique'));
                 flyCameraTo('oblique');
                 showToast(`Reset to ${params.title}`);
             });
 
-            const camButtons = document.querySelectorAll('.dock-btn');
+            // Chỉ gắn sự kiện chuyển Camera cho các nút có thuộc tính data-cam
+            const camButtons = document.querySelectorAll('.dock-btn[data-cam]');
             camButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     camButtons.forEach(b => b.classList.remove('active-cam'));
@@ -1448,8 +1638,10 @@
             document.getElementById('btn-pause').addEventListener('click', () => {
                 isPaused = !isPaused;
                 const icon = document.getElementById('icon-pause');
+                const label = document.getElementById('label-pause');
                 icon.innerHTML = isPaused ? '<polygon points="5 3 19 12 5 21 5 3"></polygon>' : '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
                 icon.style.stroke = isPaused ? '#f59e0b' : '#34d399';
+                if (label) label.textContent = isPaused ? 'Resume' : 'Pause';
                 showToast(isPaused ? "Orbital time paused" : "Orbital time resumed");
             });
 
@@ -1509,19 +1701,25 @@
             const toggleBtn = document.getElementById('btn-toggle-gui');
             const toggleIcon = document.getElementById('icon-toggle-gui');
             const toggleLabel = document.getElementById('label-toggle-gui');
-            let isGuiOpen = true;
+            let isGuiOpen = window.innerWidth >= 768;
+
+            function syncGuiDrawerState() {
+                if (isGuiOpen) {
+                    guiPanel.classList.remove('closed');
+                    toggleIcon.setAttribute('points', '9 18 15 12 9 6');
+                    toggleLabel.textContent = window.innerWidth < 420 ? 'Hide' : 'Hide Controls';
+                } else {
+                    guiPanel.classList.add('closed');
+                    toggleIcon.setAttribute('points', '15 18 9 12 15 6');
+                    toggleLabel.textContent = window.innerWidth < 420 ? 'Controls' : 'Show Controls';
+                }
+            }
+
+            syncGuiDrawerState();
 
             toggleBtn.addEventListener('click', () => {
                 isGuiOpen = !isGuiOpen;
-                if (isGuiOpen) {
-                    guiPanel.style.transform = 'translateX(0)';
-                    toggleIcon.setAttribute('points', '9 18 15 12 9 6');
-                    toggleLabel.textContent = 'Hide Controls';
-                } else {
-                    guiPanel.style.transform = 'translateX(calc(100% + 2rem))';
-                    toggleIcon.setAttribute('points', '15 18 9 12 15 6');
-                    toggleLabel.textContent = 'Show Controls';
-                }
+                syncGuiDrawerState();
             });
 
             window.addEventListener('resize', () => {
@@ -1532,11 +1730,13 @@
                 if (galaxyMaterial) {
                     galaxyMaterial.uniforms.uSize.value = params.starSize * renderer.getPixelRatio();
                 }
+                syncGuiDrawerState();
             });
         }
 
         function flyCameraTo(mode) {
             const r = params.radius;
+            const mult = getAspectDistanceMultiplier();
             camTransition.startPos.copy(camera.position);
             camTransition.startTarget.copy(controls.target);
             camTransition.endTarget.set(0, 0, 0);
@@ -1544,16 +1744,16 @@
             camTransition.active = true;
 
             if (mode === 'top') {
-                camTransition.endPos.set(0.01, r * 1.95, 0.01);
+                camTransition.endPos.set(0.01, r * 1.95 * mult, 0.01);
                 showToast("Viewpoint: Top-Down Galactic Zenith");
             } else if (mode === 'edge') {
-                camTransition.endPos.set(0, r * 0.05, r * 1.62);
+                camTransition.endPos.set(0, r * 0.05, r * 1.62 * mult);
                 showToast("Viewpoint: Edge-On Galactic Horizon");
             } else if (mode === 'core') {
                 camTransition.endPos.set(r * 0.20, r * 0.09, r * 0.26);
                 showToast("Viewpoint: Galactic Nucleus Dive");
             } else {
-                camTransition.endPos.set(0, r * 0.80, r * 1.48);
+                camTransition.endPos.set(0, r * 0.80 * mult, r * 1.48 * mult);
                 showToast("Viewpoint: Oblique Observatory");
             }
         }
