@@ -1249,22 +1249,18 @@ p {
   background: rgba(9, 11, 20, 0.75);
   border-radius: 16px;
   padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(76, 201, 240, 0.55);
+  box-shadow: 0 0 20px rgba(76, 201, 240, 0.2), inset 0 0 15px rgba(76, 201, 240, 0.08);
   margin-bottom: 18px;
 }
 
 .count-number {
   font-size: 48px;
   font-weight: 800;
-  color: #00f5d4;
-  text-shadow: 0 0 20px rgba(0, 245, 212, 0.45);
+  color: #3b82f6;
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
   margin-bottom: 14px;
   transition: transform 0.15s ease;
-}
-
-.btn-group {
-  display: flex;
-  gap: 8px;
 }
 
 .btn {
@@ -1326,10 +1322,11 @@ document.getElementById('btnDecrease').addEventListener('click', () => {
 document.getElementById('btnReset').addEventListener('click', () => {
   count = 0;
   updateDisplay();
+  counterEl.style.color = '#3b82f6';
   console.warn('Bộ đếm đã được đặt lại về 0');
 });
 
-const hues = ['#00f5d4', '#ff6b35', '#f72585', '#4cc9f0', '#a855f7'];
+const hues = ['#3b82f6', '#00f5d4', '#ff6b35', '#f72585', '#a855f7'];
 let currentIndex = 0;
 
 document.getElementById('btnConfetti').addEventListener('click', () => {
@@ -1360,14 +1357,14 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
   justify-content: center;
   background: #070913;
   font-family: 'Courier New', monospace;
-  color: #00f5d4;
+  color: #4cc9f0;
 }
 .clock-wrap {
   padding: 36px 48px;
   border-radius: 20px;
   background: rgba(17, 21, 38, 0.9);
   border: 2px solid #f72585;
-  box-shadow: 0 0 35px rgba(247, 37, 133, 0.35), inset 0 0 20px rgba(0, 245, 212, 0.15);
+  box-shadow: 0 0 35px rgba(247, 37, 133, 0.35), inset 0 0 20px rgba(76, 201, 240, 0.2);
   text-align: center;
 }
 .cyber-title {
@@ -1380,7 +1377,8 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
   font-size: 56px;
   font-weight: bold;
   letter-spacing: 4px;
-  text-shadow: 0 0 20px #00f5d4;
+  color: #4cc9f0;
+  text-shadow: 0 0 20px #4cc9f0, 0 0 35px rgba(76, 201, 240, 0.6);
 }
 .date-text {
   margin-top: 12px;
@@ -1402,6 +1400,7 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
 setInterval(updateClock, 1000);
 updateClock();
 console.log('⏰ Đồng hồ Cyberpunk đang chạy...');`
+
       },
 
       todoApp: {
@@ -1510,12 +1509,12 @@ canvas { display: block; }
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  color: #00f5d4;
+  color: #ff6b35;
   background: rgba(17, 21, 38, 0.85);
   padding: 8px 16px;
   border-radius: 999px;
   font-size: 13px;
-  border: 1px solid rgba(0, 245, 212, 0.3);
+  border: 1px solid rgba(255, 107, 53, 0.3);
   pointer-events: none;
 }`,
         js: `const canvas = document.getElementById('canvas');
@@ -1533,7 +1532,7 @@ const particles = Array.from({ length: 50 }, () => ({
   y: Math.random() * h,
   vx: (Math.random() - 0.5) * 1.5,
   vy: (Math.random() - 0.5) * 1.5,
-  color: ['#ff6b35', '#f72585', '#00f5d4', '#4cc9f0'][Math.floor(Math.random() * 4)]
+  color: '#ffffff'
 }));
 
 function animate() {
@@ -1555,7 +1554,8 @@ function animate() {
       const p2 = particles[j];
       const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
       if (dist < 110) {
-        ctx.strokeStyle = 'rgba(0, 245, 212, ' + (1 - dist / 110) + ')';
+        ctx.strokeStyle = 'rgba(255, 107, 53, ' + (1 - dist / 110) + ')';
+        ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p2.x, p2.y);
         ctx.stroke();
