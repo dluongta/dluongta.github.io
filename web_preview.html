@@ -287,7 +287,7 @@
       animation: none;
     }
 
-    /* Select Mẫu có sẵn (đã cập nhật) */
+    /* Select Mẫu có sẵn */
     .template-select {
       background: var(--bg-Control);
       color: var(--text-main);
@@ -936,11 +936,12 @@
         <span id="autoRunDot" class="pulse-dot"></span>
       </label>
 
-      <!-- Chỉ còn lại 2 mẫu: Thẻ Neon và To-do -->
+      <!-- Danh sách mẫu có sẵn đã được cập nhật thứ tự -->
       <select id="templateSelect" class="template-select" onchange="handleTemplateChange(this.value)">
         <option value="" disabled selected>✨ Mẫu có sẵn...</option>
         <option value="neonCard">1. Thẻ Neon 3D & Bộ đếm</option>
-        <option value="todoApp">2. Ứng dụng Ghi chú Nhanh</option>
+        <option value="vietnamClock">2. Đồng hồ Số</option>
+        <option value="todoApp">3. Ứng dụng Ghi chú Nhanh</option>
       </select>
 
       <button id="btnLayoutToggle" class="btn" onclick="toggleDesktopLayout()" title="Đổi bố cục khung nhìn">
@@ -1116,7 +1117,7 @@
 
   <script>
     /*************************************************************************
-     * 1. KHO MẪU CODE CÓ SẴN (ĐÃ LƯỢC BỎ ĐỒNG HỒ & HẠT MẠNG LƯỚI)
+     * 1. KHO MẪU CODE CÓ SẴN (ĐÃ BỔ SUNG ĐỒNG HỒ SỐ)
      *************************************************************************/
     const TEMPLATES = {
       neonCard: {
@@ -1297,6 +1298,177 @@ document.getElementById('btnConfetti').addEventListener('click', () => {
 });
 
 console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
+      },
+
+      vietnamClock: {
+        html: `<div class="clock-card">
+  <div class="clock-badge">🇻🇳 VIỆT NAM STANDARD TIME (UTC+07:00)</div>
+  <div class="time-display">
+    <div class="time-segment">
+      <span id="hours" class="time-digit">00</span>
+      <span class="time-label">GIỜ</span>
+    </div>
+    <span class="time-separator">:</span>
+    <div class="time-segment">
+      <span id="minutes" class="time-digit">00</span>
+      <span class="time-label">PHÚT</span>
+    </div>
+    <span class="time-separator">:</span>
+    <div class="time-segment">
+      <span id="seconds" class="time-digit">00</span>
+      <span class="time-label">GIÂY</span>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div id="fullDateDisplay" class="date-display">Đang cập nhật ngày...</div>
+  <div id="gmtLabel" class="timezone-tag">Múi giờ Việt Nam (UTC+07:00)</div>
+</div>`,
+        css: `* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #111827 0%, #060913 100%);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #f8fafc;
+  padding: 20px;
+}
+
+.clock-card {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 245, 212, 0.3);
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6),
+              0 0 35px rgba(0, 245, 212, 0.15);
+}
+
+.clock-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(0, 245, 212, 0.12);
+  color: #00f5d4;
+  border: 1px solid rgba(0, 245, 212, 0.35);
+  margin-bottom: 24px;
+}
+
+.time-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.time-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+  padding: 14px 10px;
+  background: rgba(9, 14, 26, 0.9);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.5);
+}
+
+.time-digit {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 52px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.time-digit.highlight {
+  color: #00f5d4;
+  text-shadow: 0 0 20px rgba(0, 245, 212, 0.7);
+}
+
+.time-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 1.5px;
+  margin-top: 8px;
+}
+
+.time-separator {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 44px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  margin: 24px 0 18px;
+}
+
+.date-display {
+  font-size: 18px;
+  font-weight: 600;
+  color: #93c5fd;
+  text-transform: capitalize;
+  margin-bottom: 6px;
+}
+
+.timezone-tag {
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: monospace;
+}`,
+        js: `function updateVietnamTime() {
+  const now = new Date();
+
+  // Chuẩn hóa thời gian theo múi giờ Việt Nam (Asia/Ho_Chi_Minh - UTC+7)
+  const timeFormatter = new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  const parts = timeFormatter.formatToParts(now);
+  const partMap = {};
+  parts.forEach(p => { partMap[p.type] = p.value; });
+
+  document.getElementById('hours').textContent = partMap.hour || '00';
+  document.getElementById('minutes').textContent = partMap.minute || '00';
+  document.getElementById('seconds').textContent = partMap.second || '00';
+
+  // Định dạng Thứ, Ngày, Tháng, Năm theo chuẩn tiếng Việt
+  const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
+  document.getElementById('fullDateDisplay').textContent = dateFormatter.format(now);
+}
+
+setInterval(updateVietnamTime, 1000);
+updateVietnamTime();
+
+console.log('🇻🇳 Đồng hồ Số đã khởi chạy!');`
       },
 
       todoApp: {
