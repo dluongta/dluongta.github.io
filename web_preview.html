@@ -287,21 +287,7 @@
       animation: none;
     }
 
-    @keyframes pulseAnim {
-
-      0%,
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-
-      50% {
-        opacity: 0.4;
-        transform: scale(0.85);
-      }
-    }
-
-    /* Select Mẫu có sẵn */
+    /* Select Mẫu có sẵn (đã cập nhật) */
     .template-select {
       background: var(--bg-Control);
       color: var(--text-main);
@@ -352,7 +338,7 @@
       color: #ffffff;
     }
 
-    /* Không gian làm việc chính (Workspace) */
+    /* Workspace */
     .workspace {
       flex: 1;
       display: flex;
@@ -366,7 +352,6 @@
       flex-direction: column;
     }
 
-    /* Khung chứa 3 ô nhập code (HTML, CSS, JS) */
     .editors-pane {
       width: 50%;
       height: 100%;
@@ -387,7 +372,6 @@
       flex-direction: row;
     }
 
-    /* Từng thẻ Editor */
     .editor-card {
       flex: 1;
       min-height: 38px;
@@ -502,7 +486,6 @@
       color: var(--neon-red);
     }
 
-    /* Vùng soạn thảo code & số dòng */
     .code-body {
       flex: 1;
       display: flex;
@@ -549,7 +532,6 @@
       color: #fff;
     }
 
-    /* Thanh kéo chia đôi màn hình (Splitter) */
     .splitter {
       width: 6px;
       background: #151a2e;
@@ -570,7 +552,6 @@
       background: linear-gradient(180deg, var(--neon-orange), var(--neon-pink), var(--neon-blue));
     }
 
-    /* Khung bên phải: Preview + Console */
     .preview-pane {
       flex: 1;
       height: 100%;
@@ -686,7 +667,6 @@
       transition: width 0.2s ease;
     }
 
-    /* Bảng điều khiển Console */
     .console-drawer {
       height: 155px;
       background: var(--bg-panel);
@@ -808,7 +788,6 @@
       font-size: 12px;
     }
 
-    /* Hộp thoại Modal xác nhận Reset */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -855,7 +834,6 @@
       gap: 8px;
     }
 
-    /* Toast thông báo góc dưới */
     .toast-container {
       position: fixed;
       bottom: 16px;
@@ -883,7 +861,6 @@
       display: none !important;
     }
 
-    /* Scrollbar tinh chỉnh */
     ::-webkit-scrollbar {
       width: 7px;
       height: 7px;
@@ -902,7 +879,6 @@
       background: #3a4878;
     }
 
-    /* Responsive trên màn hình nhỏ (< 960px) */
     @media (max-width: 960px) {
       .mobile-tabs {
         display: flex;
@@ -926,10 +902,8 @@
 
 <body>
 
-  <!-- Thanh dải màu Neon trên cùng -->
   <div class="neon-top-bar"></div>
 
-  <!-- Thanh điều hướng & công cụ chính -->
   <header class="app-header">
     <div class="brand-box">
       <div class="brand-logo">
@@ -948,13 +922,11 @@
     </div>
 
     <div class="header-controls">
-      <!-- Nút Run (Chạy) -->
       <button id="btnRun" class="btn btn-run" onclick="runCode(true)" title="Chạy code ngay (Ctrl + Enter)">
         <span>▶ Chạy (Run)</span>
         <span class="kbd-tag font-mono">Ctrl+Enter</span>
       </button>
 
-      <!-- Công tắc Tự động chạy (Auto-run) -->
       <label class="autorun-switch" title="Tự động chạy code sau 400ms khi ngừng gõ">
         <input type="checkbox" id="toggleAutoRun" checked onchange="handleAutoRunToggle(this.checked)" />
         <div class="switch-track">
@@ -964,33 +936,27 @@
         <span id="autoRunDot" class="pulse-dot"></span>
       </label>
 
-      <!-- Chọn mẫu code có sẵn -->
+      <!-- Chỉ còn lại 2 mẫu: Thẻ Neon và To-do -->
       <select id="templateSelect" class="template-select" onchange="handleTemplateChange(this.value)">
         <option value="" disabled selected>✨ Mẫu có sẵn...</option>
         <option value="neonCard">1. Thẻ Neon 3D & Bộ đếm</option>
-        <option value="cyberClock">2. Đồng hồ Số Cyberpunk</option>
-        <option value="todoApp">3. Ứng dụng Ghi chú Nhanh</option>
-        <option value="canvasParticles">4. Hiệu ứng Hạt Mạng Lưới</option>
+        <option value="todoApp">2. Ứng dụng Ghi chú Nhanh</option>
       </select>
 
-      <!-- Đổi bố cục Chia dọc / Chia ngang -->
       <button id="btnLayoutToggle" class="btn" onclick="toggleDesktopLayout()" title="Đổi bố cục khung nhìn">
         <span id="layoutLabel">Chia dọc</span>
       </button>
 
-      <!-- Nút tải file HTML -->
       <button class="btn btn-cyan" onclick="downloadCombinedHTML()" title="Tải toàn bộ code thành 1 file .html">
         <span>Tải HTML</span>
       </button>
 
-      <!-- Nút Khôi phục mặc định -->
       <button class="btn btn-danger-icon" onclick="openResetModal()" title="Đặt lại code mẫu mặc định">
         <span>Đặt lại</span>
       </button>
     </div>
   </header>
 
-  <!-- Thanh chuyển Tab dành cho màn hình nhỏ / điện thoại -->
   <nav class="mobile-tabs">
     <button id="mobTab-html" class="mob-tab-btn active" onclick="switchMobileTab('html')">HTML</button>
     <button id="mobTab-css" class="mob-tab-btn" onclick="switchMobileTab('css')">CSS</button>
@@ -998,13 +964,11 @@
     <button id="mobTab-preview" class="mob-tab-btn" onclick="switchMobileTab('preview')">⚡ Xem trước</button>
   </nav>
 
-  <!-- Khu vực làm việc chính -->
   <main id="workspaceContainer" class="workspace">
 
-    <!-- BÊN TRÁI: 3 Ô NHẬP CODE HTML, CSS, JS -->
     <section id="editorsPane" class="editors-pane">
 
-      <!-- 1. Ô nhập HTML -->
+      <!-- 1. HTML -->
       <div id="panel-html" class="editor-card card-html">
         <div class="editor-header">
           <div class="editor-title-group">
@@ -1026,7 +990,7 @@
         </div>
       </div>
 
-      <!-- 2. Ô nhập CSS -->
+      <!-- 2. CSS -->
       <div id="panel-css" class="editor-card card-css">
         <div class="editor-header">
           <div class="editor-title-group">
@@ -1048,7 +1012,7 @@
         </div>
       </div>
 
-      <!-- 3. Ô nhập JavaScript -->
+      <!-- 3. JS -->
       <div id="panel-js" class="editor-card card-js">
         <div class="editor-header">
           <div class="editor-title-group">
@@ -1072,13 +1036,10 @@
 
     </section>
 
-    <!-- Thanh kéo điều chỉnh kích thước -->
     <div id="splitterBar" class="splitter" title="Kéo để thay đổi kích thước khung"></div>
 
-    <!-- BÊN PHẢI: KHUNG XEM TRƯỚC (PREVIEW) & CONSOLE -->
     <section id="previewPane" class="preview-pane">
 
-      <!-- Khung chạy kết quả Live Preview -->
       <div class="preview-card">
         <div class="preview-header">
           <div class="preview-header-left">
@@ -1098,8 +1059,7 @@
               <button class="vp-btn" onclick="setPreviewWidth('375px', this)">Mobile</button>
             </div>
             <button class="mini-btn" onclick="openPreviewInNewTab()" title="Mở kết quả sang Tab mới">↗ Tab mới</button>
-            <button class="mini-btn" onclick="toggleFullscreenPreview()" title="Phóng to / Thu nhỏ khung xem trước">⛶
-              Phóng to</button>
+            <button class="mini-btn" onclick="toggleFullscreenPreview()" title="Phóng to / Thu nhỏ khung xem trước">⛶ Phóng to</button>
           </div>
         </div>
 
@@ -1109,7 +1069,6 @@
         </div>
       </div>
 
-      <!-- Ngăn Console bắt log và lỗi -->
       <div id="consoleDrawer" class="console-drawer">
         <div class="console-header" onclick="toggleConsoleDrawer()">
           <div class="console-title font-mono">
@@ -1125,8 +1084,7 @@
         </div>
 
         <div id="consoleOutput" class="console-logs font-mono">
-          <div style="color:var(--text-dim);font-style:italic">// Sẵn sàng ghi nhận console.log, console.warn,
-            console.error...</div>
+          <div style="color:var(--text-dim);font-style:italic">// Sẵn sàng ghi nhận console.log, console.warn, console.error...</div>
         </div>
 
         <div id="consoleInputRow" class="console-input-bar font-mono">
@@ -1141,7 +1099,6 @@
 
   </main>
 
-  <!-- Hộp thoại xác nhận đặt lại code -->
   <div id="resetModal" class="modal-backdrop">
     <div class="modal-box">
       <div class="modal-title">Khôi phục code mẫu mặc định?</div>
@@ -1155,12 +1112,11 @@
     </div>
   </div>
 
-  <!-- Khung chứa thông báo Toast -->
   <div id="toastContainer" class="toast-container"></div>
 
   <script>
     /*************************************************************************
-     * 1. KHO MẪU CODE CÓ SẴN (TEMPLATES)
+     * 1. KHO MẪU CODE CÓ SẴN (ĐÃ LƯỢC BỎ ĐỒNG HỒ & HẠT MẠNG LƯỚI)
      *************************************************************************/
     const TEMPLATES = {
       neonCard: {
@@ -1343,66 +1299,6 @@ document.getElementById('btnConfetti').addEventListener('click', () => {
 console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
       },
 
-      cyberClock: {
-        html: `<div class="clock-wrap">
-  <div class="cyber-title">CYBERPUNK TIME // HANOI GMT+7</div>
-  <div id="clockDisplay" class="clock-digits">00:00:00</div>
-  <div id="dateDisplay" class="date-text">Đang tải ngày...</div>
-</div>`,
-        css: `body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #070913;
-  font-family: 'Courier New', monospace;
-  color: #4cc9f0;
-}
-.clock-wrap {
-  padding: 36px 48px;
-  border-radius: 20px;
-  background: rgba(17, 21, 38, 0.9);
-  border: 2px solid #f72585;
-  box-shadow: 0 0 35px rgba(247, 37, 133, 0.35), inset 0 0 20px rgba(76, 201, 240, 0.2);
-  text-align: center;
-}
-.cyber-title {
-  font-size: 12px;
-  letter-spacing: 3px;
-  color: #ff6b35;
-  margin-bottom: 12px;
-}
-.clock-digits {
-  font-size: 56px;
-  font-weight: bold;
-  letter-spacing: 4px;
-  color: #4cc9f0;
-  text-shadow: 0 0 20px #4cc9f0, 0 0 35px rgba(76, 201, 240, 0.6);
-}
-.date-text {
-  margin-top: 12px;
-  font-size: 14px;
-  color: #94a3b8;
-}`,
-        js: `function updateClock() {
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('vi-VN', { hour12: false });
-  const dateStr = now.toLocaleDateString('vi-VN', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  document.getElementById('clockDisplay').textContent = timeStr;
-  document.getElementById('dateDisplay').textContent = dateStr;
-}
-setInterval(updateClock, 1000);
-updateClock();
-console.log('⏰ Đồng hồ Cyberpunk đang chạy...');`
-
-      },
-
       todoApp: {
         html: `<div class="todo-card">
   <h2>📝 Danh sách Việc cần làm</h2>
@@ -1491,81 +1387,6 @@ formEl.onsubmit = (e) => {
 };
 
 render();`
-      },
-
-      canvasParticles: {
-        html: `<canvas id="canvas"></canvas>
-<div class="overlay">Hiệu ứng mạng lưới hạt ánh sáng Neon</div>`,
-        css: `body, html {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: #070913;
-  font-family: sans-serif;
-}
-canvas { display: block; }
-.overlay {
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #ff6b35;
-  background: rgba(17, 21, 38, 0.85);
-  padding: 8px 16px;
-  border-radius: 999px;
-  font-size: 13px;
-  border: 1px solid rgba(255, 107, 53, 0.3);
-  pointer-events: none;
-}`,
-        js: `const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let w = canvas.width = window.innerWidth;
-let h = canvas.height = window.innerHeight;
-
-window.addEventListener('resize', () => {
-  w = canvas.width = window.innerWidth;
-  h = canvas.height = window.innerHeight;
-});
-
-const particles = Array.from({ length: 50 }, () => ({
-  x: Math.random() * w,
-  y: Math.random() * h,
-  vx: (Math.random() - 0.5) * 1.5,
-  vy: (Math.random() - 0.5) * 1.5,
-  color: '#ffffff'
-}));
-
-function animate() {
-  ctx.fillStyle = 'rgba(7, 9, 19, 0.25)';
-  ctx.fillRect(0, 0, w, h);
-
-  particles.forEach((p, i) => {
-    p.x += p.vx;
-    p.y += p.vy;
-    if (p.x < 0 || p.x > w) p.vx *= -1;
-    if (p.y < 0 || p.y > h) p.vy *= -1;
-
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-    ctx.fillStyle = p.color;
-    ctx.fill();
-
-    for (let j = i + 1; j < particles.length; j++) {
-      const p2 = particles[j];
-      const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-      if (dist < 110) {
-        ctx.strokeStyle = 'rgba(255, 107, 53, ' + (1 - dist / 110) + ')';
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p2.x, p2.y);
-        ctx.stroke();
-      }
-    }
-  });
-  requestAnimationFrame(animate);
-}
-animate();
-console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
       }
     };
 
@@ -1660,14 +1481,13 @@ console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
     }
 
     /*************************************************************************
-     * 4. TỔNG HỢP CODE & CHẠY TRONG IFRAME (AN TOÀN TUYỆT ĐỐI KHI CHẠY LOCAL)
+     * 4. TỔNG HỢP CODE & CHẠY TRONG IFRAME
      *************************************************************************/
     function buildCombinedHTML(includeConsoleBridge) {
       const htmlCode = editors.html.value;
       const cssCode = editors.css.value;
       const jsCode = editors.js.value;
 
-      // Sử dụng nối chuỗi cho các thẻ đóng để trình duyệt KHÔNG BAO GIỜ cắt nhầm thẻ script chính
       const T_STYLE_OPEN = '<style>';
       const T_STYLE_CLOSE = '<' + '/style>';
       const T_SCRIPT_OPEN = '<script>';
@@ -1753,7 +1573,7 @@ console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
     }
 
     /*************************************************************************
-     * 5. BẢNG ĐIỀU KHIỂN CONSOLE & CHẠY LỆNH NHANH
+     * 5. CONSOLE & POSTMESSAGE
      *************************************************************************/
     window.addEventListener('message', (event) => {
       if (!event.data || event.data.source !== 'codeplay-iframe') return;
@@ -1831,7 +1651,7 @@ console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
     }
 
     /*************************************************************************
-     * 6. CÁC TIỆN ÍCH: CHÉP, XÓA, CĂN LỀ, TẢI FILE, MỞ TAB MỚI
+     * 6. CÁC TIỆN ÍCH TRÊN GIAO DIỆN
      *************************************************************************/
     function copyEditorCode(lang) {
       const textarea = editors[lang];
@@ -1932,7 +1752,7 @@ console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
     }
 
     /*************************************************************************
-     * 7. CHUYỂN TAB TRÊN MOBILE & CHIA ĐÔI KHUNG HÌNH TRÊN DESKTOP
+     * 7. CHUYỂN TAB MOBILE & SPLITTER
      *************************************************************************/
     function switchMobileTab(tab) {
       const panels = {
@@ -1985,7 +1805,6 @@ console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
       }
     }
 
-    // Kéo thanh Splitter để thay đổi độ rộng / cao
     (function initDraggableSplitter() {
       const splitter = document.getElementById('splitterBar');
       const workspace = document.getElementById('workspaceContainer');
@@ -2023,7 +1842,7 @@ console.log('✨ Canvas hạt ánh sáng đã khởi chạy!');`
     })();
 
     /*************************************************************************
-     * 8. LƯU TRỮ LOCALSTORAGE & HỘP THOẠI XÁC NHẬN
+     * 8. LOCALSTORAGE & KHỞI TẠO
      *************************************************************************/
     function saveStateToStorage() {
       try {
