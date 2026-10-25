@@ -621,14 +621,15 @@
       font-weight: 700;
       color: var(--neon-cyan);
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis; 
     }
 
     .last-run-time {
       font-size: 11px;
       color: var(--text-muted);
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      flex-shrink: 0;
     }
 
     .preview-toolbar {
@@ -1076,7 +1077,7 @@
               <span class="t-dot" style="background:#f59e0b"></span>
               <span class="t-dot" style="background:#10b981"></span>
             </div>
-            <span class="preview-label">⚡ Live Preview</span>
+            <span class="preview-label">⚡ Kết quả chạy (Live Preview)</span>
             <span id="lastRunTime" class="last-run-time font-mono">Vừa cập nhật</span>
           </div>
 
