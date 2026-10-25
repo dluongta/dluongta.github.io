@@ -936,13 +936,9 @@
         <span id="autoRunDot" class="pulse-dot"></span>
       </label>
 
-      <!-- Danh sách mẫu có sẵn đã được cập nhật thứ tự -->
-      <select id="templateSelect" class="template-select" onchange="handleTemplateChange(this.value)">
-        <option value="" disabled selected>✨ Mẫu có sẵn...</option>
-        <option value="neonCard">1. Thẻ Neon 3D & Bộ đếm</option>
-        <option value="vietnamClock">2. Đồng hồ Số</option>
-        <option value="todoApp">3. Ứng dụng Ghi chú Nhanh</option>
-      </select>
+      <button class="template-select" onclick="loadDefaultTemplate()" title="Tải mẫu code ban đầu">
+        ✨ Mẫu có sẵn
+      </button>
 
       <button id="btnLayoutToggle" class="btn" onclick="toggleDesktopLayout()" title="Đổi bố cục khung nhìn">
         <span id="layoutLabel">Chia dọc</span>
@@ -1117,7 +1113,7 @@
 
   <script>
     /*************************************************************************
-     * 1. KHO MẪU CODE CÓ SẴN (ĐÃ BỔ SUNG ĐỒNG HỒ SỐ)
+     * 1. KHO MẪU CODE CÓ SẴN (Đã cập nhật chỉ còn 1 mẫu mặc định)
      *************************************************************************/
     const TEMPLATES = {
       neonCard: {
@@ -1283,7 +1279,8 @@ document.getElementById('btnReset').addEventListener('click', () => {
   console.warn('Bộ đếm đã được đặt lại về 0');
 });
 
-const hues = ['#4cc9f0', '#00f5d4', '#ff6b35', '#f72585', '#a855f7'];
+// Đã loại bỏ màu xanh lá (cyan), chỉ giữ: xanh dương, tím, hồng, cam
+const hues = ['#4cc9f0', '#a855f7', '#f72585', '#ff6b35'];
 let currentIndex = 0;
 
 document.getElementById('btnConfetti').addEventListener('click', () => {
@@ -1298,267 +1295,6 @@ document.getElementById('btnConfetti').addEventListener('click', () => {
 });
 
 console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
-      },
-
-      vietnamClock: {
-        html: `<div class="clock-card">
-  <div class="clock-badge">🇻🇳 VIỆT NAM STANDARD TIME (UTC+07:00)</div>
-  <div class="time-display">
-    <div class="time-segment">
-      <span id="hours" class="time-digit">00</span>
-      <span class="time-label">GIỜ</span>
-    </div>
-    <span class="time-separator">:</span>
-    <div class="time-segment">
-      <span id="minutes" class="time-digit">00</span>
-      <span class="time-label">PHÚT</span>
-    </div>
-    <span class="time-separator">:</span>
-    <div class="time-segment">
-      <span id="seconds" class="time-digit">00</span>
-      <span class="time-label">GIÂY</span>
-    </div>
-  </div>
-  <div class="divider"></div>
-  <div id="fullDateDisplay" class="date-display">Đang cập nhật ngày...</div>
-  <div id="gmtLabel" class="timezone-tag">Múi giờ Việt Nam (UTC+07:00)</div>
-</div>`,
-        css: `* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at center, #111827 0%, #060913 100%);
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  color: #f8fafc;
-  padding: 20px;
-}
-
-.clock-card {
-  width: 100%;
-  max-width: 520px;
-  background: rgba(17, 24, 39, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 245, 212, 0.3);
-  border-radius: 24px;
-  padding: 32px 24px;
-  text-align: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6),
-              0 0 35px rgba(0, 245, 212, 0.15);
-}
-
-.clock-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  padding: 5px 14px;
-  border-radius: 999px;
-  background: rgba(0, 245, 212, 0.12);
-  color: #00f5d4;
-  border: 1px solid rgba(0, 245, 212, 0.35);
-  margin-bottom: 24px;
-}
-
-.time-display {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.time-segment {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 90px;
-  padding: 14px 10px;
-  background: rgba(9, 14, 26, 0.9);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.5);
-}
-
-.time-digit {
-  font-family: 'JetBrains Mono', Consolas, monospace;
-  font-size: 52px;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-}
-
-.time-digit.highlight {
-  color: #00f5d4;
-  text-shadow: 0 0 20px rgba(0, 245, 212, 0.7);
-}
-
-.time-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #64748b;
-  letter-spacing: 1.5px;
-  margin-top: 8px;
-}
-
-.time-separator {
-  font-family: 'JetBrains Mono', Consolas, monospace;
-  font-size: 44px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-  margin: 24px 0 18px;
-}
-
-.date-display {
-  font-size: 18px;
-  font-weight: 600;
-  color: #93c5fd;
-  text-transform: capitalize;
-  margin-bottom: 6px;
-}
-
-.timezone-tag {
-  font-size: 12px;
-  color: #94a3b8;
-  font-family: monospace;
-}`,
-        js: `function updateVietnamTime() {
-  const now = new Date();
-
-  // Chuẩn hóa thời gian theo múi giờ Việt Nam (Asia/Ho_Chi_Minh - UTC+7)
-  const timeFormatter = new Intl.DateTimeFormat('vi-VN', {
-    timeZone: 'Asia/Ho_Chi_Minh',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  });
-
-  const parts = timeFormatter.formatToParts(now);
-  const partMap = {};
-  parts.forEach(p => { partMap[p.type] = p.value; });
-
-  document.getElementById('hours').textContent = partMap.hour || '00';
-  document.getElementById('minutes').textContent = partMap.minute || '00';
-  document.getElementById('seconds').textContent = partMap.second || '00';
-
-  // Định dạng Thứ, Ngày, Tháng, Năm theo chuẩn tiếng Việt
-  const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
-    timeZone: 'Asia/Ho_Chi_Minh',
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-
-  document.getElementById('fullDateDisplay').textContent = dateFormatter.format(now);
-}
-
-setInterval(updateVietnamTime, 1000);
-updateVietnamTime();
-
-console.log('🇻🇳 Đồng hồ Số đã khởi chạy!');`
-      },
-
-      todoApp: {
-        html: `<div class="todo-card">
-  <h2>📝 Danh sách Việc cần làm</h2>
-  <form id="todoForm" class="input-row">
-    <input id="todoInput" type="text" placeholder="Nhập công việc mới..." required />
-    <button type="submit">Thêm</button>
-  </form>
-  <ul id="todoList"></ul>
-</div>`,
-        css: `body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #0f172a, #1e1b4b);
-  font-family: system-ui, sans-serif;
-  color: #fff;
-  padding: 20px;
-}
-.todo-card {
-  width: 100%;
-  max-width: 400px;
-  background: #161b30;
-  padding: 24px;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-}
-h2 { margin-top: 0; margin-bottom: 14px; color: #4cc9f0; }
-.input-row { display: flex; gap: 8px; margin-bottom: 16px; }
-input {
-  flex: 1;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #334155;
-  background: #0b0e1a;
-  color: #fff;
-  outline: none;
-}
-button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #ff6b35, #f72585);
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-}
-ul { list-style: none; padding: 0; margin: 0; }
-li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
-  background: #0d1120;
-  margin-bottom: 8px;
-  border-radius: 10px;
-  border-left: 3px solid #00f5d4;
-}`,
-        js: `const items = ['Học HTML5 & CSS3 Neon', 'Thực hành JavaScript DOM', 'Xây dựng dự án cá nhân'];
-const listEl = document.getElementById('todoList');
-const formEl = document.getElementById('todoForm');
-const inputEl = document.getElementById('todoInput');
-
-function render() {
-  listEl.innerHTML = '';
-  items.forEach((text, idx) => {
-    const li = document.createElement('li');
-    li.innerHTML = '<span>' + text + '</span><button style="background:#ef4444;padding:4px 10px;font-size:12px">Xóa</button>';
-    li.querySelector('button').onclick = () => {
-      console.log('Đã xóa mục:', items[idx]);
-      items.splice(idx, 1);
-      render();
-    };
-    listEl.appendChild(li);
-  });
-}
-
-formEl.onsubmit = (e) => {
-  e.preventDefault();
-  items.push(inputEl.value.trim());
-  console.log('Đã thêm công việc:', inputEl.value.trim());
-  inputEl.value = '';
-  render();
-};
-
-render();`
       }
     };
 
@@ -1868,16 +1604,15 @@ render();`
       }
     }
 
-    function handleTemplateChange(templateKey) {
-      const tpl = TEMPLATES[templateKey];
-      if (!tpl) return;
+    function loadDefaultTemplate() {
+      const tpl = TEMPLATES.neonCard;
       editors.html.value = tpl.html;
       editors.css.value = tpl.css;
       editors.js.value = tpl.js;
       ['html', 'css', 'js'].forEach(updateLineNumbers);
       saveStateToStorage();
       runCode(true);
-      document.getElementById('templateSelect').selectedIndex = 0;
+      showToast('✨ Đã tải code mẫu có sẵn!');
     }
 
     function downloadCombinedHTML() {
