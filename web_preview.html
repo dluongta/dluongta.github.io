@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Web Preview</title>
   <style>
     :root {
@@ -35,8 +35,9 @@
 
     html,
     body {
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%; /* Fallback cho trình duyệt cũ */
+      height: 100dvh; /* Sửa lỗi Console bị lọt xuống dưới thanh địa chỉ ở Mobile */
       overflow: hidden;
       background-color: var(--bg-deep);
       color: var(--text-main);
@@ -419,6 +420,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 0;
     }
 
     .lang-badge {
@@ -426,6 +428,7 @@
       font-weight: 800;
       padding: 2px 7px;
       border-radius: 5px;
+      flex-shrink: 0;
     }
 
     .lang-html {
@@ -449,17 +452,22 @@
     .file-name {
       font-size: 12px;
       color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .code-stats {
       font-size: 11px;
       color: var(--text-dim);
+      white-space: nowrap;
     }
 
     .editor-actions {
       display: flex;
       align-items: center;
       gap: 4px;
+      flex-shrink: 0;
     }
 
     .mini-btn {
@@ -475,6 +483,7 @@
       gap: 4px;
       font-family: inherit;
       transition: all 0.15s;
+      white-space: nowrap;
     }
 
     .mini-btn:hover {
@@ -592,11 +601,13 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 0;
     }
 
     .traffic-dots {
       display: flex;
       gap: 5px;
+      flex-shrink: 0;
     }
 
     .t-dot {
@@ -609,17 +620,22 @@
       font-size: 12px;
       font-weight: 700;
       color: var(--neon-cyan);
+      white-space: nowrap;
     }
 
     .last-run-time {
       font-size: 11px;
       color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .preview-toolbar {
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-shrink: 0;
     }
 
     .vp-group {
@@ -701,6 +717,19 @@
       gap: 8px;
       font-size: 12px;
       font-weight: 700;
+      min-width: 0;
+    }
+    
+    .console-title span:nth-child(2) {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .console-header-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0; 
     }
 
     .badge-count {
@@ -710,6 +739,7 @@
       background: rgba(0, 245, 212, 0.18);
       color: var(--neon-cyan);
       border: 1px solid rgba(0, 245, 212, 0.3);
+      flex-shrink: 0;
     }
 
     .badge-err {
@@ -719,6 +749,7 @@
       background: rgba(244, 63, 94, 0.2);
       color: #fda4af;
       border: 1px solid rgba(244, 63, 94, 0.4);
+      flex-shrink: 0;
     }
 
     .console-logs {
@@ -977,7 +1008,7 @@
             <button class="mini-btn" onclick="formatSimpleIndent('html')">Căn lề</button>
             <button class="mini-btn" onclick="copyEditorCode('html')">Chép</button>
             <button class="mini-btn danger" onclick="clearEditorCode('html')">Xóa</button>
-            <button class="mini-btn" onclick="toggleCollapsePanel('html')" title="Thu gọn / Mở rộng">▾</button>
+            <button id="btnToggle-html" class="mini-btn" onclick="toggleCollapsePanel('html')" title="Thu gọn / Mở rộng">Thu gọn ▾</button>
           </div>
         </div>
         <div id="body-html" class="code-body">
@@ -999,7 +1030,7 @@
             <button class="mini-btn" onclick="formatSimpleIndent('css')">Căn lề</button>
             <button class="mini-btn" onclick="copyEditorCode('css')">Chép</button>
             <button class="mini-btn danger" onclick="clearEditorCode('css')">Xóa</button>
-            <button class="mini-btn" onclick="toggleCollapsePanel('css')" title="Thu gọn / Mở rộng">▾</button>
+            <button id="btnToggle-css" class="mini-btn" onclick="toggleCollapsePanel('css')" title="Thu gọn / Mở rộng">Thu gọn ▾</button>
           </div>
         </div>
         <div id="body-css" class="code-body">
@@ -1021,7 +1052,7 @@
             <button class="mini-btn" onclick="formatSimpleIndent('js')">Căn lề</button>
             <button class="mini-btn" onclick="copyEditorCode('js')">Chép</button>
             <button class="mini-btn danger" onclick="clearEditorCode('js')">Xóa</button>
-            <button class="mini-btn" onclick="toggleCollapsePanel('js')" title="Thu gọn / Mở rộng">▾</button>
+            <button id="btnToggle-js" class="mini-btn" onclick="toggleCollapsePanel('js')" title="Thu gọn / Mở rộng">Thu gọn ▾</button>
           </div>
         </div>
         <div id="body-js" class="code-body">
@@ -1074,9 +1105,9 @@
             <span id="consoleCountBadge" class="badge-count">0</span>
             <span id="consoleErrorBadge" class="badge-err hidden">0 lỗi</span>
           </div>
-          <div onclick="event.stopPropagation()">
+          <div class="console-header-actions" onclick="event.stopPropagation()">
             <button class="mini-btn" onclick="clearConsoleLogs()">Xóa log</button>
-            <button class="mini-btn" onclick="toggleConsoleDrawer()">▾</button>
+            <button id="btnToggleConsole" class="mini-btn" onclick="toggleConsoleDrawer()">Thu gọn ▾</button>
           </div>
         </div>
 
@@ -1113,7 +1144,7 @@
 
   <script>
     /*************************************************************************
-     * 1. KHO MẪU CODE CÓ SẴN (Đã cập nhật chỉ còn 1 mẫu mặc định)
+     * 1. KHO MẪU CODE CÓ SẴN
      *************************************************************************/
     const TEMPLATES = {
       neonCard: {
@@ -1279,7 +1310,6 @@ document.getElementById('btnReset').addEventListener('click', () => {
   console.warn('Bộ đếm đã được đặt lại về 0');
 });
 
-// Đã loại bỏ màu xanh lá (cyan), chỉ giữ: xanh dương, tím, hồng, cam
 const hues = ['#4cc9f0', '#a855f7', '#f72585', '#ff6b35'];
 let currentIndex = 0;
 
@@ -1555,7 +1585,13 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
 
     function toggleConsoleDrawer() {
       const drawer = document.getElementById('consoleDrawer');
-      drawer.classList.toggle('collapsed');
+      const btn = document.getElementById('btnToggleConsole');
+      const isCollapsed = drawer.classList.toggle('collapsed');
+      if(isCollapsed) {
+          btn.innerHTML = 'Mở rộng ▴';
+      } else {
+          btn.innerHTML = 'Thu gọn ▾';
+      }
     }
 
     /*************************************************************************
@@ -1588,7 +1624,13 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
 
     function toggleCollapsePanel(lang) {
       const panel = document.getElementById('panel-' + lang);
-      panel.classList.toggle('collapsed');
+      const btn = document.getElementById('btnToggle-' + lang);
+      const isCollapsed = panel.classList.toggle('collapsed');
+      if(isCollapsed) {
+          btn.innerHTML = 'Mở rộng ▴';
+      } else {
+          btn.innerHTML = 'Thu gọn ▾';
+      }
     }
 
     function handleAutoRunToggle(checked) {
@@ -1705,7 +1747,7 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
         editorsPane.style.height = '100%';
         label.textContent = 'Chia dọc';
       } else {
-        workspace.classList.add('split-horizontal');
+        workspace.workspaceContainer.classList.add('split-horizontal');
         editorsPane.style.width = '100%';
         editorsPane.style.height = '50%';
         label.textContent = 'Chia ngang';
@@ -1796,20 +1838,6 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
       runCode(true);
       closeResetModal();
       showToast('🔄 Đã khôi phục code mẫu mặc định!');
-    }
-
-    function showToast(message) {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.className = 'toast-item';
-      toast.textContent = message;
-      container.appendChild(toast);
-
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(8px)';
-        setTimeout(() => toast.remove(), 250);
-      }, 2200);
     }
 
     window.addEventListener('keydown', (e) => {
