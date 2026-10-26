@@ -106,15 +106,21 @@
             inset: -2px;
             border-radius: 22px;
             padding: 2px;
+
             background: var(--grad-card-led);
             background-size: 300% 300%;
             animation: ledFlow 6s ease infinite;
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
+            mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
             mask-composite: exclude;
+            -webkit-mask:
+                linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
             pointer-events: none;
         }
-
+        
         @keyframes ledFlow {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
