@@ -1311,7 +1311,7 @@
                     <span id="hud-best" class="title-futuristic stat-value" style="color: var(--neon-gold);">0</span>
                 </div>
                 <div id="hud-extra" class="glass-pill hud-extra-pill">
-                    ❤️❤️❤️
+                    ❤️ x3
                 </div>
                 <button onclick="App.togglePause()" class="glass-pill icon-btn" title="Tạm dừng (P)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
@@ -1970,7 +1970,7 @@
                 document.getElementById('hud-best').textContent = Store.highScores.fruit;
                 const extra = document.getElementById('hud-extra');
                 if (this.mode === 'classic') {
-                    extra.innerHTML = '❤️'.repeat(Math.max(0, this.lives)) + '🖤'.repeat(Math.max(0, 3 - this.lives));
+                    extra.innerHTML = `❤️ x${Math.max(0, this.lives)}`;
                 } else {
                     extra.innerHTML = `⏱️ ${Math.ceil(this.timeLeft)}s`;
                 }
@@ -2505,7 +2505,7 @@
                 document.getElementById('hud-score').textContent = this.score;
                 document.getElementById('hud-best').textContent = Store.highScores.brick;
                 document.getElementById('hud-game-subtitle').textContent = `Cấp độ ${this.level} • Kéo thanh đỡ để phản bóng`;
-                document.getElementById('hud-extra').innerHTML = `LV.${this.level} | ${'❤️'.repeat(Math.max(0, this.lives))}`;
+                document.getElementById('hud-extra').innerHTML = `LV.${this.level} | ❤️ x${Math.max(0, this.lives)}`;
             },
 
             onPointerMove(x) {
