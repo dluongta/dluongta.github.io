@@ -1034,8 +1034,9 @@
             .app-main {
                 padding: 14px 12px calc(100px + var(--safe-bottom)) 12px;
             }
-            .coin-shop-tag, .skin-btn span, .stat-best-box {
-                display: none;
+            /* Ẩn hoàn toàn nút Skin và Tag thừa trên mobile để không bị lỗi khối trống */
+            .skin-btn, .coin-shop-tag, .stat-best-box {
+                display: none !important;
             }
             .hud-bar {
                 padding: 8px 10px;
@@ -2465,7 +2466,6 @@
                 const startX = (w - totalW) / 2;
                 const bw = (totalW - pad * (cols - 1)) / cols;
                 const bh = isMobile ? 20 : 23;
-                // Strictly Orange, Pink, Magenta, Purple, Gold row colors
                 const rowColors = ['#ff6a00', '#ff007a', '#9d00ff', '#e100ff', '#ff2a5f', '#ffaa00'];
 
                 for (let r = 0; r < rows; r++) {
@@ -3116,7 +3116,6 @@
                 ctx.shadowColor = this.wheelFlash > 0 ? '#ffffff' : coreColor;
                 ctx.shadowBlur = this.wheelFlash > 0 ? 32 : 22;
 
-                // Strictly Orange -> Pink -> Purple Wheel Gradient
                 const grad = ctx.createRadialGradient(0, 0, wheelR * 0.15, 0, 0, wheelR);
                 grad.addColorStop(0, '#ffffff');
                 grad.addColorStop(0.35, isBoss ? '#ffaa00' : '#ff6a00');
@@ -3254,7 +3253,6 @@
                 this.isGameOver = false;
                 const stageEl = document.getElementById('game-stage');
                 stageEl.classList.add('hidden');
-                // Restore smooth vertical scrolling on body when returning to Hub
                 document.body.style.overflow = '';
                 this.highlightNav('hub');
                 Store.syncUI();
@@ -3278,7 +3276,6 @@
 
                 const stageEl = document.getElementById('game-stage');
                 stageEl.classList.remove('hidden');
-                // Lock background page scroll only while inside the active game stage
                 document.body.style.overflow = 'hidden';
 
                 this.highlightNav(gameKey);
@@ -3488,7 +3485,6 @@
                     FruitGame.isPointerDown = false;
                 });
 
-                // Mobile Multi-Touch / Smooth Swipe Support inside Canvas only
                 this.canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     Sound.init();
@@ -3521,7 +3517,6 @@
                     FruitGame.isPointerDown = false;
                 }, { passive: false });
 
-                // Keyboard Controls
                 window.addEventListener('keydown', (e) => {
                     if (e.code === 'ArrowLeft' || e.code === 'KeyA') BrickGame.keys.left = true;
                     if (e.code === 'ArrowRight' || e.code === 'KeyD') BrickGame.keys.right = true;
@@ -3583,4 +3578,4 @@
         };
     </script>
 </body>
-</html> 
+</html>
