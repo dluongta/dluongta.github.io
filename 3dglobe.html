@@ -322,6 +322,37 @@
             text-decoration: underline;
             text-underline-offset: 3px;
         }
+
+        .loader-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 220px;
+        }
+
+        /* ---> THÊM ĐOẠN CSS NÀY VÀO <--- */
+        @keyframes globe-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .tech-spinner {
+            width: 44px;
+            height: 44px;
+            margin-bottom: 12px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, rgba(14, 165, 233, 0) 0%, #0ea5e9 40%, #a855f7 100%);
+            -webkit-mask: radial-gradient(farthest-side, transparent 82%, #000 84%);
+            mask: radial-gradient(farthest-side, transparent 82%, #000 84%);
+            animation: globe-spin 1s linear infinite;
+            filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.6));
+        }
     </style>
 </head>
 
@@ -330,13 +361,17 @@
     <!-- 1. Màn hình Preloader (Chỉ giữ thanh %) -->
     <div id="loader-overlay">
         <div class="loader-info">
-            <div class="loader-text-row">
-                <span>Initializing Globe</span>
-                <span id="loader-percent" class="mono loader-percent">0%</span>
-            </div>
-            <div class="progress-track">
-                <div id="loader-bar" class="progress-fill"></div>
-            </div>
+
+            <!-- ---> THÊM THẺ NÀY Ở ĐÂY <--- -->
+                <div class="tech-spinner"></div>
+
+                <div class="loader-text-row">
+                    <span>Initializing Globe</span>
+                    <span id="loader-percent" class="mono loader-percent">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div id="loader-bar" class="progress-fill"></div>
+                </div>
         </div>
     </div>
 
