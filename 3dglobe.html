@@ -346,11 +346,18 @@
             height: 44px;
             margin-bottom: 12px;
             border-radius: 50%;
-            background: conic-gradient(from 0deg, rgba(14, 165, 233, 0) 0%, #0ea5e9 40%, #a855f7 100%);
+            background: conic-gradient(
+                from 0deg, 
+                #0ea5e9 0deg, 
+                #a855f7 90deg, 
+                #334155 90deg, 
+                #334155 360deg
+            );
             -webkit-mask: radial-gradient(farthest-side, transparent 82%, #000 84%);
             mask: radial-gradient(farthest-side, transparent 82%, #000 84%);
             animation: globe-spin 1s linear infinite;
-            filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.6));
+            /* Hiệu ứng sáng mờ */
+            filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.4));
         }
     </style>
 </head>
