@@ -7,7 +7,7 @@
     <title>Text Image</title>
     <!-- <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script> -->
     <script src="tesseract.min.js"></script>
-<style>
+    <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 700px;
@@ -28,7 +28,7 @@
             border: 2px dashed #007bff;
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: #666;
             transition: 0.3s;
             cursor: pointer;
@@ -53,7 +53,6 @@
             white-space: pre-wrap;
         }
 
-        /* Ẩn dấu gạch chân đỏ trên một số trình duyệt khó tính */
         #output:focus {
             outline: none;
             border-color: #007bff;
@@ -69,10 +68,23 @@
             font-size: 16px;
             margin-top: 15px;
             transition: 0.2s;
+            display: inline-block;
         }
 
         .btn:hover {
             background: #218838;
+        }
+
+        .btn-paste {
+            background: #007bff;
+            width: 100%;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .btn-paste:hover {
+            background: #0056b3;
         }
 
         #preview {
@@ -113,18 +125,23 @@
 
     <div class="container">
         <h2>🔍 Trích xuất văn bản thông minh</h2>
+
         <div class="drop-zone" id="dropZone">
-            Nhấn vào đây để chọn ảnh hoặc <br>
-            Nhấn <kbd>Ctrl</kbd> + <kbd>V</kbd> để dán ảnh từ bộ nhớ tạm
+            Nhấn vào đây để chọn ảnh từ máy <br>
+            hoặc kéo thả ảnh vào khung này <br>
+            hoặc nhấn <kbd>Ctrl</kbd> + <kbd>V</kbd> để dán ảnh từ bộ nhớ tạm
         </div>
         <input type="file" id="imageInput" accept="image/*" style="display: none;">
+
+        <!-- Nút mới để dán trực tiếp bằng Click trên Mobile/PC -->
+        <button class="btn btn-paste" id="pasteBtn">📋 Nhấn vào đây để dán ảnh từ bộ nhớ tạm</button>
 
         <img id="preview" alt="Preview">
 
         <div id="status" class="loading">Sẵn sàng...</div>
 
-        <!-- Đã thêm hàng loạt thuộc tính để chặn hoàn toàn gạch đỏ chính tả -->
-        <textarea id="output" lang="vi" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Văn bản sẽ hiển thị ở đây..."></textarea>
+        <textarea id="output" lang="vi" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"
+            placeholder="Văn bản sẽ hiển thị ở đây..."></textarea>
 
         <button class="btn" id="copyBtn">📋 Sao chép kết quả</button>
     </div>
@@ -132,6 +149,7 @@
     <script>
         const imageInput = document.getElementById('imageInput');
         const dropZone = document.getElementById('dropZone');
+        const pasteBtn = document.getElementById('pasteBtn');
         const preview = document.getElementById('preview');
         const output = document.getElementById('output');
         const status = document.getElementById('status');
@@ -153,7 +171,6 @@
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-                // 1. Phóng to ảnh để đọc chữ nhỏ sắc nét
                 const scale = 2.0;
                 canvas.width = img.width * scale;
                 canvas.height = img.height * scale;
@@ -164,7 +181,6 @@
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
 
-                // 2. Chuyển xám và ép tương phản mềm
                 const contrast = 75;
                 const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
 
@@ -190,15 +206,10 @@
                         }
                     );
 
-                    // --- GIẢI QUYẾT LỖI XUỐNG DÒNG SAI CHỖ ---
-                    // Tesseract trả về toàn bộ text (result.data.text).
-                    // Ta dùng Regex để: 
-                    // 1. Thay thế các dấu xuống dòng ĐƠN LẺ (\n) bằng khoảng trắng (nối lại thành câu).
-                    // 2. Giữ nguyên các dấu xuống dòng KÉP (\n\n) để phân tách các đoạn văn rõ ràng.
                     let formattedText = result.data.text
-                        .replace(/([^\n])\n([^\n])/g, '$1 $2') // Tìm vị trí xuống dòng giữa 2 chữ và thay bằng khoảng trắng
-                        .replace(/\n{2,}/g, '\n\n')            // Nếu có 2 dấu xuống dòng trở lên, giữ nguyên làm đoạn mới
-                        .replace(/ {2,}/g, ' ')                // Xóa các khoảng trắng thừa
+                        .replace(/([^\n])\n([^\n])/g, '$1 $2')
+                        .replace(/\n{2,}/g, '\n\n')
+                        .replace(/ {2,}/g, ' ')
                         .trim();
 
                     output.value = formattedText;
@@ -210,7 +221,34 @@
             };
         }
 
-        // --- CÁC SỰ KIỆN GIAO DIỆN CHUẨN ---
+        // 1. Nhấn nút để đọc trực tiếp từ Clipboard (Hỗ trợ Click trên PC/Mobile)
+        pasteBtn.addEventListener('click', async () => {
+            try {
+                // Yêu cầu quyền đọc clipboard
+                const clipboardItems = await navigator.clipboard.read();
+                let imageFound = false;
+
+                for (const clipboardItem of clipboardItems) {
+                    // Tìm file có định dạng hình ảnh trong bộ nhớ tạm
+                    const imageTypes = clipboardItem.types.filter(type => type.startsWith('image/'));
+                    if (imageTypes.length > 0) {
+                        const blob = await clipboardItem.getType(imageTypes[0]);
+                        processImage(blob);
+                        imageFound = true;
+                        break; // Dừng lại sau khi tìm thấy ảnh đầu tiên
+                    }
+                }
+
+                if (!imageFound) {
+                    alert("Không tìm thấy ảnh trong bộ nhớ tạm. Hãy sao chép (copy) một hình ảnh trước!");
+                }
+            } catch (err) {
+                console.error("Lỗi khi đọc clipboard:", err);
+                alert("Trình duyệt từ chối quyền truy cập bộ nhớ tạm hoặc bạn chưa cấp quyền. \n\nMẹo: Tính năng này yêu cầu trang web chạy trên HTTPS hoặc localhost.");
+            }
+        });
+
+        // 2. Nhấn Ctrl+V để dán trực tiếp vào toàn trang
         window.addEventListener('paste', (e) => {
             const items = e.clipboardData.items;
             for (let i = 0; i < items.length; i++) {
@@ -221,18 +259,10 @@
             }
         });
 
+        // 3. Click hoặc kéo thả vào Drop Zone để chọn File
         dropZone.addEventListener('click', () => imageInput.click());
         imageInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) processImage(e.target.files[0]);
-        });
-
-        copyBtn.addEventListener('click', () => {
-            if (!output.value) return;
-            output.select();
-            document.execCommand('copy');
-            const originalText = copyBtn.innerText;
-            copyBtn.innerText = "Đã sao chép!";
-            setTimeout(() => copyBtn.innerText = originalText, 2000);
         });
 
         dropZone.addEventListener('dragover', (e) => {
@@ -244,6 +274,16 @@
             e.preventDefault();
             dropZone.classList.remove('active');
             if (e.dataTransfer.files.length > 0) processImage(e.dataTransfer.files[0]);
+        });
+
+        // Copy kết quả
+        copyBtn.addEventListener('click', () => {
+            if (!output.value) return;
+            output.select();
+            document.execCommand('copy');
+            const originalText = copyBtn.innerText;
+            copyBtn.innerText = "Đã sao chép!";
+            setTimeout(() => copyBtn.innerText = originalText, 2000);
         });
     </script>
 
