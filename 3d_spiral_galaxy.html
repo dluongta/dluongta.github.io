@@ -765,12 +765,17 @@
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                 </svg>
             </div>
-            <div style="min-width: 0; flex: 1;">
+            <!-- <div style="min-width: 0; flex: 1;">
                 <div class="title-row">
                     <h1 id="hud-preset-title" class="preset-title">3D Spiral Galaxy</h1>
                     <span id="hud-class-badge" class="badge">Orbital Disk</span>
                 </div>
                 <p id="hud-preset-subtitle" class="preset-sub">3D Orbital Spiral Galaxy</p>
+            </div> -->
+            <div style="min-width: 0; flex: 1;">
+                <div class="title-row">
+                    <h1 id="hud-preset-title" class="preset-title">3D Spiral Galaxy</h1>
+                </div>
             </div>
         </div>
 
@@ -1506,9 +1511,10 @@
             const gradBar = document.getElementById('gradient-preview');
             gradBar.style.background = `linear-gradient(90deg, ${params.coreColor} 0%, ${params.midColor} 50%, ${params.outerColor} 100%)`;
 
+            // document.getElementById('hud-preset-title').textContent = params.title;
+            // document.getElementById('hud-class-badge').textContent = params.badge;
+            // document.getElementById('hud-preset-subtitle').textContent = params.subtitle;
             document.getElementById('hud-preset-title').textContent = params.title;
-            document.getElementById('hud-class-badge').textContent = params.badge;
-            document.getElementById('hud-preset-subtitle').textContent = params.subtitle;
         }
 
         function updateTelemetryStats() {
