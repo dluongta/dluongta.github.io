@@ -44,6 +44,41 @@
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
+        #preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: var(--bg-deep);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.55s ease;
+        }
+        #preloader.loaded {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loader-orbit {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 4px solid rgba(148, 163, 184, 0.25);
+            border-top-color: #ff7b00;
+            animation: orbitSpin 0.85s linear infinite;
+        }
+        .loader-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #ff7b00;
+        }
+        @keyframes orbitSpin {
+            to { transform: rotate(360deg); }
+        }
+
         #canvas-container {
             position: fixed;
             inset: 0;
@@ -752,6 +787,11 @@
 
 <body>
 
+    <div id="preloader">
+        <div class="loader-orbit"></div>
+        <div class="loader-text">LOADING UNIVERSE...</div>
+    </div>
+
     <!-- 3D WebGL Canvas Container -->
     <div id="canvas-container"></div>
 
@@ -945,7 +985,7 @@
                 </div>
 
                 <div class="control-group" style="display: none;">
-                    <div class="control-header">
+                    <div class="control-header">    
                         <span class="control-title">Bar Structure Ratio</span>
                         <span id="val-bar" class="control-value">0.00</span>
                     </div>
@@ -1783,11 +1823,38 @@
             }
         }
 
-        window.onload = function () {
-            initScene();
-            setupEventListeners();
-            animate();
-        };
+        window.addEventListener('DOMContentLoaded', () => {
+            const preloader = document.getElementById('preloader');
+            requestAnimationFrame(() => {
+                initScene();
+                setupEventListeners();
+
+                requestAnimationFrame(() => {
+                    renderer.compile(scene, camera);
+
+                    let warmupFrames = 0;
+                    function runWarmup() {
+                        warmupFrames++;
+                        simTime += 0.016;
+                        if (galaxyMaterial) {
+                            galaxyMaterial.uniforms.uTime.value = simTime;
+                        }
+                        controls.update();
+                        renderer.render(scene, camera);
+
+                        if (warmupFrames < 5) {
+                            requestAnimationFrame(runWarmup);
+                        } else {
+                            clock.start();
+                            lastFpsUpdate = performance.now();
+                            animate();
+                            preloader.classList.add('loaded');
+                        }
+                    }
+                    requestAnimationFrame(runWarmup);
+                });
+            });
+        });
     </script>
 </body>
 
