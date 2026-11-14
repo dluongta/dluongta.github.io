@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script> -->
     <script src="three.min.js"></script>
     <script src="OrbitControls.js"></script>
-<style>
+    <style>
         :root {
             color-scheme: dark;
             --bg-deep: #02040a;
@@ -622,7 +622,6 @@
                 gap: 0.45rem;
             }
 
-            /* Chừa chỗ bên phải cho nút Toggle Controls để không đè lên nhau */
             .preset-header-card {
                 margin-right: 7.4rem;
                 padding: 0.6rem 0.75rem;
@@ -665,7 +664,6 @@
                 gap: 0.5rem;
             }
 
-            /* Thanh điều khiển dưới cùng chuyển thành 2 dòng rõ ràng */
             .hud-bottom-dock {
                 bottom: calc(0.65rem + var(--safe-bottom));
                 width: calc(100vw - 1.3rem);
@@ -708,7 +706,6 @@
                 display: inline;
             }
 
-            /* Bảng điều khiển nằm gọn giữa Header trên và Dock 2 dòng dưới */
             .gui-panel {
                 top: calc(6.8rem + var(--safe-top));
                 bottom: calc(6.2rem + var(--safe-bottom));
@@ -732,7 +729,6 @@
             }
         }
 
-        /* Màn hình siêu nhỏ (<= 380px) */
         @media (max-width: 380px) {
             .preset-header-card {
                 margin-right: 6.4rem;
@@ -772,10 +768,10 @@
             </div>
             <div style="min-width: 0; flex: 1;">
                 <div class="title-row">
-                    <h1 id="hud-preset-title" class="preset-title">Spiral Galaxy</h1>
-                    <span id="hud-class-badge" class="badge">SA(s)b • Multi-Arm</span>
+                    <h1 id="hud-preset-title" class="preset-title">3D Galaxy</h1>
+                    <span id="hud-class-badge" class="badge">Orbital Disk</span>
                 </div>
-                <p id="hud-preset-subtitle" class="preset-sub">Majestic multi-arm disk with luminous orange-to-pink spectral color gradients</p>
+                <p id="hud-preset-subtitle" class="preset-sub">Concentric stellar disk with luminous orange-to-pink spectral color gradients</p>
             </div>
         </div>
 
@@ -799,9 +795,8 @@
         </div>
     </div>
 
-    <!-- Bottom Center Camera & Action HUD Dock (2 Rows on Mobile, 1 Row on Desktop) -->
+    <!-- Bottom Center Camera & Action HUD Dock -->
     <div class="glass-panel hud-bottom-dock">
-        <!-- Row 1 on Mobile: Camera Viewpoints -->
         <div class="dock-group dock-group-cam">
             <button data-cam="oblique" class="dock-btn active-cam" title="Oblique Observatory View">
                 <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
@@ -823,7 +818,6 @@
 
         <div class="divider-v dock-divider"></div>
 
-        <!-- Row 2 on Mobile: Simulation & Export Actions -->
         <div class="dock-group dock-group-actions">
             <button id="btn-pause" class="dock-btn" title="Pause / Resume Orbital Time">
                 <svg id="icon-pause" viewBox="0 0 24 24" style="stroke: #34d399;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
@@ -860,19 +854,19 @@
         </div>
 
         <div class="panel-body custom-scroll">
-            <!-- Section 1: Single Spiral Galaxy Model Archetype -->
+            <!-- Section 1: Galaxy Model Archetype -->
             <div>
                 <div class="section-label">
                     <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    Celestial Spiral Model
+                    Celestial Orbital Model
                 </div>
                 <div class="preset-grid" id="preset-grid">
                     <button data-preset="spiralGalaxy" class="preset-btn active">
                         <div class="preset-btn-title">
-                            <span>Spiral Galaxy</span>
+                            <span>Orbital Galaxy</span>
                             <span class="dot-indicator" style="background: #ff7b00; box-shadow: 0 0 8px #ff7b00;"></span>
                         </div>
-                        <div class="preset-btn-sub">SA(s)b • Orange-Purple-Pink</div>
+                        <div class="preset-btn-sub">360° Orbital • Orange-Purple-Pink</div>
                     </button>
                 </div>
             </div>
@@ -907,11 +901,11 @@
 
             <div class="divider-h"></div>
 
-            <!-- Section 3: Spiral Architecture & Bar Geometry -->
+            <!-- Section 3: Disk Structure & Geometry -->
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                 <div class="section-label">
                     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z"></path><path d="M15.7 3.8c4.52 4.54 6.54 9.87 4.5 11.9-2.03 2.04-7.36.02-11.9-4.5C3.78 6.66 1.76 1.33 3.8-.7c2.03-2.04 7.36-.02 11.9 4.5Z"></path></svg>
-                    Spiral Structure & Geometry
+                    Disk Structure & Geometry
                 </div>
 
                 <div class="control-group">
@@ -930,7 +924,7 @@
                     <input id="ctrl-radius" type="range" min="4.0" max="16.0" step="0.2" value="12.6" class="astro-slider">
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" style="display: none;">
                     <div class="control-header">
                         <span class="control-title">Spiral Arms</span>
                         <span id="val-branches" class="control-value">4</span>
@@ -938,20 +932,20 @@
                     <input id="ctrl-branches" type="range" min="1" max="10" step="1" value="4" class="astro-slider">
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" style="display: none;">
                     <div class="control-header">
                         <span class="control-title">Arm Twist / Spin</span>
-                        <span id="val-spin" class="control-value">2.35</span>
+                        <span id="val-spin" class="control-value">0.00</span>
                     </div>
-                    <input id="ctrl-spin" type="range" min="-4.0" max="4.0" step="0.05" value="2.35" class="astro-slider">
+                    <input id="ctrl-spin" type="range" min="-4.0" max="4.0" step="0.05" value="0.0" class="astro-slider">
                 </div>
 
-                <div class="control-group">
+                <div class="control-group" style="display: none;">
                     <div class="control-header">
                         <span class="control-title">Bar Structure Ratio</span>
-                        <span id="val-bar" class="control-value">0.10</span>
+                        <span id="val-bar" class="control-value">0.00</span>
                     </div>
-                    <input id="ctrl-bar" type="range" min="0.0" max="0.65" step="0.02" value="0.10" class="astro-slider">
+                    <input id="ctrl-bar" type="range" min="0.0" max="0.65" step="0.02" value="0.0" class="astro-slider">
                 </div>
             </div>
 
@@ -1049,24 +1043,24 @@
     <!-- Toast Notification Banner -->
     <div id="toast" class="toast-banner">
         <svg viewBox="0 0 24 24"><path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18.5l1.9-5.8 5.8-1.9-5.8-1.9z"></path></svg>
-        <span id="toast-msg">Loaded Spiral Galaxy</span>
+        <span id="toast-msg">Loaded Orbital Galaxy</span>
     </div>
 
     <script>
         // ============================================================================
-        // 1. SINGLE SPIRAL GALAXY MODEL DEFINITION
+        // 1. GALAXY MODEL DEFINITION (PURE 360° ORBITAL DISTRIBUTION)
         // ============================================================================
         const PRESETS = {
             spiralGalaxy: {
                 key: "spiralGalaxy",
-                title: "3D Spiral Galaxy",
-                badge: "SA(s)b • Multi-Arm",
-                subtitle: "Magnificent spiral galaxy with luminous orange-to-pink spectral color gradients",
+                title: "3D Galaxy",
+                badge: "Orbital Disk",
+                subtitle: "Concentric stellar disk with luminous orange-to-pink spectral color gradients",
                 count: 250000,
                 radius: 12.6,
                 branches: 4,
-                spin: 2.35,
-                barFactor: 0.10,
+                spin: 0.0,
+                barFactor: 0.0,
                 randomness: 0.46,
                 randomnessPower: 2.9,
                 coreConcentration: 0.42,
@@ -1087,7 +1081,7 @@
         let simTime = 0;
 
         // ============================================================================
-        // 2. CUSTOM GLSL SHADER PIPELINE (KEPLERIAN ORBITS & 3 PARTICLE CLASSES)
+        // 2. CUSTOM GLSL SHADER PIPELINE (KEPLERIAN CIRCULAR ORBITS)
         // ============================================================================
         const galaxyVertexShader = `
             uniform float uTime;
@@ -1343,7 +1337,6 @@
             const tempColor = new THREE.Color();
 
             const maxR = params.radius;
-            const barLength = maxR * params.barFactor;
             const bulgeFraction = params.coreConcentration * 0.42;
 
             for (let i = 0; i < count; i++) {
@@ -1351,7 +1344,6 @@
                 const isBulgeStar = Math.random() < bulgeFraction;
 
                 let r = 0, rNorm = 0, x = 0, y = 0, z = 0;
-                let randX = 0, randY = 0, randZ = 0;
                 let pType = 0.0;
 
                 if (isBulgeStar) {
@@ -1364,57 +1356,46 @@
                     const phi = Math.acos(2 * Math.random() - 1);
                     const flattenY = 0.50 + params.thickness * 0.45;
 
-                    x = r * Math.sin(phi) * Math.cos(theta);
-                    y = r * Math.cos(phi) * flattenY;
-                    z = r * Math.sin(phi) * Math.sin(theta);
-
-                    randX = (Math.random() - 0.5) * 0.14;
-                    randY = (Math.random() - 0.5) * 0.11;
-                    randZ = (Math.random() - 0.5) * 0.14;
+                    x = r * Math.sin(phi) * Math.cos(theta) + (Math.random() - 0.5) * 0.14;
+                    y = r * Math.cos(phi) * flattenY + (Math.random() - 0.5) * 0.11;
+                    z = r * Math.sin(phi) * Math.sin(theta) + (Math.random() - 0.5) * 0.14;
                 } else {
                     const u = Math.random();
                     const radialExp = 1.05 + params.coreConcentration * 1.40;
-                    r = Math.pow(u, radialExp) * maxR;
-                    rNorm = r / maxR;
+                    const baseR = Math.pow(u, radialExp) * maxR;
 
-                    const branchIndex = i % params.branches;
-                    const branchAngle = (branchIndex / params.branches) * Math.PI * 2;
+                    const spreadScale = params.randomness * (0.24 + baseR * 0.82);
+                    const power = params.randomnessPower;
+                    const radialOffset = Math.pow(Math.random(), power) * (Math.random() < 0.5 ? 1 : -1) * spreadScale;
 
-                    let totalAngle = branchAngle;
-                    if (barLength > 0.05 && r < barLength) {
-                        const barAxisAngle = (branchIndex % 2) * Math.PI;
-                        const barBlend = Math.pow(r / barLength, 2.15);
-                        const spinAtBarEnd = barLength * params.spin * 0.35;
-                        totalAngle = barAxisAngle + barBlend * (branchAngle - barAxisAngle + spinAtBarEnd);
-                    } else {
-                        const effectiveR = Math.max(0, r - barLength * 0.65);
-                        const spinAngle = effectiveR * params.spin;
-                        totalAngle = branchAngle + spinAngle;
-                    }
+                    r = Math.max(0.02, baseR + radialOffset);
+                    rNorm = Math.min(1.0, r / maxR);
+
+                    // Phân bố góc ngẫu nhiên đều 360 độ xung quanh tâm (không tạo nhánh xoắn ốc)
+                    const totalAngle = Math.random() * Math.PI * 2;
 
                     x = Math.cos(totalAngle) * r;
                     z = Math.sin(totalAngle) * r;
-                    y = 0;
-
-                    const spreadScale = params.randomness * (0.24 + r * 0.82);
-                    const power = params.randomnessPower;
-
-                    randX = Math.pow(Math.random(), power) * (Math.random() < 0.5 ? 1 : -1) * spreadScale;
-                    randZ = Math.pow(Math.random(), power) * (Math.random() < 0.5 ? 1 : -1) * spreadScale;
 
                     const verticalEnvelope = params.thickness * (1.15 - rNorm * 0.65) * maxR * 0.15;
-                    randY = Math.pow(Math.random(), power * 0.9) * (Math.random() < 0.5 ? 1 : -1) * verticalEnvelope;
+                    y = Math.pow(Math.random(), power * 0.9) * (Math.random() < 0.5 ? 1 : -1) * verticalEnvelope;
 
-                    const armProximity = 1.0 - Math.min(1.0, Math.hypot(randX, randZ) / (spreadScale + 0.001));
-                    if (rNorm > 0.12 && rNorm < 0.92 && armProximity > 0.66 && Math.random() < params.nebula * 0.18) {
+                    const diskProximity = 1.0 - Math.min(1.0, Math.abs(radialOffset) / (spreadScale + 0.001));
+                    if (rNorm > 0.12 && rNorm < 0.92 && diskProximity > 0.66 && Math.random() < params.nebula * 0.18) {
                         pType = 1.0;
                     } else if (Math.random() < 0.0075) {
                         pType = 2.0;
                     }
                 }
 
-                positions[i3] = x; positions[i3 + 1] = y; positions[i3 + 2] = z;
-                randomness[i3] = randX; randomness[i3 + 1] = randY; randomness[i3 + 2] = randZ;
+                positions[i3] = x;
+                positions[i3 + 1] = y;
+                positions[i3 + 2] = z;
+
+                // Đã gộp độ lệch trực tiếp vào bán kính quỹ đạo tròn để các hạt xoay tròn đồng tâm
+                randomness[i3] = 0;
+                randomness[i3 + 1] = 0;
+                randomness[i3 + 2] = 0;
                 particleTypes[i] = pType;
 
                 const curvedR = Math.min(1.0, Math.pow(rNorm, 0.82));
@@ -1435,7 +1416,9 @@
                     tempColor.b = Math.min(1, Math.max(0, tempColor.b - jitter));
                 }
 
-                colors[i3] = tempColor.r; colors[i3 + 1] = tempColor.g; colors[i3 + 2] = tempColor.b;
+                colors[i3] = tempColor.r;
+                colors[i3 + 1] = tempColor.g;
+                colors[i3 + 2] = tempColor.b;
 
                 if (pType === 1.0) {
                     scales[i] = 1.45 + Math.random() * 1.85;
@@ -1563,7 +1546,6 @@
                 const el = document.getElementById(`ctrl-${id}`);
                 el.addEventListener('input', (e) => {
                     params[key] = parse(e.target.value);
-                    params.badge = params.barFactor > 0.15 ? `SBc • ${params.branches}-Arm` : `SAc • ${params.branches}-Arm`;
                     updateUIValues();
                     generateGalaxy();
                 });
@@ -1626,7 +1608,6 @@
                 showToast(`Reset to ${params.title}`);
             });
 
-            // Chỉ gắn sự kiện chuyển Camera cho các nút có thuộc tính data-cam
             const camButtons = document.querySelectorAll('.dock-btn[data-cam]');
             camButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1648,7 +1629,7 @@
             });
 
             const poeticPrefixes = ["Seraphic", "Astral", "Velvet", "Hyperion", "Elysian", "Solstice", "Valhalla", "Obsidian", "Luminous", "Cygnus"];
-            const poeticNouns = ["Maelstrom", "Spiral", "Cascade", "Sanctuary", "Nebula", "Horizon", "Pinwheel", "Diadem", "Ascendant", "Tempest"];
+            const poeticNouns = ["Crown", "Halo", "Cascade", "Sanctuary", "Nebula", "Horizon", "Cluster", "Diadem", "Ascendant", "Ring"];
 
             document.getElementById('btn-randomize').addEventListener('click', () => {
                 presetButtons.forEach(b => b.classList.remove('active'));
@@ -1665,19 +1646,15 @@
                 const ngcNum = Math.floor(1000 + Math.random() * 8999);
 
                 params.title = `${prefix} ${noun}`;
-                params.branches = Math.floor(2 + Math.random() * 6);
                 params.radius = +(7.2 + Math.random() * 6.5).toFixed(1);
-                params.spin = +((Math.random() < 0.5 ? 1 : -1) * (1.0 + Math.random() * 2.4)).toFixed(2);
-                params.barFactor = Math.random() < 0.45 ? +(0.16 + Math.random() * 0.36).toFixed(2) : 0.0;
                 params.randomness = +(0.26 + Math.random() * 0.42).toFixed(2);
                 params.randomnessPower = +(2.4 + Math.random() * 2.0).toFixed(1);
                 params.coreConcentration = +(0.22 + Math.random() * 0.36).toFixed(2);
                 params.thickness = +(0.20 + Math.random() * 0.32).toFixed(2);
                 params.nebula = +(0.18 + Math.random() * 0.45).toFixed(2);
 
-                const hubType = params.barFactor > 0.15 ? "SBc" : "SAc";
-                params.badge = `NGC ${ngcNum} • ${hubType}`;
-                params.subtitle = `Procedural ${params.branches}-arm cosmic spiral synthesized in deep space`;
+                params.badge = `NGC ${ngcNum} • Orbital`;
+                params.subtitle = `Procedural concentric stellar disk synthesized in deep space`;
 
                 params.coreColor = randomHex(20, 60, 0.95, 0.76);
                 params.midColor = randomHex(160, 330, 0.90, 0.60);
