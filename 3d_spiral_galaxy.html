@@ -2553,7 +2553,7 @@
                 } else {
                     guiPanel.classList.add('closed');
                     if (polyline) polyline.setAttribute('points', '15 18 9 12 15 6');
-                    toggleLabel.textContent = window.innerWidth < 420 ? 'Controls' : 'Show Controls';
+                    toggleLabel.textContent = window.innerWidth < 420 ? 'Show' : 'Show Controls';
                 }
             }
 
@@ -2586,7 +2586,7 @@
                 camTransition.endPos.set(0, r * 0.05, r * 1.62 * mult);
                 showToast("Viewpoint: Edge-On Galactic Horizon");
             } else if (mode === 'core') {
-                camTransition.endPos.set(r * 0.20, r * 0.09, r * 0.26);
+                camTransition.endPos.set(r * 0.45 * mult, r * 0.15 * mult, r * 0.55 * mult);
                 showToast("Viewpoint: Galactic Nucleus Dive");
             } else {
                 camTransition.endPos.set(0, r * 0.80 * mult, r * 1.48 * mult);
