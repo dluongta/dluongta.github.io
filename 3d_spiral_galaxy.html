@@ -25,7 +25,8 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -52,11 +53,13 @@
             gap: 1rem;
             transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.55s ease;
         }
+
         #preloader.loaded {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
+
         .loader-orbit {
             width: 48px;
             height: 48px;
@@ -65,14 +68,18 @@
             border-top-color: #ff7b00;
             animation: orbitSpin 0.85s linear infinite;
         }
+
         .loader-text {
             font-size: 0.85rem;
             font-weight: 600;
             letter-spacing: 0.08em;
             color: #ff7b00;
         }
+
         @keyframes orbitSpin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         #canvas-container {
@@ -103,13 +110,16 @@
         .custom-scroll::-webkit-scrollbar {
             width: 5px;
         }
+
         .custom-scroll::-webkit-scrollbar-track {
             background: rgba(15, 23, 42, 0.35);
         }
+
         .custom-scroll::-webkit-scrollbar-thumb {
             background: rgba(129, 140, 248, 0.45);
             border-radius: 9999px;
         }
+
         .custom-scroll::-webkit-scrollbar-thumb:hover {
             background: rgba(129, 140, 248, 0.85);
         }
@@ -126,9 +136,11 @@
             border: 1px solid rgba(148, 163, 184, 0.16);
             transition: border-color 0.2s ease;
         }
+
         input[type="range"].astro-slider:hover {
             border-color: rgba(129, 140, 248, 0.55);
         }
+
         input[type="range"].astro-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -141,6 +153,7 @@
             border: 2px solid #e0e7ff;
             transition: transform 0.15s ease, background-color 0.15s ease;
         }
+
         input[type="range"].astro-slider::-webkit-slider-thumb:hover {
             transform: scale(1.18);
             background: #a5b4fc;
@@ -157,9 +170,11 @@
             background: transparent;
             padding: 0;
         }
+
         input[type="color"].astro-color::-webkit-color-swatch-wrapper {
             padding: 0;
         }
+
         input[type="color"].astro-color::-webkit-color-swatch {
             border: 1px solid rgba(255, 255, 255, 0.28);
             border-radius: 7px;
@@ -179,7 +194,10 @@
             max-width: 380px;
             width: calc(100vw - 2rem);
         }
-        .pointer-auto { pointer-events: auto; }
+
+        .pointer-auto {
+            pointer-events: auto;
+        }
 
         .preset-header-card {
             display: flex;
@@ -188,6 +206,7 @@
             padding: 0.85rem 1rem;
             border-radius: 1rem;
         }
+
         .icon-box {
             width: 2.5rem;
             height: 2.5rem;
@@ -200,6 +219,7 @@
             color: var(--accent-indigo);
             flex-shrink: 0;
         }
+
         .icon-box svg {
             width: 1.35rem;
             height: 1.35rem;
@@ -216,6 +236,7 @@
             gap: 0.5rem;
             flex-wrap: wrap;
         }
+
         .preset-title {
             font-size: 0.95rem;
             font-weight: 700;
@@ -225,6 +246,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         .badge {
             padding: 0.1rem 0.5rem;
             font-size: 0.65rem;
@@ -237,6 +259,7 @@
             border-radius: 999px;
             white-space: nowrap;
         }
+
         .preset-sub {
             font-size: 0.75rem;
             color: var(--text-muted);
@@ -257,12 +280,14 @@
             font-family: ui-monospace, monospace;
             color: #cbd5e1;
         }
+
         .telemetry-item {
             display: flex;
             align-items: center;
             gap: 0.35rem;
             white-space: nowrap;
         }
+
         .pulse-dot {
             width: 8px;
             height: 8px;
@@ -272,6 +297,7 @@
             display: inline-block;
             flex-shrink: 0;
         }
+
         .divider-v {
             width: 1px;
             height: 0.85rem;
@@ -294,15 +320,18 @@
             pointer-events: auto;
             max-width: calc(100vw - 1.5rem);
         }
+
         .dock-group {
             display: flex;
             align-items: center;
             gap: 0.35rem;
         }
+
         .dock-divider {
             height: 1.25rem;
             margin: 0 0.2rem;
         }
+
         .dock-btn {
             background: transparent;
             border: 1px solid transparent;
@@ -319,6 +348,7 @@
             gap: 0.4rem;
             white-space: nowrap;
         }
+
         .dock-btn svg {
             width: 0.95rem;
             height: 0.95rem;
@@ -329,15 +359,18 @@
             stroke-linejoin: round;
             flex-shrink: 0;
         }
+
         .dock-btn:hover {
             background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
         }
+
         .dock-btn.active-cam {
             background: rgba(129, 140, 248, 0.22);
             color: #ffffff;
             border-color: rgba(129, 140, 248, 0.45);
         }
+
         .pause-label {
             display: none;
         }
@@ -361,6 +394,7 @@
             border: 1px solid var(--border-glass);
             transition: all 0.2s ease;
         }
+
         .toggle-gui-btn svg {
             width: 0.9rem;
             height: 0.9rem;
@@ -371,6 +405,7 @@
             stroke-linejoin: round;
             flex-shrink: 0;
         }
+
         .toggle-gui-btn:hover {
             color: #ffffff;
             border-color: rgba(129, 140, 248, 0.5);
@@ -391,6 +426,7 @@
             overflow: hidden;
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
         }
+
         .gui-panel.closed {
             transform: translateX(calc(100% + 2rem));
             pointer-events: none;
@@ -412,6 +448,7 @@
             background: rgba(15, 23, 42, 0.4);
             flex-shrink: 0;
         }
+
         .panel-title {
             font-size: 0.75rem;
             font-weight: 600;
@@ -423,6 +460,7 @@
             align-items: center;
             gap: 0.5rem;
         }
+
         .panel-title svg {
             width: 0.95rem;
             height: 0.95rem;
@@ -432,6 +470,7 @@
             stroke-linecap: round;
             stroke-linejoin: round;
         }
+
         .reset-btn {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -445,6 +484,7 @@
             align-items: center;
             gap: 0.3rem;
         }
+
         .reset-btn svg {
             width: 0.8rem;
             height: 0.8rem;
@@ -454,6 +494,7 @@
             stroke-linecap: round;
             stroke-linejoin: round;
         }
+
         .reset-btn:hover {
             background: rgba(129, 140, 248, 0.2);
             color: #ffffff;
@@ -482,6 +523,7 @@
             gap: 0.5rem;
             margin-bottom: 0.65rem;
         }
+
         .section-label svg {
             width: 0.85rem;
             height: 0.85rem;
@@ -497,6 +539,7 @@
             grid-template-columns: minmax(0, 1fr);
             gap: 0.5rem;
         }
+
         .preset-btn {
             text-align: left;
             padding: 0.65rem;
@@ -506,15 +549,18 @@
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         .preset-btn:hover {
             border-color: rgba(129, 140, 248, 0.5);
             transform: translateY(-1px);
         }
+
         .preset-btn.active {
             background: linear-gradient(135deg, rgba(79, 70, 229, 0.38), rgba(147, 51, 234, 0.28));
             border-color: rgba(129, 140, 248, 0.85);
             box-shadow: 0 0 15px rgba(129, 140, 248, 0.25);
         }
+
         .preset-btn-title {
             font-size: 0.75rem;
             font-weight: 600;
@@ -523,11 +569,13 @@
             align-items: center;
             justify-content: space-between;
         }
+
         .dot-indicator {
             width: 8px;
             height: 8px;
             border-radius: 50%;
         }
+
         .preset-btn-sub {
             font-size: 0.65rem;
             color: var(--text-muted);
@@ -540,7 +588,7 @@
             width: 100%;
             border-radius: 999px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
         .color-pickers-grid {
@@ -549,6 +597,7 @@
             gap: 0.5rem;
             margin-top: 0.5rem;
         }
+
         .color-card {
             background: rgba(15, 23, 42, 0.65);
             border: 1px solid rgba(148, 163, 184, 0.12);
@@ -559,11 +608,13 @@
             align-items: center;
             gap: 0.3rem;
         }
+
         .color-label {
             font-size: 0.65rem;
             color: #cbd5e1;
             font-weight: 500;
         }
+
         .color-hex {
             font-size: 0.6rem;
             font-family: ui-monospace, monospace;
@@ -575,13 +626,21 @@
             flex-direction: column;
             gap: 0.3rem;
         }
+
         .control-header {
             display: flex;
             justify-content: space-between;
             font-size: 0.72rem;
         }
-        .control-title { color: #cbd5e1; }
-        .control-value { font-family: ui-monospace, monospace; color: #a5b4fc; }
+
+        .control-title {
+            color: #cbd5e1;
+        }
+
+        .control-value {
+            font-family: ui-monospace, monospace;
+            color: #a5b4fc;
+        }
 
         .divider-h {
             height: 1px;
@@ -620,13 +679,14 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             display: flex;
             align-items: center;
             gap: 0.5rem;
             max-width: calc(100vw - 2rem);
             white-space: nowrap;
         }
+
         .toast-banner svg {
             width: 0.9rem;
             height: 0.9rem;
@@ -637,7 +697,10 @@
             stroke-linejoin: round;
             flex-shrink: 0;
         }
-        .toast-banner.show { opacity: 1; }
+
+        .toast-banner.show {
+            opacity: 1;
+        }
 
         /* ============================================================================
            RESPONSIVE BREAKPOINTS (MOBILE & TABLET)
@@ -664,17 +727,21 @@
                 height: 2.1rem;
                 border-radius: 0.6rem;
             }
+
             .icon-box svg {
                 width: 1.15rem;
                 height: 1.15rem;
             }
+
             .preset-title {
                 font-size: 0.85rem;
             }
+
             .badge {
                 font-size: 0.58rem;
                 padding: 0.08rem 0.4rem;
             }
+
             .preset-sub {
                 font-size: 0.68rem;
             }
@@ -764,15 +831,18 @@
                 margin-right: 6.4rem;
                 padding: 0.5rem 0.6rem;
             }
+
             .toggle-gui-btn {
                 padding: 0 0.6rem;
                 font-size: 0.68rem;
             }
+
             .dock-btn {
                 font-size: 0.65rem;
                 padding: 0.4rem 0.2rem;
                 gap: 0.22rem;
             }
+
             .dock-btn svg {
                 width: 0.85rem;
                 height: 0.85rem;
@@ -798,7 +868,9 @@
                 <svg viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10"></circle>
                     <path d="M2 12h20"></path>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    <path
+                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                    </path>
                 </svg>
             </div>
             <div style="min-width: 0; flex: 1;">
@@ -832,19 +904,42 @@
     <div class="glass-panel hud-bottom-dock">
         <div class="dock-group dock-group-cam">
             <button data-cam="oblique" class="dock-btn active-cam" title="Oblique Observatory View">
-                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                    </path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
                 <span>Oblique</span>
             </button>
             <button data-cam="top" class="dock-btn" title="Top-Down Galactic Zenith">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                </svg>
                 <span>Zenith</span>
             </button>
             <button data-cam="edge" class="dock-btn" title="Edge-On Galactic Horizon">
-                <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                <svg viewBox="0 0 24 24">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
                 <span>Horizon</span>
             </button>
             <button data-cam="core" class="dock-btn" title="Galactic Nucleus Dive">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
                 <span>Core Dive</span>
             </button>
         </div>
@@ -853,15 +948,25 @@
 
         <div class="dock-group dock-group-actions">
             <button id="btn-pause" class="dock-btn" title="Pause / Resume Orbital Time">
-                <svg id="icon-pause" viewBox="0 0 24 24" style="stroke: #34d399;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                <svg id="icon-pause" viewBox="0 0 24 24" style="stroke: #34d399;">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
                 <span id="label-pause" class="pause-label">Pause</span>
             </button>
             <button id="btn-randomize" class="dock-btn" title="Random Cosmic Mutator">
-                <svg viewBox="0 0 24 24" style="stroke: #e879f9;"><path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18.5l1.9-5.8 5.8-1.9-5.8-1.9z"></path><path d="m5 3 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"></path><path d="m19 15 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"></path></svg>
+                <svg viewBox="0 0 24 24" style="stroke: #e879f9;">
+                    <path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18.5l1.9-5.8 5.8-1.9-5.8-1.9z"></path>
+                    <path d="m5 3 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"></path>
+                    <path d="m19 15 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"></path>
+                </svg>
                 <span>Mutate</span>
             </button>
             <button id="btn-screenshot" class="dock-btn" title="Export PNG Snapshot">
-                <svg viewBox="0 0 24 24" style="stroke: #38bdf8;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <svg viewBox="0 0 24 24" style="stroke: #38bdf8;">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                </svg>
                 <span>Snapshot</span>
             </button>
         </div>
@@ -869,19 +974,34 @@
 
     <!-- Floating Toggle Button for Control Panel -->
     <button id="btn-toggle-gui" class="glass-panel toggle-gui-btn" title="Toggle Astrophysics Control Panel">
-        <svg id="icon-toggle-gui" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        <span id="label-toggle-gui">Hide Controls</span>
+        <svg id="icon-toggle-gui" viewBox="0 0 24 24">
+            <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+        <span id="label-toggle-gui">Show Controls</span>
     </button>
 
     <!-- Right Interactive Astrophysics Control Panel -->
-    <aside id="gui-panel" class="glass-panel gui-panel">
+    <aside id="gui-panel" class="glass-panel gui-panel closed">
         <div class="panel-header">
             <h2 class="panel-title">
-                <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                <svg viewBox="0 0 24 24">
+                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                </svg>
                 Astrophysics Synthesizer
             </h2>
             <button id="btn-reset-preset" class="reset-btn">
-                <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                    <path d="M3 3v5h5"></path>
+                </svg>
                 Reset
             </button>
         </div>
@@ -890,14 +1010,19 @@
             <!-- Section 1: Galaxy Model Archetype -->
             <div>
                 <div class="section-label">
-                    <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <svg viewBox="0 0 24 24">
+                        <polygon
+                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                        </polygon>
+                    </svg>
                     Celestial Orbital Model
                 </div>
                 <div class="preset-grid" id="preset-grid">
                     <button data-preset="spiralGalaxy" class="preset-btn active">
                         <div class="preset-btn-title">
                             <span>Orbital Galaxy</span>
-                            <span class="dot-indicator" style="background: #ff7b00; box-shadow: 0 0 8px #ff7b00;"></span>
+                            <span class="dot-indicator"
+                                style="background: #ff7b00; box-shadow: 0 0 8px #ff7b00;"></span>
                         </div>
                         <div class="preset-btn-sub">360° Orbital • Orange-Purple-Pink</div>
                     </button>
@@ -909,7 +1034,15 @@
             <!-- Section 2: 3-Stop Spectral Color Gradient -->
             <div>
                 <div class="section-label">
-                    <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.504 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="13.5" cy="6.5" r=".5"></circle>
+                        <circle cx="17.5" cy="10.5" r=".5"></circle>
+                        <circle cx="8.5" cy="7.5" r=".5"></circle>
+                        <circle cx="6.5" cy="12.5" r=".5"></circle>
+                        <path
+                            d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.504 5.555-5.554C21.965 6.012 17.461 2 12 2z">
+                        </path>
+                    </svg>
                     3-Stop Spectral Color Gradient
                 </div>
                 <div id="gradient-preview" class="gradient-preview"></div>
@@ -937,7 +1070,15 @@
             <!-- Section 3: Disk Structure & Geometry -->
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                 <div class="section-label">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z"></path><path d="M15.7 3.8c4.52 4.54 6.54 9.87 4.5 11.9-2.03 2.04-7.36.02-11.9-4.5C3.78 6.66 1.76 1.33 3.8-.7c2.03-2.04 7.36-.02 11.9 4.5Z"></path></svg>
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <path
+                            d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z">
+                        </path>
+                        <path
+                            d="M15.7 3.8c4.52 4.54 6.54 9.87 4.5 11.9-2.03 2.04-7.36.02-11.9-4.5C3.78 6.66 1.76 1.33 3.8-.7c2.03-2.04 7.36-.02 11.9 4.5Z">
+                        </path>
+                    </svg>
                     Disk Structure & Geometry
                 </div>
 
@@ -946,7 +1087,8 @@
                         <span class="control-title">Star Count</span>
                         <span id="val-count" class="control-value">250,000</span>
                     </div>
-                    <input id="ctrl-count" type="range" min="30000" max="320000" step="10000" value="250000" class="astro-slider">
+                    <input id="ctrl-count" type="range" min="30000" max="320000" step="10000" value="250000"
+                        class="astro-slider">
                 </div>
 
                 <div class="control-group">
@@ -954,7 +1096,8 @@
                         <span class="control-title">Galaxy Radius</span>
                         <span id="val-radius" class="control-value">12.6</span>
                     </div>
-                    <input id="ctrl-radius" type="range" min="4.0" max="16.0" step="0.2" value="12.6" class="astro-slider">
+                    <input id="ctrl-radius" type="range" min="4.0" max="16.0" step="0.2" value="12.6"
+                        class="astro-slider">
                 </div>
 
                 <div class="control-group" style="display: none;">
@@ -970,11 +1113,12 @@
                         <span class="control-title">Arm Twist / Spin</span>
                         <span id="val-spin" class="control-value">0.00</span>
                     </div>
-                    <input id="ctrl-spin" type="range" min="-4.0" max="4.0" step="0.05" value="0.0" class="astro-slider">
+                    <input id="ctrl-spin" type="range" min="-4.0" max="4.0" step="0.05" value="0.0"
+                        class="astro-slider">
                 </div>
 
                 <div class="control-group" style="display: none;">
-                    <div class="control-header">    
+                    <div class="control-header">
                         <span class="control-title">Bar Structure Ratio</span>
                         <span id="val-bar" class="control-value">0.00</span>
                     </div>
@@ -987,7 +1131,9 @@
             <!-- Section 4: Radial Distribution, Bulge & Nebulae -->
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                 <div class="section-label">
-                    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
                     Radial Distribution & Bulge
                 </div>
 
@@ -996,7 +1142,8 @@
                         <span class="control-title">Radial Scatter</span>
                         <span id="val-randomness" class="control-value">0.46</span>
                     </div>
-                    <input id="ctrl-randomness" type="range" min="0.05" max="1.5" step="0.02" value="0.46" class="astro-slider">
+                    <input id="ctrl-randomness" type="range" min="0.05" max="1.5" step="0.02" value="0.46"
+                        class="astro-slider">
                 </div>
 
                 <div class="control-group">
@@ -1004,7 +1151,8 @@
                         <span class="control-title">Core Concentration Power</span>
                         <span id="val-randomnessPower" class="control-value">2.9</span>
                     </div>
-                    <input id="ctrl-randomnessPower" type="range" min="1.2" max="6.5" step="0.1" value="2.9" class="astro-slider">
+                    <input id="ctrl-randomnessPower" type="range" min="1.2" max="6.5" step="0.1" value="2.9"
+                        class="astro-slider">
                 </div>
 
                 <div class="control-group">
@@ -1012,7 +1160,8 @@
                         <span class="control-title">Core Bulge Size</span>
                         <span id="val-coreConcentration" class="control-value">0.42</span>
                     </div>
-                    <input id="ctrl-coreConcentration" type="range" min="0.08" max="0.75" step="0.02" value="0.42" class="astro-slider">
+                    <input id="ctrl-coreConcentration" type="range" min="0.08" max="0.75" step="0.02" value="0.42"
+                        class="astro-slider">
                 </div>
 
                 <div class="control-group">
@@ -1020,7 +1169,8 @@
                         <span class="control-title">Disk Thickness</span>
                         <span id="val-thickness" class="control-value">0.24</span>
                     </div>
-                    <input id="ctrl-thickness" type="range" min="0.06" max="1.00" step="0.02" value="0.24" class="astro-slider">
+                    <input id="ctrl-thickness" type="range" min="0.06" max="1.00" step="0.02" value="0.24"
+                        class="astro-slider">
                 </div>
 
                 <div class="control-group">
@@ -1028,7 +1178,8 @@
                         <span class="control-title">Nebula H-II Density</span>
                         <span id="val-nebula" class="control-value">0.20</span>
                     </div>
-                    <input id="ctrl-nebula" type="range" min="0.0" max="0.75" step="0.02" value="0.20" class="astro-slider">
+                    <input id="ctrl-nebula" type="range" min="0.0" max="0.75" step="0.02" value="0.20"
+                        class="astro-slider">
                 </div>
             </div>
 
@@ -1037,7 +1188,9 @@
             <!-- Section 5: Orbital Kinematics & Star Optics -->
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
                 <div class="section-label">
-                    <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    <svg viewBox="0 0 24 24">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
                     Orbital Kinematics & Optics
                 </div>
 
@@ -1054,7 +1207,8 @@
                         <span class="control-title">Rotation Speed</span>
                         <span id="val-rotationSpeed" class="control-value">0.14</span>
                     </div>
-                    <input id="ctrl-rotationSpeed" type="range" min="0.0" max="1.0" step="0.02" value="0.14" class="astro-slider">
+                    <input id="ctrl-rotationSpeed" type="range" min="0.0" max="1.0" step="0.02" value="0.14"
+                        class="astro-slider">
                 </div>
 
                 <div class="control-group">
@@ -1062,7 +1216,8 @@
                         <span class="control-title">Keplerian Shear</span>
                         <span id="val-differential" class="control-value">0.52</span>
                     </div>
-                    <input id="ctrl-differential" type="range" min="0.0" max="1.0" step="0.05" value="0.52" class="astro-slider">
+                    <input id="ctrl-differential" type="range" min="0.0" max="1.0" step="0.05" value="0.52"
+                        class="astro-slider">
                 </div>
             </div>
         </div>
@@ -1075,7 +1230,9 @@
 
     <!-- Toast Notification Banner -->
     <div id="toast" class="toast-banner">
-        <svg viewBox="0 0 24 24"><path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18.5l1.9-5.8 5.8-1.9-5.8-1.9z"></path></svg>
+        <svg viewBox="0 0 24 24">
+            <path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18.5l1.9-5.8 5.8-1.9-5.8-1.9z"></path>
+        </svg>
         <span id="toast-msg">Loaded Orbital Galaxy</span>
     </div>
 
@@ -1251,9 +1408,9 @@
                 const c = Math.cos(rad);
                 const s = Math.sin(rad);
                 out.fill(0);
-                out[0] = c;  out[2] = -s;
+                out[0] = c; out[2] = -s;
                 out[5] = 1;
-                out[8] = s;  out[10] = c;
+                out[8] = s; out[10] = c;
                 out[15] = 1;
                 return out;
             }
@@ -1921,11 +2078,11 @@
             // Quad corners for camera-facing billboard sprite
             const corners = new Float32Array([
                 -0.5, -0.5,
-                 0.5, -0.5,
-                -0.5,  0.5,
-                -0.5,  0.5,
-                 0.5, -0.5,
-                 0.5,  0.5
+                0.5, -0.5,
+                -0.5, 0.5,
+                -0.5, 0.5,
+                0.5, -0.5,
+                0.5, 0.5
             ]);
             spriteQuadBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, spriteQuadBuffer);
@@ -2386,16 +2543,18 @@
             const toggleBtn = document.getElementById('btn-toggle-gui');
             const toggleIcon = document.getElementById('icon-toggle-gui');
             const toggleLabel = document.getElementById('label-toggle-gui');
-            let isGuiOpen = window.innerWidth >= 768;
+            //let isGuiOpen = window.innerWidth >= 768;
+            let isGuiOpen = false;
 
             function syncGuiDrawerState() {
+                const polyline = toggleIcon.querySelector('polyline');
                 if (isGuiOpen) {
                     guiPanel.classList.remove('closed');
-                    toggleIcon.setAttribute('points', '9 18 15 12 9 6');
+                    if (polyline) polyline.setAttribute('points', '9 18 15 12 9 6');
                     toggleLabel.textContent = window.innerWidth < 420 ? 'Hide' : 'Hide Controls';
                 } else {
                     guiPanel.classList.add('closed');
-                    toggleIcon.setAttribute('points', '15 18 9 12 15 6');
+                    if (polyline) polyline.setAttribute('points', '15 18 9 12 15 6');
                     toggleLabel.textContent = window.innerWidth < 420 ? 'Controls' : 'Show Controls';
                 }
             }
