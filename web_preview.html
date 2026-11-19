@@ -36,8 +36,8 @@
     html,
     body {
       width: 100%;
-      height: 100%; /* Fallback cho trình duyệt cũ */
-      height: 100dvh; /* Sửa lỗi Console bị lọt xuống dưới thanh địa chỉ ở Mobile */
+      height: 100%;
+      height: 100dvh;
       overflow: hidden;
       background-color: var(--bg-deep);
       color: var(--text-main);
@@ -209,14 +209,15 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    .btn-cyan {
-      color: var(--neon-cyan);
-      border-color: rgba(0, 245, 212, 0.3);
+    .btn-blue {
+      color: var(--neon-blue);
+      border-color: rgb(0, 118, 245);
     }
 
-    .btn-cyan:hover {
-      border-color: var(--neon-cyan);
-      background: rgba(0, 245, 212, 0.1);
+    .btn-blue:hover {
+      border-color: var(--neon-blue);
+      background: rgb(0, 118, 245);
+      color: #fff;
     }
 
     .btn-danger-icon:hover {
@@ -278,8 +279,8 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: var(--neon-cyan);
-      box-shadow: 0 0 8px var(--neon-cyan);
+      background: var(--neon-blue);
+      box-shadow: 0 0 8px var(--neon-blue);
     }
 
     .pulse-dot.off {
@@ -288,7 +289,7 @@
       animation: none;
     }
 
-    /* Select Mẫu có sẵn */
+    /* Nút Mẫu có sẵn */
     .template-select {
       background: var(--bg-Control);
       color: var(--text-main);
@@ -622,7 +623,7 @@
       color: var(--neon-cyan);
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis; 
+      text-overflow: ellipsis;
     }
 
     .last-run-time {
@@ -720,7 +721,7 @@
       font-weight: 700;
       min-width: 0;
     }
-    
+
     .console-title span:nth-child(2) {
       white-space: nowrap;
       overflow: hidden;
@@ -730,7 +731,7 @@
     .console-header-actions {
       display: flex;
       gap: 4px;
-      flex-shrink: 0; 
+      flex-shrink: 0;
     }
 
     .badge-count {
@@ -976,7 +977,7 @@
         <span id="layoutLabel">Chia dọc</span>
       </button>
 
-      <button class="btn btn-cyan" onclick="downloadCombinedHTML()" title="Tải toàn bộ code thành 1 file .html">
+      <button class="btn btn-blue" onclick="downloadCombinedHTML()" title="Tải toàn bộ code thành 1 file .html">
         <span>Tải HTML</span>
       </button>
 
@@ -1148,22 +1149,23 @@
      * 1. KHO MẪU CODE CÓ SẴN
      *************************************************************************/
     const TEMPLATES = {
-      neonCard: {
-        html: `<div class="playground-card">
-  <div class="badge">✨ TRÌNH CHẠY CODE TRỰC TIẾP</div>
-  <h1>Welcome to <span class="gradient-text">WEB PREVIEW</span></h1>
-  <p>Chỉnh sửa HTML, CSS hoặc JS ở 3 ô bên trái để thấy giao diện biến đổi tức thì.</p>
+      defaultPage: {
+        html: `<div class="page-wrapper">
+  <header class="site-header">
+    <h1>Studying Source</h1>
+  </header>
 
-  <div class="counter-box">
-    <div class="count-number" id="counterValue">0</div>
-    <div class="btn-group">
-      <button id="btnDecrease" class="btn btn-sub">- Giảm</button>
-      <button id="btnReset" class="btn btn-reset">Đặt lại</button>
-      <button id="btnIncrease" class="btn btn-add">+ Tăng</button>
+  <main class="site-content">
+    <div class="clock-card">
+      <p class="clock-label">Thời gian hiện tại (Việt Nam - GMT+7)</p>
+      <div id="vn-time" class="time-text">00:00:00</div>
+      <div id="vn-date" class="date-text">Đang tải ngày tháng...</div>
     </div>
-  </div>
+  </main>
 
-  <button id="btnConfetti" class="btn-magic">🚀 Đổi màu chủ đạo & Ghi Log</button>
+  <footer class="site-footer">
+    <p>&copy; <span id="copyright-year"></span> DLUONGTA. All rights reserved.</p>
+  </footer>
 </div>`,
         css: `* {
   box-sizing: border-box;
@@ -1172,167 +1174,124 @@
 }
 
 body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+.page-wrapper {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header màu xám */
+.site-header {
+  background-color: #d1d5db;
+  color: #111827;
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #9ca3af;
+}
+
+.site-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Nội dung chính */
+.site-content {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at top right, #1e1b4b, #090b14 70%);
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  color: #f8fafc;
-  padding: 20px;
+  padding: 24px;
 }
 
-.playground-card {
-  max-width: 430px;
-  width: 100%;
-  background: rgba(22, 27, 48, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 24px;
-  padding: 28px;
+.clock-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 32px 40px;
   text-align: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55),
-              0 0 30px rgba(247, 37, 133, 0.18);
-  transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-.playground-card:hover {
-  transform: translateY(-4px);
-}
-
-.badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: rgba(0, 245, 212, 0.12);
-  color: #00f5d4;
-  border: 1px solid rgba(0, 245, 212, 0.3);
-  margin-bottom: 14px;
-}
-
-h1 {
-  font-size: 28px;
-  margin-bottom: 10px;
-}
-
-.gradient-text {
-  background: linear-gradient(90deg, #ff6b35, #f72585);
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-p {
-  font-size: 14px;
-  color: #94a3b8;
-  line-height: 1.5;
-  margin-bottom: 22px;
-}
-
-.counter-box {
-  background: rgba(9, 11, 20, 0.75);
-  border-radius: 16px;
-  padding: 18px;
-  border: 1px solid rgba(76, 201, 240, 0.55);
-  box-shadow: 0 0 20px rgba(76, 201, 240, 0.2), inset 0 0 15px rgba(76, 201, 240, 0.08);
-  margin-bottom: 18px;
-}
-
-.count-number {
-  font-size: 48px;
-  font-weight: 800;
-  color: #4cc9f0;
-  text-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
-  margin-bottom: 14px;
-  transition: transform 0.15s ease;
-}
-
-.btn {
-  flex: 1;
-  padding: 9px 12px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  color: white;
-  transition: all 0.2s;
-}
-
-.btn-add, .btn-sub, .btn-reset {
-  background: linear-gradient(135deg, #ff6b35, #f72585);
-}
-.btn-add:hover, .btn-sub:hover, .btn-reset:hover { filter: brightness(1.15); }
-
-.btn-magic {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  max-width: 420px;
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(76, 201, 240, 0.4);
-  background: linear-gradient(90deg, #7209b7, #f72585);
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 0 20px rgba(247, 37, 133, 0.35);
-  transition: all 0.2s ease;
 }
 
-.btn-magic:hover {
-  transform: scale(1.02);
+.clock-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 12px;
+}
+
+.time-text {
+  font-size: 46px;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 8px;
+}
+
+.date-text {
+  font-size: 16px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* Footer */
+.site-footer {
+  background-color: #e5e7eb;
+  color: #4b5563;
+  text-align: center;
+  padding: 14px 20px;
+  font-size: 13px;
+  border-top: 1px solid #d1d5db;
 }`,
-        js: `let count = 0;
-const counterEl = document.getElementById('counterValue');
-const cardEl = document.querySelector('.playground-card');
+        js: `function updateVietnamClock() {
+  const now = new Date();
 
-function updateDisplay() {
-  counterEl.textContent = count;
-  counterEl.style.transform = 'scale(1.18)';
-  setTimeout(() => {
-    counterEl.style.transform = 'scale(1)';
-  }, 140);
+  const timeFormatter = new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    weekday: 'long',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+
+  const yearFormatter = new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric'
+  });
+
+  document.getElementById('vn-time').textContent = timeFormatter.format(now);
+  document.getElementById('vn-date').textContent = dateFormatter.format(now);
+  document.getElementById('copyright-year').textContent = yearFormatter.format(now);
 }
 
-document.getElementById('btnIncrease').addEventListener('click', () => {
-  count++;
-  updateDisplay();
-  console.log('Đã tăng bộ đếm lên:', count);
-});
+updateVietnamClock();
+setInterval(updateVietnamClock, 1000);
 
-document.getElementById('btnDecrease').addEventListener('click', () => {
-  count--;
-  updateDisplay();
-  console.log('Đã giảm bộ đếm xuống:', count);
-});
-
-document.getElementById('btnReset').addEventListener('click', () => {
-  count = 0;
-  updateDisplay();
-  counterEl.style.color = '#4cc9f0';
-  console.warn('Bộ đếm đã được đặt lại về 0');
-});
-
-const hues = ['#4cc9f0', '#a855f7', '#f72585', '#ff6b35'];
-let currentIndex = 0;
-
-document.getElementById('btnConfetti').addEventListener('click', () => {
-  const pick = hues[currentIndex];
-
-  counterEl.style.color = pick;
-  cardEl.style.borderColor = pick;
-
-  console.log('🎨 Đã đổi màu chủ đạo sang:', pick);
-
-  currentIndex = (currentIndex + 1) % hues.length;
-});
-
-console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
+console.log('Trang mẫu Studying Source đã sẵn sàng!');`
       }
     };
 
     /*************************************************************************
      * 2. TRẠNG THÁI ỨNG DỤNG & THAM CHIẾU DOM
      *************************************************************************/
-    const STORAGE_KEY = 'codeplay_vn_saved_state_v2';
+    const STORAGE_KEY = 'codeplay_vn_saved_state_v3';
     let autoRunEnabled = true;
     let debounceTimer = null;
     let isVerticalSplit = true;
@@ -1588,16 +1547,30 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
       const drawer = document.getElementById('consoleDrawer');
       const btn = document.getElementById('btnToggleConsole');
       const isCollapsed = drawer.classList.toggle('collapsed');
-      if(isCollapsed) {
-          btn.innerHTML = 'Mở rộng ▴';
+      if (isCollapsed) {
+        btn.innerHTML = 'Mở rộng ▴';
       } else {
-          btn.innerHTML = 'Thu gọn ▾';
+        btn.innerHTML = 'Thu gọn ▾';
       }
     }
 
     /*************************************************************************
      * 6. CÁC TIỆN ÍCH TRÊN GIAO DIỆN
      *************************************************************************/
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const item = document.createElement('div');
+      item.className = 'toast-item';
+      item.textContent = message;
+      container.appendChild(item);
+
+      setTimeout(() => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(8px)';
+        setTimeout(() => item.remove(), 250);
+      }, 2200);
+    }
+
     function copyEditorCode(lang) {
       const textarea = editors[lang];
       textarea.select();
@@ -1627,10 +1600,10 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
       const panel = document.getElementById('panel-' + lang);
       const btn = document.getElementById('btnToggle-' + lang);
       const isCollapsed = panel.classList.toggle('collapsed');
-      if(isCollapsed) {
-          btn.innerHTML = 'Mở rộng ▴';
+      if (isCollapsed) {
+        btn.innerHTML = 'Mở rộng ▴';
       } else {
-          btn.innerHTML = 'Thu gọn ▾';
+        btn.innerHTML = 'Thu gọn ▾';
       }
     }
 
@@ -1648,7 +1621,7 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
     }
 
     function loadDefaultTemplate() {
-      const tpl = TEMPLATES.neonCard;
+      const tpl = TEMPLATES.defaultPage;
       editors.html.value = tpl.html;
       editors.css.value = tpl.css;
       editors.js.value = tpl.js;
@@ -1748,7 +1721,7 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
         editorsPane.style.height = '100%';
         label.textContent = 'Chia dọc';
       } else {
-        workspace.workspaceContainer.classList.add('split-horizontal');
+        workspace.classList.add('split-horizontal');
         editorsPane.style.width = '100%';
         editorsPane.style.height = '50%';
         label.textContent = 'Chia ngang';
@@ -1810,16 +1783,16 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
-          editors.html.value = parsed.html !== undefined ? parsed.html : TEMPLATES.neonCard.html;
-          editors.css.value = parsed.css !== undefined ? parsed.css : TEMPLATES.neonCard.css;
-          editors.js.value = parsed.js !== undefined ? parsed.js : TEMPLATES.neonCard.js;
+          editors.html.value = parsed.html !== undefined ? parsed.html : TEMPLATES.defaultPage.html;
+          editors.css.value = parsed.css !== undefined ? parsed.css : TEMPLATES.defaultPage.css;
+          editors.js.value = parsed.js !== undefined ? parsed.js : TEMPLATES.defaultPage.js;
           return;
         }
       } catch (e) { }
 
-      editors.html.value = TEMPLATES.neonCard.html;
-      editors.css.value = TEMPLATES.neonCard.css;
-      editors.js.value = TEMPLATES.neonCard.js;
+      editors.html.value = TEMPLATES.defaultPage.html;
+      editors.css.value = TEMPLATES.defaultPage.css;
+      editors.js.value = TEMPLATES.defaultPage.js;
     }
 
     function openResetModal() {
@@ -1831,9 +1804,9 @@ console.log('Ứng dụng mẫu đã khởi tạo thành công!');`
     }
 
     function confirmResetDefault() {
-      editors.html.value = TEMPLATES.neonCard.html;
-      editors.css.value = TEMPLATES.neonCard.css;
-      editors.js.value = TEMPLATES.neonCard.js;
+      editors.html.value = TEMPLATES.defaultPage.html;
+      editors.css.value = TEMPLATES.defaultPage.css;
+      editors.js.value = TEMPLATES.defaultPage.js;
       ['html', 'css', 'js'].forEach(updateLineNumbers);
       saveStateToStorage();
       runCode(true);
