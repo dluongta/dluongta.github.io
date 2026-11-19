@@ -974,7 +974,7 @@
       </button>
 
       <button id="btnLayoutToggle" class="btn btn-blue" onclick="toggleDesktopLayout()" title="Đổi bố cục khung nhìn">
-        <span id="layoutLabel">Chia dọc</span>
+        <span id="layoutLabel">Chia ngang</span>
       </button>
 
       <button class="btn btn-blue" onclick="downloadCombinedHTML()" title="Tải toàn bộ code thành 1 file .html">
@@ -1731,12 +1731,12 @@ console.log('Website mẫu đã sẵn sàng!');`
         workspace.classList.remove('split-horizontal');
         editorsPane.style.width = '50%';
         editorsPane.style.height = '100%';
-        label.textContent = 'Chia dọc';
+        label.textContent = 'Chia ngang';
       } else {
         workspace.classList.add('split-horizontal');
         editorsPane.style.width = '100%';
         editorsPane.style.height = '50%';
-        label.textContent = 'Chia ngang';
+        label.textContent = 'Chia dọc';
       }
     }
 
