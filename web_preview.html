@@ -1089,7 +1089,7 @@
               <button class="vp-btn" onclick="setPreviewWidth('375px', this)">Mobile</button>
             </div>
             <button class="mini-btn" onclick="openPreviewInNewTab()" title="Mở kết quả sang Tab mới">↗ Tab mới</button>
-            <button class="mini-btn" onclick="toggleFullscreenPreview()" title="Phóng to / Thu nhỏ khung xem trước">⛶ Phóng to</button>
+            <button id="btnFullscreen" class="mini-btn" onclick="toggleFullscreenPreview()" title="Phóng to / Thu nhỏ khung xem trước">⛶ Phóng to</button>
           </div>
         </div>
 
@@ -1662,15 +1662,18 @@ console.log('Trang mẫu Studying Source đã sẵn sàng!');`
     function toggleFullscreenPreview() {
       const editorsPane = document.getElementById('editorsPane');
       const splitter = document.getElementById('splitterBar');
+      const btn = document.getElementById('btnFullscreen');
       isFullscreenPreview = !isFullscreenPreview;
 
       if (isFullscreenPreview) {
         editorsPane.classList.add('hidden');
         splitter.classList.add('hidden');
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg> Thu nhỏ`;
         showToast('🖥️ Đang xem trước toàn màn hình');
       } else {
         editorsPane.classList.remove('hidden');
         splitter.classList.remove('hidden');
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg> Phóng to`;
       }
     }
 
