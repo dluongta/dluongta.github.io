@@ -305,7 +305,7 @@
 
     .template-select:hover,
     .template-select:focus {
-      border-color: var(--neon-cyan);
+      border-color: var(--neon-blue);
     }
 
     /* Thanh Tab trên Mobile */
@@ -973,7 +973,7 @@
         ✨ Mẫu có sẵn
       </button>
 
-      <button id="btnLayoutToggle" class="btn" onclick="toggleDesktopLayout()" title="Đổi bố cục khung nhìn">
+      <button id="btnLayoutToggle" class="btn btn-blue" onclick="toggleDesktopLayout()" title="Đổi bố cục khung nhìn">
         <span id="layoutLabel">Chia dọc</span>
       </button>
 
@@ -981,7 +981,7 @@
         <span>Tải HTML</span>
       </button>
 
-      <button class="btn btn-danger-icon" onclick="openResetModal()" title="Đặt lại code mẫu mặc định">
+      <button class="btn btn-blue" onclick="openResetModal()" title="Đặt lại code mẫu mặc định">
         <span>Đặt lại</span>
       </button>
     </div>
@@ -1157,7 +1157,7 @@
 
   <main class="site-content">
     <div class="clock-card">
-      <p class="clock-label">Thời gian hiện tại (Việt Nam - GMT+7)</p>
+      <p class="clock-label">Thời gian hiện tại (Việt Nam)</p>
       <div id="vn-time" class="time-text">00:00:00</div>
       <div id="vn-date" class="date-text">Đang tải ngày tháng...</div>
     </div>
@@ -1189,14 +1189,14 @@ body {
 .site-header {
   background-color: #d1d5db;
   color: #111827;
-  padding: 20px;
+  padding: 35px;
   text-align: center;
   border-bottom: 1px solid #9ca3af;
 }
 
 .site-header h1 {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.5px;
 }
 
@@ -1248,7 +1248,7 @@ body {
   background-color: #e5e7eb;
   color: #4b5563;
   text-align: center;
-  padding: 14px 20px;
+  padding: 30px 20px;
   font-size: 13px;
   border-top: 1px solid #d1d5db;
 }`,
@@ -1445,7 +1445,7 @@ console.log('Trang mẫu Studying Source đã sẵn sàng!');`
       return '<!DOCTYPE html>\n<html lang="vi">\n<head>\n' +
         '  <meta charset="UTF-8" />\n' +
         '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
-        '  <title>WEBPREVIEW VN — Kết Quả</title>\n' +
+        '  <title>Website Template</title>\n' +
         '  ' + T_STYLE_OPEN + '\n' + cssCode + '\n  ' + T_STYLE_CLOSE + '\n' +
         consoleBridgeScript + '\n' +
         T_HEAD_CLOSE + '\n<body>\n' +
