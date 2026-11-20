@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>FRUIT SLASH NEON - Chém Hoa Quả</title>
+    <style>
+        /* ==========================================================================
+           1. CSS VARIABLES & RESET (STRICT ORANGE-PINK-PURPLE NEON)
+           ========================================================================== */
+        :root {
+            --bg-deep: #090412;
+            --bg-panel: rgba(22, 10, 38, 0.88);
+            --bg-glass: rgba(255, 255, 255, 0.06);
+            --bg-glass-hover: rgba(255, 0, 122, 0.16);
+            --border-glass: rgba(255, 106, 0, 0.22);
+            --neon-orange: #ff6a00;
+            --neon-gold: #ffaa00;
+            --neon-pink: #ff007a;
+            --neon-magenta: #e100ff;
+            --neon-purple: #8a2be2;
+            --neon-rose: #ff2a5f;
+            --grad-brand: linear-gradient(90deg, #ff7b00 0%, #ff006a 50%, #9d00ff 100%);
+            --grad-btn: linear-gradient(135deg, #ff6a00 0%, #ff007a 52%, #8a2be2 100%);
+            --grad-card-led: linear-gradient(135deg, #ff6a00, #ff007a, #8a2be2, #e100ff, #ff6a00);
+            --text-main: #fff5f9;
+            --text-muted: #d1b3c4;
+            --font-display: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+            --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        button {
+            font-family: inherit;
+            color: inherit;
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ==========================================================================
+           2. NEON TYPOGRAPHY, LED BORDERS & BUTTONS
+           ========================================================================== */
+        .title-futuristic {
+            font-family: var(--font-display);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .text-gradient-neon {
+            background: var(--grad-brand);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 2px 14px rgba(255, 0, 122, 0.38));
+        }
+
+        .led-border {
+            position: relative;
+            background: var(--bg-panel);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+        }
+
+        .led-border::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            border-radius: 22px;
+            padding: 2px;
+            background: var(--grad-card-led);
+            background-size: 300% 300%;
+            animation: ledFlow 6s ease infinite;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        @keyframes ledFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes floatBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes popScale {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.32); color: #ffffff; }
+            100% { transform: scale(1); }
+        }
+
+        .coin-pop {
+            animation: popScale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .btn-neon-primary {
+            background: var(--grad-btn);
+            box-shadow: 0 4px 22px rgba(255, 0, 122, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-radius: 14px;
+            padding: 12px 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+        }
+
+        .btn-neon-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 28px rgba(255, 106, 0, 0.65), 0 0 36px rgba(255, 0, 122, 0.55);
+        }
+
+        .btn-neon-primary:active {
+            transform: translateY(1px) scale(0.97);
+        }
+
+        .glass-pill {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .glass-pill:hover {
+            background: var(--bg-glass-hover);
+            border-color: rgba(255, 0, 122, 0.45);
+        }
+
+        .glass-pill:active {
+            transform: scale(0.96);
+        }
+
+        .svg-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 11px;
+            color: #ffe4f0;
+        }
+
+        /* ==========================================================================
+           3. FULL-SCREEN GAME STAGE & HUD BAR
+           ========================================================================== */
+        .game-stage {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+            background: var(--bg-deep);
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(255, 106, 0, 0.16) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(157, 0, 255, 0.2) 0%, transparent 50%);
+            display: flex;
+            flex-direction: column;
+            padding: calc(10px + var(--safe-top)) 12px calc(10px + var(--safe-bottom)) 12px;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .hud-bar {
+            max-width: 1280px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .hud-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hud-game-title {
+            font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        .hud-game-sub {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff99cc;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            display: block;
+        }
+
+        .mode-switcher {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 3px;
+            border-radius: 10px;
+            border: 1px solid var(--border-glass);
+            gap: 4px;
+        }
+
+        .mode-btn {
+            padding: 6px 11px;
+            border-radius: 7px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn.active {
+            background: var(--grad-brand);
+            color: #ffffff;
+        }
+
+        .hud-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .coin-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        .coin-badge {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffdd55, #ff6a00);
+            color: #090412;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 11px;
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
+        }
+
+        .coin-amount {
+            font-weight: 900;
+            font-size: 13px;
+            color: var(--neon-gold);
+        }
+
+        .coin-shop-tag {
+            font-size: 9px;
+            background: rgba(255, 106, 0, 0.22);
+            color: #ffcc66;
+            padding: 2px 5px;
+            border-radius: 5px;
+            font-weight: 800;
+        }
+
+        .stat-box {
+            text-align: right;
+        }
+
+        .stat-label {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .stat-value {
+            font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .hud-extra-pill {
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #ffb84d;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        /* Canvas Wrapper */
+        #canvas-wrapper {
+            position: relative;
+            flex: 1;
+            max-width: 1280px;
+            width: 100%;
+            margin: 0 auto;
+            min-height: 220px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1f0a33 0%, #090412 100%);
+            box-shadow: 0 0 45px rgba(0, 0, 0, 0.85), inset 0 0 40px rgba(255, 0, 122, 0.16);
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        .slowmo-vignette {
+            box-shadow: inset 0 0 85px 22px rgba(225, 0, 255, 0.48) !important;
+        }
+
+        .fever-vignette {
+            box-shadow: inset 0 0 95px 24px rgba(255, 106, 0, 0.58) !important;
+        }
+
+        /* ==========================================================================
+           4. START SCREEN, OVERLAYS & SKIN SHOP MODAL
+           ========================================================================== */
+        .overlay-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(9, 4, 18, 0.84);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 3, 15, 0.86);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            z-index: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .overlay-card {
+            max-width: 440px;
+            width: 100%;
+            max-height: 90dvh;
+            overflow-y: auto;
+            padding: 26px 24px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Start Screen Art */
+        .start-art {
+            position: relative;
+            height: 92px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+
+        .slash-beam {
+            width: 210px;
+            height: 5px;
+            background: linear-gradient(90deg, transparent, var(--neon-orange), var(--neon-pink), #ffffff);
+            transform: rotate(-12deg);
+            box-shadow: 0 0 18px var(--neon-pink);
+            border-radius: 99px;
+        }
+
+        .fruit-emoji-row {
+            position: absolute;
+            display: flex;
+            gap: 16px;
+            font-size: 46px;
+            filter: drop-shadow(0 0 14px rgba(255, 106, 0, 0.7));
+            animation: floatBounce 2.2s ease-in-out infinite;
+        }
+
+        .start-mode-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .start-mode-card {
+            padding: 12px 10px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-glass);
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .start-mode-card.active {
+            background: rgba(255, 0, 122, 0.16);
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 18px rgba(255, 0, 122, 0.32);
+        }
+
+        .start-mode-title {
+            font-size: 13px;
+            font-weight: 900;
+            color: #ffffff;
+            display: block;
+        }
+
+        .start-mode-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            display: block;
+        }
+
+        .overlay-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+            border-radius: 16px;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .score-breakdown {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .overlay-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .shop-card {
+            max-width: 660px;
+            width: 100%;
+            max-height: 90dvh;
+            overflow-y: auto;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .shop-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 14px;
+        }
+
+        .shop-balance-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .btn-free-coins {
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: rgba(255, 170, 0, 0.16);
+            border: 1px solid rgba(255, 170, 0, 0.45);
+            color: var(--neon-gold);
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .btn-free-coins:hover {
+            background: rgba(255, 170, 0, 0.28);
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .skin-item {
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .skin-item.equipped {
+            background: rgba(255, 0, 122, 0.14);
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 20px rgba(255, 0, 122, 0.28);
+        }
+
+        /* ==========================================================================
+           5. RESPONSIVE MOBILE
+           ========================================================================== */
+        @media (max-width: 640px) {
+            .coin-shop-tag, .stat-best-box {
+                display: none !important;
+            }
+            .hud-bar {
+                padding: 8px 10px;
+                gap: 6px;
+            }
+            .mode-switcher {
+                width: 100%;
+                justify-content: center;
+            }
+            .mode-btn {
+                flex: 1;
+                text-align: center;
+            }
+            .overlay-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= FULL-SCREEN FRUIT SLASH GAME STAGE ================= -->
+    <section class="game-stage">
+        <!-- Top HUD Bar -->
+        <div class="led-border hud-bar">
+            <div class="hud-left">
+                <div>
+                    <h1 class="title-futuristic hud-game-title text-gradient-neon">FRUIT SLASH NEON</h1>
+                    <span id="hud-game-subtitle" class="hud-game-sub">Chế độ Classic (3 Mạng)</span>
+                </div>
+
+                <!-- Mode Switcher -->
+                <div class="mode-switcher">
+                    <button onclick="App.selectMode('classic', true)" id="btn-mode-classic" class="mode-btn active">
+                        CLASSIC (3 Mạng)
+                    </button>
+                    <button onclick="App.selectMode('arcade', true)" id="btn-mode-arcade" class="mode-btn">
+                        ARCADE (60 Giây)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Score, Coins & Controls -->
+            <div class="hud-right">
+                <div onclick="App.toggleShop(true)" class="glass-pill coin-pill" title="Cửa Hàng Skin Lưỡi Kiếm">
+                    <div class="coin-badge">¢</div>
+                    <span id="ui-coins" class="coin-amount">250</span>
+                    <span class="coin-shop-tag">+SKIN</span>
+                </div>
+
+                <div class="stat-box">
+                    <span class="stat-label">ĐIỂM SỐ</span>
+                    <span id="hud-score" class="title-futuristic stat-value">0</span>
+                </div>
+
+                <div class="stat-box stat-best-box">
+                    <span class="stat-label">KỶ LỤC</span>
+                    <span id="hud-best" class="title-futuristic stat-value" style="color: var(--neon-gold);">0</span>
+                </div>
+
+                <div id="hud-extra" class="glass-pill hud-extra-pill">
+                    ❤️ x3
+                </div>
+
+                <button onclick="Sound.toggleMute()" id="btn-sound" class="glass-pill icon-btn" style="color: var(--neon-gold);" title="Bật/Tắt Âm Thanh">
+                    <svg id="icon-sound-on" class="svg-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                    <svg id="icon-sound-off" class="svg-icon hidden" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                </button>
+
+                <button onclick="App.togglePause()" class="glass-pill icon-btn" title="Tạm dừng (P)">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+                </button>
+
+                <button onclick="App.restartGame()" class="glass-pill icon-btn" title="Chơi lại (R)">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 2.97-2.17 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93 0-4.42-3.58-8-8-8zm-6 8c0-1.65.67-3.15 1.76-4.24L6.34 7.34C4.9 8.79 4 10.79 4 13c0 4.08 3.05 7.44 7 7.93v-2.02c-2.83-.48-5-2.94-5-5.91z"/></svg>
+                </button>
+
+                <button onclick="App.toggleFullscreen()" class="glass-pill icon-btn" title="Toàn màn hình">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Interactive HTML5 Canvas Stage -->
+        <div id="canvas-wrapper" class="led-border">
+            <canvas id="game-canvas"></canvas>
+
+            <!-- START SCREEN OVERLAY (Hiện mặc định khi mở app) -->
+            <div id="start-overlay" class="overlay-backdrop">
+                <div class="led-border overlay-card">
+                    <div class="start-art">
+                        <div class="slash-beam"></div>
+                        <div class="fruit-emoji-row">
+                            <span style="transform: rotate(-14deg);">🍉</span>
+                            <span style="transform: translateY(6px);">🍊</span>
+                            <span style="transform: rotate(14deg);">🍑</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="title-futuristic text-gradient-neon" style="font-size: 28px; line-height: 1.15;">
+                            FRUIT SLASH NEON
+                        </h2>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px; line-height: 1.5;">
+                            Lướt chuột hoặc ngón tay chém đôi hoa quả để tạo <strong>Combo</strong>, kích hoạt <strong>Neon Fever x2</strong> và né Bom Plasma!
+                        </p>
+                    </div>
+
+                    <!-- Chọn chế độ chơi ngay tại màn hình chờ -->
+                    <div class="start-mode-grid">
+                        <button onclick="App.selectMode('classic', false)" id="start-mode-classic" class="start-mode-card active">
+                            <span class="title-futuristic start-mode-title">❤️ CLASSIC</span>
+                            <span class="start-mode-sub">3 Mạng &bull; Né Bom</span>
+                        </button>
+                        <button onclick="App.selectMode('arcade', false)" id="start-mode-arcade" class="start-mode-card">
+                            <span class="title-futuristic start-mode-title">⏱️ ARCADE</span>
+                            <span class="start-mode-sub">60 Giây &bull; Đua Điểm</span>
+                        </button>
+                    </div>
+
+                    <div class="score-breakdown">
+                        <div>
+                            <span class="stat-label">KỶ LỤC CỦA BẠN</span>
+                            <span id="start-best" class="title-futuristic" style="font-size: 22px; color: var(--neon-gold);">0</span>
+                        </div>
+                        <div>
+                            <span class="stat-label">XU HIỆN CÓ</span>
+                            <span id="start-coins" class="title-futuristic" style="font-size: 22px; color: var(--neon-orange);">250</span>
+                        </div>
+                    </div>
+
+                    <div class="overlay-actions">
+                        <button onclick="App.startGame()" class="btn-neon-primary" style="flex: 1; padding: 14px 20px; font-size: 15px;">
+                            ⚔️ BẮT ĐẦU CHƠI
+                        </button>
+                        <button onclick="App.toggleShop(true)" class="glass-pill" style="padding: 12px 16px; font-weight: 800; font-size: 13px; color: var(--neon-gold); border-color: rgba(255, 170, 0, 0.45);">
+                            ✨ SKINS
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAUSE / GAME OVER OVERLAY -->
+            <div id="canvas-overlay" class="overlay-backdrop hidden">
+                <div class="led-border overlay-card">
+                    <div class="overlay-icon btn-neon-primary">🏆</div>
+                    <div>
+                        <h3 id="overlay-title" class="title-futuristic text-gradient-neon" style="font-size: 24px;">KẾT THÚC MÀN!</h3>
+                        <p id="overlay-subtitle" style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
+                            Bạn đã chiến đấu cực kỳ xuất sắc!
+                        </p>
+                    </div>
+
+                    <div class="score-breakdown">
+                        <div>
+                            <span class="stat-label">ĐIỂM ĐẠT ĐƯỢC</span>
+                            <span id="overlay-score" class="title-futuristic" style="font-size: 24px; color: var(--neon-orange);">0</span>
+                        </div>
+                        <div>
+                            <span class="stat-label">KỶ LỤC CAO NHẤT</span>
+                            <span id="overlay-best" class="title-futuristic" style="font-size: 24px; color: var(--neon-gold);">0</span>
+                        </div>
+                    </div>
+
+                    <div class="overlay-actions">
+                        <button onclick="App.resumeOrRestartOverlay()" id="overlay-primary-btn" class="btn-neon-primary" style="flex: 1;">
+                            ▶ CHƠI TIẾP
+                        </button>
+                        <button onclick="App.backToStartScreen()" class="glass-pill" style="padding: 12px 16px; font-weight: 800; font-size: 13px;">
+                            🏠 MENU
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SKINS SHOP MODAL ================= -->
+    <div id="shop-modal" class="modal-backdrop hidden">
+        <div class="led-border shop-card">
+            <div class="shop-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="btn-neon-primary" style="width: 40px; height: 40px; padding: 0; border-radius: 12px;">✨</div>
+                    <div>
+                        <h3 class="title-futuristic text-gradient-neon" style="font-size: 18px;">CỬA HÀNG SKIN LƯỠI KIẾM</h3>
+                        <p style="font-size: 12px; color: var(--text-muted);">Trang bị hiệu ứng chém Neon Cam - Hồng - Tím</p>
+                    </div>
+                </div>
+                <button onclick="App.toggleShop(false)" class="glass-pill icon-btn">✕</button>
+            </div>
+
+            <div class="shop-balance-bar">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="coin-badge" style="width: 28px; height: 28px; font-size: 15px;">¢</div>
+                    <div>
+                        <span class="stat-label">SỐ DƯ HIỆN TẠI</span>
+                        <span id="shop-coins" class="title-futuristic" style="font-size: 18px; color: var(--neon-gold);">250 XU</span>
+                    </div>
+                </div>
+                <button onclick="App.claimBonusCoins()" class="btn-free-coins">
+                    🎁 +300 XU THƯỞNG MIỄN PHÍ
+                </button>
+            </div>
+
+            <div id="shop-skins-grid" class="shop-grid"></div>
+        </div>
+    </div>
+
+    <!-- ================= GAME ENGINE & AUDIO SCRIPT ================= -->
+    <script>
+        /* ============================================================================
+         * 1. WEB AUDIO API SOUND ENGINE (100% Offline)
+         * ============================================================================ */
+        const Sound = {
+            ctx: null,
+            muted: false,
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume().catch(() => {});
+                }
+            },
+
+            toggleMute() {
+                this.muted = !this.muted;
+                const btn = document.getElementById('btn-sound');
+                const onIcon = document.getElementById('icon-sound-on');
+                const offIcon = document.getElementById('icon-sound-off');
+                if (this.muted) {
+                    btn.style.color = 'var(--neon-rose)';
+                    onIcon.classList.add('hidden');
+                    offIcon.classList.remove('hidden');
+                } else {
+                    this.init();
+                    btn.style.color = 'var(--neon-gold)';
+                    offIcon.classList.add('hidden');
+                    onIcon.classList.remove('hidden');
+                    this.playChime(2);
+                }
+            },
+
+            playSlash() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(680, now);
+                osc.frequency.exponentialRampToValueAtTime(140, now + 0.13);
+                gain.gain.setValueAtTime(0.13, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.14);
+            },
+
+            playSplat(isBonus = false) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = isBonus ? 'triangle' : 'sawtooth';
+                osc.frequency.setValueAtTime(isBonus ? 520 : 320, now);
+                osc.frequency.exponentialRampToValueAtTime(isBonus ? 980 : 95, now + 0.16);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.18);
+            },
+
+            playExplosion() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const bufferSize = Math.floor(this.ctx.sampleRate * 0.42);
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.13));
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(420, now);
+                filter.frequency.exponentialRampToValueAtTime(55, now + 0.4);
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.42, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.41);
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start(now);
+            },
+
+            playError() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.exponentialRampToValueAtTime(90, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.21);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.22);
+            },
+
+            playChime(comboLevel = 1) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.5];
+                const freq = notes[Math.min(notes.length - 1, Math.max(0, comboLevel - 1))];
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+                osc.frequency.exponentialRampToValueAtTime(freq * 1.25, now + 0.22);
+                gain.gain.setValueAtTime(0.16, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.23);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.24);
+            }
+        };
+
+        /* ============================================================================
+         * 2. SKINS & PERSISTENT STORAGE
+         * ============================================================================ */
+        const SKINS = {
+            sunset: {
+                id: 'sunset',
+                name: 'Sunset Neon (Cam - Hồng - Tím)',
+                desc: 'Dải màu chuẩn Cam rực lửa, Hồng cánh sen & Tím',
+                price: 0,
+                colors: ['#ff6a00', '#ff007a', '#9d00ff'],
+                primary: '#ff007a'
+            },
+            solar: {
+                id: 'solar',
+                name: 'Solar Flare (Vàng - Cam - Đỏ)',
+                desc: 'Ngọn lửa Mặt Trời Hoàng Kim & Cam Hồng rực cháy',
+                price: 250,
+                colors: ['#ffaa00', '#ff6a00', '#ff0055'],
+                primary: '#ff6a00'
+            },
+            plasma: {
+                id: 'plasma',
+                name: 'Plasma Magenta (Hồng - Tím)',
+                desc: 'Năng lượng Hồng Điện Tử & Tím Huyền Bí',
+                price: 500,
+                colors: ['#ff007a', '#e100ff', '#8a2be2'],
+                primary: '#e100ff'
+            },
+            vortex: {
+                id: 'vortex',
+                name: 'Sunset Vortex (Biến Ảo)',
+                desc: 'Hiệu ứng chuyển sắc Cam - Hồng - Tím tự động liên tục',
+                price: 800,
+                colors: ['#ff6a00', '#ff007a', '#e100ff', '#ffaa00'],
+                primary: '#ff6a00',
+                dynamicWarm: true
+            }
+        };
+
+        const Store = {
+            coins: 250,
+            unlockedSkins: ['sunset'],
+            equippedSkin: 'sunset',
+            highScore: 0,
+
+            load() {
+                try {
+                    const raw = localStorage.getItem('FRUIT_SLASH_NEON_V1');
+                    if (raw) {
+                        const data = JSON.parse(raw);
+                        this.coins = data.coins ?? 250;
+                        this.unlockedSkins = data.unlockedSkins || ['sunset'];
+                        if (!this.unlockedSkins.includes('sunset')) this.unlockedSkins.push('sunset');
+                        this.equippedSkin = SKINS[data.equippedSkin] ? data.equippedSkin : 'sunset';
+                        this.highScore = data.highScore || 0;
+                    }
+                } catch (e) {}
+                this.syncUI();
+            },
+
+            save() {
+                try {
+                    localStorage.setItem('FRUIT_SLASH_NEON_V1', JSON.stringify({
+                        coins: this.coins,
+                        unlockedSkins: this.unlockedSkins,
+                        equippedSkin: this.equippedSkin,
+                        highScore: this.highScore
+                    }));
+                } catch (e) {}
+                this.syncUI();
+            },
+
+            addCoins(amount) {
+                if (amount <= 0) return;
+                this.coins += Math.floor(amount);
+                this.save();
+                const el = document.getElementById('ui-coins');
+                if (el) {
+                    el.classList.remove('coin-pop');
+                    void el.offsetWidth;
+                    el.classList.add('coin-pop');
+                }
+            },
+
+            updateHighScore(score) {
+                if (score > this.highScore) {
+                    this.highScore = score;
+                    this.save();
+                    return true;
+                }
+                return false;
+            },
+
+            getSkin() {
+                return SKINS[this.equippedSkin] || SKINS.sunset;
+            },
+
+            syncUI() {
+                document.getElementById('ui-coins').textContent = this.coins.toLocaleString();
+                document.getElementById('shop-coins').textContent = `${this.coins.toLocaleString()} XU`;
+                document.getElementById('hud-best').textContent = this.highScore;
+                document.getElementById('start-best').textContent = this.highScore;
+                document.getElementById('start-coins').textContent = this.coins.toLocaleString();
+            }
+        };
+
+        /* ============================================================================
+         * 3. VISUAL FX ENGINE (Particles, Splatters, Shockwaves, Floating Text)
+         * ============================================================================ */
+        const FX = {
+            particles: [],
+            texts: [],
+            shockwaves: [],
+            splatters: [],
+            shakeTime: 0,
+            shakeMagnitude: 0,
+
+            clear() {
+                this.particles = [];
+                this.texts = [];
+                this.shockwaves = [];
+                this.splatters = [];
+                this.shakeTime = 0;
+            },
+
+            shake(mag = 10, duration = 0.25) {
+                this.shakeMagnitude = Math.max(this.shakeMagnitude, mag);
+                this.shakeTime = Math.max(this.shakeTime, duration);
+            },
+
+            spawnParticles(x, y, color, count = 16, speed = 240, size = 5) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const vel = (0.25 + Math.random() * 0.75) * speed;
+                    this.particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * vel,
+                        vy: Math.sin(angle) * vel,
+                        size: (0.5 + Math.random() * 0.8) * size,
+                        color,
+                        alpha: 1,
+                        life: 0.42 + Math.random() * 0.4,
+                        maxLife: 0.82,
+                        gravity: 320
+                    });
+                }
+            },
+
+            spawnSplatter(x, y, color, radius = 34) {
+                const blobs = [];
+                for (let i = 0; i < 6; i++) {
+                    const ang = Math.random() * Math.PI * 2;
+                    const dist = Math.random() * radius * 0.75;
+                    blobs.push({
+                        ox: Math.cos(ang) * dist,
+                        oy: Math.sin(ang) * dist,
+                        r: radius * (0.24 + Math.random() * 0.42)
+                    });
+                }
+                this.splatters.push({ x, y, color, alpha: 0.45, blobs });
+                if (this.splatters.length > 15) this.splatters.shift();
+            },
+
+            spawnShockwave(x, y, color = '#ff007a', maxRadius = 120) {
+                this.shockwaves.push({ x, y, radius: 8, maxRadius, color, alpha: 1 });
+            },
+
+            spawnText(x, y, text, color = '#ffaa00', scale = 1) {
+                const safeX = Math.max(70, Math.min((App.width || 400) - 70, x));
+                const safeY = Math.max(50, Math.min((App.height || 400) - 40, y));
+                this.texts.push({
+                    x: safeX,
+                    y: safeY,
+                    vy: -68,
+                    text,
+                    color,
+                    scale,
+                    alpha: 1,
+                    life: 0.95
+                });
+            },
+
+            update(dt) {
+                if (this.shakeTime > 0) {
+                    this.shakeTime -= dt;
+                    if (this.shakeTime <= 0) this.shakeMagnitude = 0;
+                }
+
+                for (let i = this.splatters.length - 1; i >= 0; i--) {
+                    this.splatters[i].alpha -= dt * 0.08;
+                    if (this.splatters[i].alpha <= 0) this.splatters.splice(i, 1);
+                }
+
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx * dt;
+                    p.y += p.vy * dt;
+                    p.vy += p.gravity * dt;
+                    p.life -= dt;
+                    p.alpha = Math.max(0, p.life / p.maxLife);
+                    if (p.life <= 0) this.particles.splice(i, 1);
+                }
+
+                for (let i = this.shockwaves.length - 1; i >= 0; i--) {
+                    const s = this.shockwaves[i];
+                    s.radius += (s.maxRadius - s.radius) * 8 * dt;
+                    s.alpha -= dt * 2.1;
+                    if (s.alpha <= 0) this.shockwaves.splice(i, 1);
+                }
+
+                for (let i = this.texts.length - 1; i >= 0; i--) {
+                    const t = this.texts[i];
+                    t.y += t.vy * dt;
+                    t.life -= dt;
+                    t.alpha = Math.max(0, t.life);
+                    if (t.life <= 0) this.texts.splice(i, 1);
+                }
+            },
+
+            renderSplatters(ctx) {
+                for (const s of this.splatters) {
+                    ctx.save();
+                    ctx.globalAlpha = s.alpha;
+                    ctx.fillStyle = s.color;
+                    for (const b of s.blobs) {
+                        ctx.beginPath();
+                        ctx.arc(s.x + b.ox, s.y + b.oy, b.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+            },
+
+            renderForeground(ctx) {
+                for (const s of this.shockwaves) {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, s.alpha);
+                    ctx.strokeStyle = s.color;
+                    ctx.lineWidth = 3.5;
+                    ctx.shadowColor = s.color;
+                    ctx.shadowBlur = 14;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                for (const p of this.particles) {
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fillStyle = p.color;
+                    ctx.shadowColor = p.color;
+                    ctx.shadowBlur = 8;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                const fontScale = Math.max(0.78, Math.min(1.1, (App.width || 600) / 650));
+                for (const t of this.texts) {
+                    ctx.save();
+                    ctx.globalAlpha = t.alpha;
+                    ctx.font = `900 ${Math.round(20 * t.scale * fontScale)}px 'Segoe UI', system-ui, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = t.color;
+                    ctx.shadowColor = t.color;
+                    ctx.shadowBlur = 10;
+                    ctx.fillText(t.text, t.x, t.y);
+                    ctx.restore();
+                }
+            }
+        };
+
+        /* ============================================================================
+         * 4. FRUIT SLASH NEON GAME LOGIC
+         * ============================================================================ */
+        const FRUIT_TYPES = [
+            { id: 'watermelon', name: 'Dưa Hấu Hồng', r: 36, outer: '#ff007a', inner: '#ff2a5f', seed: '#1a0626', points: 10 },
+            { id: 'orange', name: 'Cam Neon', r: 31, outer: '#ff6a00', inner: '#ff9e00', seed: '#fff0b3', points: 12 },
+            { id: 'dragonfruit', name: 'Thanh Long Đỏ', r: 34, outer: '#ff006a', inner: '#ffe6f2', seed: '#1f082e', points: 15 },
+            { id: 'peach', name: 'Đào Tiên Hồng', r: 30, outer: '#ff4d94', inner: '#ffb3d1', seed: '#800033', points: 15 },
+            { id: 'mango', name: 'Xoài Hoàng Kim', r: 33, outer: '#ffaa00', inner: '#ffe066', seed: '#ffffff', points: 30, golden: true },
+            { id: 'chrono', name: 'Quả Năng Lượng Tím', r: 32, outer: '#9d00ff', inner: '#e100ff', seed: '#ffffff', points: 20, freeze: true },
+            { id: 'banana', name: 'Chuối Nhân Đôi', r: 30, outer: '#ffaa00', inner: '#fff5cc', seed: '#cc7a00', points: 25, doubleScore: true }
+        ];
+
+        const FruitGame = {
+            mode: 'classic',
+            score: 0,
+            lives: 3,
+            timeLeft: 60,
+            fruits: [],
+            halves: [],
+            bladeTrail: [],
+            isPointerDown: false,
+            spawnTimer: 0,
+            freezeTimer: 0,
+            doubleTimer: 0,
+            feverGauge: 0,
+            feverTimer: 0,
+            sliceComboCount: 0,
+            sliceComboWindow: 0,
+
+            init() {
+                FX.clear();
+                this.score = 0;
+                this.lives = 3;
+                this.timeLeft = 60;
+                this.fruits = [];
+                this.halves = [];
+                this.bladeTrail = [];
+                this.spawnTimer = 0.35;
+                this.freezeTimer = 0;
+                this.doubleTimer = 0;
+                this.feverGauge = 0;
+                this.feverTimer = 0;
+                this.sliceComboCount = 0;
+                this.sliceComboWindow = 0;
+                this.syncModeButtons();
+                this.updateHUD();
+            },
+
+            syncModeButtons() {
+                const cBtn = document.getElementById('btn-mode-classic');
+                const aBtn = document.getElementById('btn-mode-arcade');
+                const scBtn = document.getElementById('start-mode-classic');
+                const saBtn = document.getElementById('start-mode-arcade');
+                const sub = document.getElementById('hud-game-subtitle');
+
+                if (this.mode === 'classic') {
+                    cBtn.classList.add('active');
+                    aBtn.classList.remove('active');
+                    scBtn.classList.add('active');
+                    saBtn.classList.remove('active');
+                    sub.textContent = 'Chế độ Classic (3 Mạng)';
+                } else {
+                    aBtn.classList.add('active');
+                    cBtn.classList.remove('active');
+                    saBtn.classList.add('active');
+                    scBtn.classList.remove('active');
+                    sub.textContent = 'Chế độ Arcade (60 Giây)';
+                }
+            },
+
+            updateHUD() {
+                document.getElementById('hud-score').textContent = this.score;
+                document.getElementById('hud-best').textContent = Store.highScore;
+                const extra = document.getElementById('hud-extra');
+                if (this.mode === 'classic') {
+                    extra.innerHTML = `❤️ x${Math.max(0, this.lives)}`;
+                } else {
+                    extra.innerHTML = `⏱️ ${Math.ceil(this.timeLeft)}s`;
+                }
+                const wrapper = document.getElementById('canvas-wrapper');
+                wrapper.classList.toggle('slowmo-vignette', this.freezeTimer > 0);
+                wrapper.classList.toggle('fever-vignette', this.feverTimer > 0);
+            },
+
+            getGravity(h) {
+                return Math.max(520, h * 1.15);
+            },
+
+            spawnWave(w, h) {
+                const isMobile = w < 520;
+                const sizeScale = isMobile ? 0.84 : 1.0;
+                const gravity = this.getGravity(h);
+                const count = this.feverTimer > 0 ? (isMobile ? 3 : 4) : (Math.random() < 0.35 ? 3 : 2);
+
+                for (let i = 0; i < count; i++) {
+                    const isBomb = this.feverTimer <= 0 && Math.random() < 0.17;
+                    const x = w * (0.16 + Math.random() * 0.68);
+                    const y = h + 36;
+                    const targetX = w * (0.24 + Math.random() * 0.52);
+                    const peakHeight = h * (0.62 + Math.random() * 0.22);
+                    const vy = -Math.sqrt(2 * gravity * peakHeight);
+                    const flightTime = (-vy / gravity) * 1.85;
+                    const vx = (targetX - x) / Math.max(0.8, flightTime);
+
+                    if (isBomb) {
+                        this.fruits.push({
+                            isBomb: true,
+                            x, y, vx, vy,
+                            r: 32 * sizeScale,
+                            angle: 0,
+                            vAngle: (Math.random() - 0.5) * 5
+                        });
+                    } else {
+                        let pool = FRUIT_TYPES.slice(0, 5);
+                        if (Math.random() < 0.16) pool = [FRUIT_TYPES[5]];
+                        else if (this.mode === 'arcade' && Math.random() < 0.18) pool = [FRUIT_TYPES[6]];
+                        const type = pool[Math.floor(Math.random() * pool.length)];
+
+                        this.fruits.push({
+                            isBomb: false,
+                            type,
+                            x, y, vx, vy,
+                            r: type.r * sizeScale,
+                            angle: Math.random() * Math.PI * 2,
+                            vAngle: (Math.random() - 0.5) * 4.5
+                        });
+                    }
+                }
+            },
+
+            onPointerMove(x, y) {
+                this.bladeTrail.push({ x, y, life: 0.2 });
+                if (this.bladeTrail.length > 18) this.bladeTrail.shift();
+
+                if (this.bladeTrail.length >= 2) {
+                    const p1 = this.bladeTrail[this.bladeTrail.length - 2];
+                    const p2 = this.bladeTrail[this.bladeTrail.length - 1];
+                    if (Math.hypot(p2.x - p1.x, p2.y - p1.y) > 4) {
+                        this.checkSlices(p1.x, p1.y, p2.x, p2.y);
+                    }
+                }
+            },
+
+            checkSlices(x1, y1, x2, y2) {
+                const slashAngle = Math.atan2(y2 - y1, x2 - x1);
+                let hitSomething = false;
+
+                for (let i = this.fruits.length - 1; i >= 0; i--) {
+                    const f = this.fruits[i];
+                    const d = this.pointToSegmentDist(f.x, f.y, x1, y1, x2, y2);
+                    if (d <= f.r + 10) {
+                        hitSomething = true;
+                        if (f.isBomb) {
+                            this.triggerBomb(f);
+                            this.fruits.splice(i, 1);
+                            break;
+                        } else {
+                            this.sliceFruit(f, slashAngle);
+                            this.fruits.splice(i, 1);
+                        }
+                    }
+                }
+                if (hitSomething) Sound.playSlash();
+            },
+
+            pointToSegmentDist(px, py, x1, y1, x2, y2) {
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const lenSq = dx * dx + dy * dy;
+                if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+                let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+                t = Math.max(0, Math.min(1, t));
+                return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+            },
+
+            sliceFruit(f, slashAngle) {
+                const t = f.type;
+                Sound.playSplat(t.golden || t.freeze);
+                FX.spawnSplatter(f.x, f.y, t.inner, f.r * 1.1);
+                FX.spawnParticles(f.x, f.y, t.inner, 18, 260, 5);
+                FX.spawnParticles(f.x, f.y, t.outer, 7, 180, 3.8);
+
+                for (let side of [-1, 1]) {
+                    this.halves.push({
+                        type: t,
+                        r: f.r,
+                        x: f.x + Math.cos(slashAngle + side * Math.PI / 2) * 7,
+                        y: f.y + Math.sin(slashAngle + side * Math.PI / 2) * 7,
+                        vx: f.vx + Math.cos(slashAngle + side * Math.PI / 2) * 85,
+                        vy: f.vy - 50,
+                        angle: slashAngle,
+                        vAngle: side * 5.2,
+                        side,
+                        alpha: 1
+                    });
+                }
+
+                if (t.freeze) {
+                    this.freezeTimer = 5.0;
+                    FX.spawnShockwave(f.x, f.y, '#e100ff', 150);
+                    FX.spawnText(f.x, f.y - 24, '🔮 SLOW-MO TÍM!', '#e100ff', 1.2);
+                    Sound.playChime(3);
+                }
+                if (t.doubleScore) {
+                    this.doubleTimer = 6.0;
+                    FX.spawnShockwave(f.x, f.y, '#ffaa00', 150);
+                    FX.spawnText(f.x, f.y - 24, '⚡ X2 ĐIỂM!', '#ffaa00', 1.2);
+                    Sound.playChime(4);
+                }
+                if (t.golden) {
+                    Store.addCoins(12);
+                    FX.spawnText(f.x, f.y - 26, '+12 XU VÀNG!', '#ffaa00', 1.15);
+                }
+
+                this.sliceComboCount++;
+                this.sliceComboWindow = 0.26;
+
+                const mult = (this.doubleTimer > 0 || this.feverTimer > 0) ? 2 : 1;
+                const gained = t.points * mult;
+                this.score += gained;
+                Store.addCoins(1);
+
+                if (this.feverTimer <= 0) {
+                    this.feverGauge = Math.min(100, this.feverGauge + 9);
+                    if (this.feverGauge >= 100) {
+                        this.feverTimer = 6.5;
+                        this.feverGauge = 0;
+                        FX.shake(10, 0.3);
+                        FX.spawnText(App.width / 2, App.height * 0.32, '🔥 NEON FEVER X2! 🔥', '#ff6a00', 1.4);
+                        Sound.playChime(4);
+                    }
+                }
+
+                FX.spawnText(f.x, f.y, `+${gained}`, t.inner, 1.0);
+                Store.updateHighScore(this.score);
+                this.updateHUD();
+            },
+
+            triggerBomb(b) {
+                Sound.playExplosion();
+                FX.shake(20, 0.45);
+                FX.spawnShockwave(b.x, b.y, '#ff0055', 220);
+                FX.spawnParticles(b.x, b.y, '#ff6a00', 34, 380, 6.5);
+                FX.spawnParticles(b.x, b.y, '#ffffff', 16, 260, 4.5);
+
+                if (this.mode === 'classic') {
+                    this.lives--;
+                    FX.spawnText(b.x, b.y, '💥 NỔ BOM! -1 MẠNG', '#ff2a5f', 1.25);
+                    this.updateHUD();
+                    if (this.lives <= 0) {
+                        App.triggerGameOver('FRUIT SLASH CLASSIC', this.score, Store.highScore);
+                    }
+                } else {
+                    this.score = Math.max(0, this.score - 25);
+                    FX.spawnText(b.x, b.y, '💥 -25 ĐIỂM!', '#ff2a5f', 1.25);
+                    this.updateHUD();
+                }
+            },
+
+            update(dt, w, h) {
+                const timeScale = this.freezeTimer > 0 ? 0.48 : 1.0;
+                const scaledDt = dt * timeScale;
+                const gravity = this.getGravity(h);
+
+                if (this.freezeTimer > 0) {
+                    this.freezeTimer = Math.max(0, this.freezeTimer - dt);
+                    this.updateHUD();
+                }
+                if (this.doubleTimer > 0) this.doubleTimer = Math.max(0, this.doubleTimer - dt);
+                if (this.feverTimer > 0) {
+                    this.feverTimer = Math.max(0, this.feverTimer - dt);
+                    this.updateHUD();
+                }
+
+                if (this.sliceComboWindow > 0) {
+                    this.sliceComboWindow -= dt;
+                    if (this.sliceComboWindow <= 0) {
+                        if (this.sliceComboCount >= 2) {
+                            const bonus = this.sliceComboCount * 15;
+                            this.score += bonus;
+                            Store.addCoins(this.sliceComboCount * 2);
+                            const label = this.sliceComboCount >= 4
+                                ? `⚡ BLITZ COMBO x${this.sliceComboCount}! +${bonus}`
+                                : `🔥 COMBO x${this.sliceComboCount}! +${bonus}`;
+                            FX.spawnText(w / 2, h * 0.38, label, '#ffaa00', 1.3);
+                            Sound.playChime(Math.min(4, this.sliceComboCount));
+                            Store.updateHighScore(this.score);
+                            this.updateHUD();
+                        }
+                        this.sliceComboCount = 0;
+                    }
+                }
+
+                if (this.mode === 'arcade') {
+                    this.timeLeft -= dt;
+                    this.updateHUD();
+                    if (this.timeLeft <= 0) {
+                        this.timeLeft = 0;
+                        App.triggerGameOver('FRUIT SLASH ARCADE', this.score, Store.highScore);
+                        return;
+                    }
+                }
+
+                this.spawnTimer -= dt;
+                if (this.spawnTimer <= 0) {
+                    this.spawnWave(w, h);
+                    this.spawnTimer = this.feverTimer > 0 ? 0.65 : (1.2 + Math.random() * 0.5);
+                }
+
+                for (let i = this.fruits.length - 1; i >= 0; i--) {
+                    const f = this.fruits[i];
+                    f.x += f.vx * scaledDt;
+                    f.y += f.vy * scaledDt;
+                    f.vy += gravity * scaledDt;
+                    f.angle += f.vAngle * scaledDt;
+
+                    if (f.x - f.r < 6) {
+                        f.x = 6 + f.r;
+                        f.vx = Math.abs(f.vx) * 0.8;
+                    } else if (f.x + f.r > w - 6) {
+                        f.x = w - 6 - f.r;
+                        f.vx = -Math.abs(f.vx) * 0.8;
+                    }
+
+                    if (f.y > h + 70 && f.vy > 0) {
+                        if (!f.isBomb && this.mode === 'classic') {
+                            this.lives--;
+                            FX.spawnText(f.x, h - 36, '❌ RƠI QUẢ!', '#ff2a5f', 1.0);
+                            this.updateHUD();
+                            if (this.lives <= 0) {
+                                App.triggerGameOver('FRUIT SLASH CLASSIC', this.score, Store.highScore);
+                                return;
+                            }
+                        }
+                        this.fruits.splice(i, 1);
+                    }
+                }
+
+                for (let i = this.halves.length - 1; i >= 0; i--) {
+                    const hf = this.halves[i];
+                    hf.x += hf.vx * scaledDt;
+                    hf.y += hf.vy * scaledDt;
+                    hf.vy += gravity * 1.1 * scaledDt;
+                    hf.angle += hf.vAngle * scaledDt;
+                    hf.alpha -= dt * 0.85;
+                    if (hf.alpha <= 0 || hf.y > h + 80) this.halves.splice(i, 1);
+                }
+
+                for (let i = this.bladeTrail.length - 1; i >= 0; i--) {
+                    this.bladeTrail[i].life -= dt;
+                    if (this.bladeTrail[i].life <= 0) this.bladeTrail.splice(i, 1);
+                }
+            },
+
+            render(ctx, w, h) {
+                FX.renderSplatters(ctx);
+
+                // Fever Gauge Bar
+                const barW = Math.min(260, w * 0.62);
+                const barX = (w - barW) / 2;
+                ctx.save();
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.beginPath();
+                ctx.roundRect(barX, 12, barW, 9, 5);
+                ctx.fill();
+
+                const fillPct = this.feverTimer > 0 ? (this.feverTimer / 6.5) : (this.feverGauge / 100);
+                const grad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+                grad.addColorStop(0, '#ff6a00');
+                grad.addColorStop(0.5, '#ff007a');
+                grad.addColorStop(1, '#9d00ff');
+                ctx.fillStyle = grad;
+                ctx.shadowColor = '#ff007a';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.roundRect(barX, 12, Math.max(0, barW * fillPct), 9, 5);
+                ctx.fill();
+
+                ctx.font = "800 10px 'Segoe UI', system-ui, sans-serif";
+                ctx.fillStyle = '#ffe6f2';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.feverTimer > 0 ? '🔥 NEON FEVER X2 ACTIVE!' : 'THANH NĂNG LƯỢNG FEVER', w / 2, 34);
+                ctx.restore();
+
+                for (const hf of this.halves) {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, hf.alpha);
+                    ctx.translate(hf.x, hf.y);
+                    ctx.rotate(hf.angle);
+                    this.drawFruitHalf(ctx, hf.type, hf.r, hf.side);
+                    ctx.restore();
+                }
+
+                for (const f of this.fruits) {
+                    ctx.save();
+                    ctx.translate(f.x, f.y);
+                    ctx.rotate(f.angle);
+                    if (f.isBomb) this.drawBomb(ctx, f.r);
+                    else this.drawFruitWhole(ctx, f.type, f.r);
+                    ctx.restore();
+                }
+
+                if (this.bladeTrail.length > 1) {
+                    const skin = Store.getSkin();
+                    ctx.save();
+                    for (let i = 1; i < this.bladeTrail.length; i++) {
+                        const p1 = this.bladeTrail[i - 1];
+                        const p2 = this.bladeTrail[i];
+                        const ratio = i / this.bladeTrail.length;
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.lineCap = 'round';
+                        ctx.lineWidth = ratio * 13;
+                        const strokeColor = skin.dynamicWarm
+                            ? skin.colors[i % skin.colors.length]
+                            : skin.primary;
+                        ctx.strokeStyle = strokeColor;
+                        ctx.shadowColor = strokeColor;
+                        ctx.shadowBlur = 16;
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.lineWidth = ratio * 4.5;
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+            },
+
+            drawFruitWhole(ctx, t, r) {
+                ctx.shadowColor = t.outer;
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = t.outer;
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = t.inner;
+                ctx.beginPath();
+                ctx.arc(0, 0, r * 0.82, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = t.seed;
+                for (let i = 0; i < 6; i++) {
+                    const a = (i * Math.PI) / 3;
+                    ctx.beginPath();
+                    ctx.arc(Math.cos(a) * r * 0.45, Math.sin(a) * r * 0.45, 2.4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            },
+
+            drawFruitHalf(ctx, t, r, side) {
+                ctx.shadowColor = t.inner;
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = t.outer;
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI, side < 0);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = t.inner;
+                ctx.beginPath();
+                ctx.arc(0, 0, r * 0.82, 0, Math.PI, side < 0);
+                ctx.closePath();
+                ctx.fill();
+            },
+
+            drawBomb(ctx, r) {
+                const pulse = 1 + Math.sin(performance.now() * 0.015) * 0.08;
+                ctx.scale(pulse, pulse);
+                ctx.shadowColor = '#ff0055';
+                ctx.shadowBlur = 20;
+                ctx.fillStyle = '#240936';
+                ctx.strokeStyle = '#ff0055';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#ff0055';
+                ctx.beginPath();
+                ctx.arc(0, 0, r * 0.42, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(0, -r);
+                ctx.lineTo(9, -r - 12);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffaa00';
+                ctx.beginPath();
+                ctx.arc(9, -r - 12, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        };
+
+        /* ============================================================================
+         * 5. MAIN APP CONTROLLER & CANVAS ENGINE
+         * ============================================================================ */
+        const App = {
+            canvas: null,
+            ctx: null,
+            width: 800,
+            height: 550,
+            dpr: 1,
+            started: false,
+            paused: true,
+            isGameOver: false,
+            lastTime: 0,
+
+            init() {
+                Store.load();
+                this.canvas = document.getElementById('game-canvas');
+                this.ctx = this.canvas.getContext('2d');
+
+                const wrapper = document.getElementById('canvas-wrapper');
+                if (window.ResizeObserver && wrapper) {
+                    const ro = new ResizeObserver(() => this.resizeCanvas());
+                    ro.observe(wrapper);
+                }
+                window.addEventListener('resize', () => this.resizeCanvas());
+                window.addEventListener('orientationchange', () => setTimeout(() => this.resizeCanvas(), 120));
+
+                this.resizeCanvas();
+                this.bindInputEvents();
+                this.renderShop();
+                FruitGame.init();
+
+                requestAnimationFrame((t) => this.loop(t));
+            },
+
+            resizeCanvas() {
+                const wrapper = document.getElementById('canvas-wrapper');
+                if (!wrapper) return;
+                const rect = wrapper.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                    this.width = rect.width;
+                    this.height = rect.height;
+                    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+                    this.canvas.width = Math.round(this.width * this.dpr);
+                    this.canvas.height = Math.round(this.height * this.dpr);
+                    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+                }
+            },
+
+            selectMode(newMode, restartIfRunning) {
+                FruitGame.mode = newMode;
+                FruitGame.syncModeButtons();
+                if (this.started && restartIfRunning) {
+                    this.startGame();
+                } else {
+                    FruitGame.init();
+                }
+            },
+
+            startGame() {
+                Sound.init();
+                Sound.playChime(2);
+                this.started = true;
+                this.paused = false;
+                this.isGameOver = false;
+                document.getElementById('start-overlay').classList.add('hidden');
+                this.hideOverlay();
+                FruitGame.init();
+            },
+
+            backToStartScreen() {
+                this.started = false;
+                this.paused = true;
+                this.isGameOver = false;
+                this.hideOverlay();
+                FruitGame.init();
+                this.ctx.clearRect(0, 0, this.width, this.height);
+                Store.syncUI();
+                document.getElementById('start-overlay').classList.remove('hidden');
+            },
+
+            restartGame() {
+                if (!this.started) {
+                    this.startGame();
+                    return;
+                }
+                this.startGame();
+            },
+
+            togglePause() {
+                if (!this.started || this.isGameOver) return;
+                this.paused = !this.paused;
+                if (this.paused) {
+                    this.showOverlay('⏸️ TẠM DỪNG', 'Nghỉ ngơi chút trước khi chém tiếp nhé!', FruitGame.score, Store.highScore, '▶ TIẾP TỤC CHƠI');
+                } else {
+                    this.hideOverlay();
+                }
+            },
+
+            triggerGameOver(title, score, best) {
+                this.isGameOver = true;
+                this.paused = true;
+                this.showOverlay(
+                    score >= best && score > 0 ? '🏆 KỶ LỤC MỚI!' : '💥 KẾT THÚC MÀN!',
+                    `Bạn vừa hoàn thành ${title}`,
+                    score,
+                    best,
+                    '↻ CHƠI LẠI NGAY'
+                );
+            },
+
+            showOverlay(title, subtitle, score, best, btnLabel) {
+                document.getElementById('overlay-title').textContent = title;
+                document.getElementById('overlay-subtitle').textContent = subtitle;
+                document.getElementById('overlay-score').textContent = score;
+                document.getElementById('overlay-best').textContent = best;
+                document.getElementById('overlay-primary-btn').textContent = btnLabel;
+                document.getElementById('canvas-overlay').classList.remove('hidden');
+            },
+
+            hideOverlay() {
+                document.getElementById('canvas-overlay').classList.add('hidden');
+            },
+
+            resumeOrRestartOverlay() {
+                if (this.isGameOver) {
+                    this.restartGame();
+                } else {
+                    this.paused = false;
+                    this.hideOverlay();
+                }
+            },
+
+            toggleShop(show) {
+                const modal = document.getElementById('shop-modal');
+                if (show) {
+                    this.paused = true;
+                    this.renderShop();
+                    modal.classList.remove('hidden');
+                } else {
+                    modal.classList.add('hidden');
+                    if (this.started && !this.isGameOver && document.getElementById('canvas-overlay').classList.contains('hidden')) {
+                        this.paused = false;
+                    }
+                }
+            },
+
+            claimBonusCoins() {
+                Store.addCoins(300);
+                Sound.playChime(4);
+                this.renderShop();
+            },
+
+            renderShop() {
+                Store.syncUI();
+                const grid = document.getElementById('shop-skins-grid');
+                grid.innerHTML = '';
+
+                Object.values(SKINS).forEach(skin => {
+                    const unlocked = Store.unlockedSkins.includes(skin.id);
+                    const equipped = Store.equippedSkin === skin.id;
+
+                    const card = document.createElement('div');
+                    card.className = `skin-item ${equipped ? 'equipped' : ''}`;
+                    const gradBar = `linear-gradient(90deg, ${skin.colors.join(', ')})`;
+
+                    card.innerHTML = `
+                        <div>
+                            <div style="height: 10px; border-radius: 99px; margin-bottom: 10px; background: ${gradBar}; box-shadow: 0 0 12px ${skin.primary};"></div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                                <h4 class="title-futuristic" style="font-size: 14px;">${skin.name}</h4>
+                                <span style="font-size: 11px; font-weight: 800; color: ${unlocked ? 'var(--neon-gold)' : 'var(--neon-orange)'}; white-space: nowrap;">
+                                    ${unlocked ? 'ĐÃ MỞ' : `¢ ${skin.price} XU`}
+                                </span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${skin.desc}</p>
+                        </div>
+                    `;
+
+                    const btn = document.createElement('button');
+                    if (equipped) {
+                        btn.className = 'glass-pill';
+                        btn.style.cssText = 'width:100%; padding:10px; font-weight:800; font-size:11px; color:var(--neon-gold); border-color:rgba(255,170,0,0.5);';
+                        btn.textContent = '✓ ĐANG TRANG BỊ';
+                    } else if (unlocked) {
+                        btn.className = 'glass-pill';
+                        btn.style.cssText = 'width:100%; padding:10px; font-weight:800; font-size:11px; color:#fff;';
+                        btn.textContent = 'TRANG BỊ NGAY';
+                        btn.onclick = () => {
+                            Store.equippedSkin = skin.id;
+                            Store.save();
+                            Sound.playChime(3);
+                            this.renderShop();
+                        };
+                    } else {
+                        btn.className = 'btn-neon-primary';
+                        btn.style.cssText = 'width:100%; padding:10px; font-size:11px;';
+                        btn.textContent = `🔓 MỞ KHÓA (${skin.price} XU)`;
+                        btn.onclick = () => {
+                            if (Store.coins >= skin.price) {
+                                Store.coins -= skin.price;
+                                Store.unlockedSkins.push(skin.id);
+                                Store.equippedSkin = skin.id;
+                                Store.save();
+                                Sound.playChime(4);
+                                this.renderShop();
+                            } else {
+                                Sound.playError();
+                                btn.textContent = 'CHƯA ĐỦ XU! BẤM +300 XU Ở TRÊN';
+                            }
+                        };
+                    }
+
+                    card.appendChild(btn);
+                    grid.appendChild(card);
+                });
+            },
+
+            toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen().catch(() => {});
+                }
+            },
+
+            bindInputEvents() {
+                const getPos = (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+                    const clientX = touch ? touch.clientX : e.clientX;
+                    const clientY = touch ? touch.clientY : e.clientY;
+                    return {
+                        x: clientX - rect.left,
+                        y: clientY - rect.top
+                    };
+                };
+
+                this.canvas.addEventListener('mousedown', (e) => {
+                    Sound.init();
+                    if (!this.started || this.paused) return;
+                    const pos = getPos(e);
+                    FruitGame.isPointerDown = true;
+                    FruitGame.onPointerMove(pos.x, pos.y);
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    if (!this.started || this.paused) return;
+                    const pos = getPos(e);
+                    FruitGame.onPointerMove(pos.x, pos.y);
+                });
+
+                window.addEventListener('mouseup', () => {
+                    FruitGame.isPointerDown = false;
+                });
+
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    Sound.init();
+                    if (!this.started || this.paused) return;
+                    const pos = getPos(e);
+                    FruitGame.isPointerDown = true;
+                    FruitGame.bladeTrail = [];
+                    FruitGame.onPointerMove(pos.x, pos.y);
+                }, { passive: false });
+
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (!this.started || this.paused) return;
+                    const pos = getPos(e);
+                    FruitGame.onPointerMove(pos.x, pos.y);
+                }, { passive: false });
+
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    FruitGame.isPointerDown = false;
+                }, { passive: false });
+
+                window.addEventListener('keydown', (e) => {
+                    if (e.code === 'KeyP') this.togglePause();
+                    if (e.code === 'KeyR' && this.started) this.restartGame();
+                });
+            },
+
+            loop(timestamp) {
+                const dt = Math.min(0.033, (timestamp - this.lastTime) / 1000 || 0.016);
+                this.lastTime = timestamp;
+
+                if (this.started && !this.paused) {
+                    const ctx = this.ctx;
+                    const w = this.width;
+                    const h = this.height;
+
+                    ctx.clearRect(0, 0, w, h);
+
+                    ctx.save();
+                    if (FX.shakeTime > 0) {
+                        const dx = (Math.random() - 0.5) * FX.shakeMagnitude * 2;
+                        const dy = (Math.random() - 0.5) * FX.shakeMagnitude * 2;
+                        ctx.translate(dx, dy);
+                    }
+
+                    FruitGame.update(dt, w, h);
+                    FruitGame.render(ctx, w, h);
+
+                    FX.update(dt);
+                    FX.renderForeground(ctx);
+                    ctx.restore();
+                }
+
+                requestAnimationFrame((t) => this.loop(t));
+            }
+        };
+
+        window.onload = () => App.init();
+    </script>
+</body>
+</html>
