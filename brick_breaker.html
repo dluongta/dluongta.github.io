@@ -560,7 +560,7 @@
         <div class="led-border hud-bar">
             <div class="hud-left">
                 <div>
-                    <h1 class="title-futuristic hud-game-title text-gradient-neon">NEON BRICK BREAKER</h1>
+                    <h1 class="title-futuristic hud-game-title text-gradient-neon">BRICK BREAKER</h1>
                     <span id="hud-game-subtitle" class="hud-game-sub">Cấp độ 1 &bull; Kéo thanh đỡ hoặc dùng phím A/D/Mũi tên</span>
                 </div>
             </div>
@@ -630,7 +630,7 @@
 
                     <div>
                         <h2 class="title-futuristic text-gradient-neon" style="font-size: 26px; line-height: 1.15;">
-                            NEON BRICK BREAKER
+                            BRICK BREAKER
                         </h2>
                         <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px; line-height: 1.5;">
                             Di chuyển chuột, kéo ngón tay hoặc dùng phím <strong>A / D / Mũi tên</strong> để đỡ bóng, kích nổ gạch <strong>TNT</strong> và thu thập Power-Ups!
@@ -1483,7 +1483,7 @@
                     this.updateHUD();
                     FX.shake(14, 0.3);
                     if (this.lives <= 0) {
-                        App.triggerGameOver('NEON BRICK BREAKER', this.score, Store.highScore);
+                        App.triggerGameOver('BRICK BREAKER', this.score, Store.highScore);
                         return;
                     } else {
                         const baseSpeed = w < 520 ? 280 : 330;
