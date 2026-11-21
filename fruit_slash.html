@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Fruit Slash</title>
     <style>
         /* ==========================================================================
@@ -31,14 +33,17 @@
             --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
         }
 
-        html, body {
+        html,
+        body {
             width: 100%;
             height: 100%;
             background-color: var(--bg-deep);
@@ -123,20 +128,44 @@
         }
 
         @keyframes ledFlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         @keyframes floatBounce {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
         }
 
         @keyframes popScale {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.32); color: #ffffff; }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.32);
+                color: #ffffff;
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .coin-pop {
@@ -448,12 +477,12 @@
         }
 
         .slash-beam {
-            width: 210px;
-            height: 5px;
-            background: linear-gradient(90deg, transparent, var(--neon-orange), var(--neon-pink), #ffffff);
+            width: 215px;
+            height: 6px;
+            background: linear-gradient(90deg, var(--neon-orange) 0%, #ff3344 45%, var(--neon-pink) 100%);
             transform: rotate(-12deg);
-            box-shadow: 0 0 18px var(--neon-pink);
-            border-radius: 99px;
+            box-shadow: 0 0 16px rgba(255, 106, 0, 0.75), 0 0 22px rgba(255, 0, 122, 0.75);
+            border-radius: 999px;
         }
 
         .fruit-emoji-row {
@@ -614,33 +643,74 @@
            5. RESPONSIVE MOBILE
            ========================================================================== */
         @media (max-width: 640px) {
-            .coin-shop-tag, .stat-best-box {
-                display: none !important;
-            }
             .hud-bar {
                 padding: 8px 10px;
                 gap: 6px;
             }
+
             .mode-switcher {
                 width: 100%;
                 justify-content: center;
             }
+
             .mode-btn {
                 flex: 1;
                 text-align: center;
             }
+
+            .hud-right {
+                width: 100%;
+                justify-content: space-between;
+                gap: 6px;
+            }
+
+            .coin-pill {
+                padding: 4px 8px;
+                gap: 4px;
+            }
+
+            .coin-amount {
+                font-size: 12px;
+            }
+
+            .stat-value {
+                font-size: 15px;
+            }
+
+            .hud-extra-pill {
+                padding: 5px 8px;
+                font-size: 11px;
+            }
+
+            .icon-btn {
+                width: 32px;
+                height: 32px;
+            }
+
             .overlay-actions {
                 flex-direction: column;
             }
+
             .shop-grid {
                 grid-template-columns: 1fr;
             }
-            .shop-scroll, .overlay-scroll {
+
+            .shop-scroll,
+            .overlay-scroll {
                 padding: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hud-right {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 6px;
             }
         }
     </style>
 </head>
+
 <body>
 
     <!-- ================= FULL-SCREEN FRUIT SLASH GAME STAGE ================= -->
@@ -686,21 +756,35 @@
                     ❤️ x3
                 </div>
 
-                <button onclick="Sound.toggleMute()" id="btn-sound" class="glass-pill icon-btn" style="color: var(--neon-gold);" title="Bật/Tắt Âm Thanh">
-                    <svg id="icon-sound-on" class="svg-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-                    <svg id="icon-sound-off" class="svg-icon hidden" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                <button onclick="Sound.toggleMute()" id="btn-sound" class="glass-pill icon-btn"
+                    style="color: var(--neon-gold);" title="Bật/Tắt Âm Thanh">
+                    <svg id="icon-sound-on" class="svg-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <svg id="icon-sound-off" class="svg-icon hidden" viewBox="0 0 24 24">
+                        <path
+                            d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                    </svg>
                 </button>
 
                 <button onclick="App.togglePause()" class="glass-pill icon-btn" title="Tạm dừng (P)">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+                    <svg class="svg-icon" viewBox="0 0 24 24">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                    </svg>
                 </button>
 
                 <button onclick="App.restartGame()" class="glass-pill icon-btn" title="Chơi lại (R)">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 2.97-2.17 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93 0-4.42-3.58-8-8-8zm-6 8c0-1.65.67-3.15 1.76-4.24L6.34 7.34C4.9 8.79 4 10.79 4 13c0 4.08 3.05 7.44 7 7.93v-2.02c-2.83-.48-5-2.94-5-5.91z"/></svg>
+                    <svg class="svg-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 2.97-2.17 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93 0-4.42-3.58-8-8-8zm-6 8c0-1.65.67-3.15 1.76-4.24L6.34 7.34C4.9 8.79 4 10.79 4 13c0 4.08 3.05 7.44 7 7.93v-2.02c-2.83-.48-5-2.94-5-5.91z" />
+                    </svg>
                 </button>
 
                 <button onclick="App.toggleFullscreen()" class="glass-pill icon-btn" title="Toàn màn hình">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                    <svg class="svg-icon" viewBox="0 0 24 24">
+                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+                    </svg>
                 </button>
             </div>
         </div>
@@ -727,17 +811,20 @@
                                 FRUIT SLASH
                             </h2>
                             <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px; line-height: 1.5;">
-                                Lướt chuột hoặc ngón tay chém đôi hoa quả để tạo <strong>Combo</strong>, kích hoạt <strong>Neon Fever x2</strong> và né Bom Plasma!
+                                Lướt chuột hoặc ngón tay chém đôi hoa quả để tạo <strong>Combo</strong>, kích hoạt
+                                <strong>Neon Fever x2</strong> và né Bom Plasma!
                             </p>
                         </div>
 
                         <!-- Chọn chế độ chơi ngay tại màn hình chờ -->
                         <div class="start-mode-grid">
-                            <button onclick="App.selectMode('classic', false)" id="start-mode-classic" class="start-mode-card active">
+                            <button onclick="App.selectMode('classic', false)" id="start-mode-classic"
+                                class="start-mode-card active">
                                 <span class="title-futuristic start-mode-title">❤️ CLASSIC</span>
                                 <span class="start-mode-sub">3 Mạng &bull; Né Bom</span>
                             </button>
-                            <button onclick="App.selectMode('arcade', false)" id="start-mode-arcade" class="start-mode-card">
+                            <button onclick="App.selectMode('arcade', false)" id="start-mode-arcade"
+                                class="start-mode-card">
                                 <span class="title-futuristic start-mode-title">⏱️ ARCADE</span>
                                 <span class="start-mode-sub">60 Giây &bull; Đua Điểm</span>
                             </button>
@@ -746,19 +833,23 @@
                         <div class="score-breakdown">
                             <div>
                                 <span class="stat-label">KỶ LỤC CỦA BẠN</span>
-                                <span id="start-best" class="title-futuristic" style="font-size: 22px; color: var(--neon-gold);">0</span>
+                                <span id="start-best" class="title-futuristic"
+                                    style="font-size: 22px; color: var(--neon-gold);">0</span>
                             </div>
                             <div>
                                 <span class="stat-label">XU HIỆN CÓ</span>
-                                <span id="start-coins" class="title-futuristic" style="font-size: 22px; color: var(--neon-orange);">250</span>
+                                <span id="start-coins" class="title-futuristic"
+                                    style="font-size: 22px; color: var(--neon-orange);">250</span>
                             </div>
                         </div>
 
                         <div class="overlay-actions">
-                            <button onclick="App.startGame()" class="btn-neon-primary" style="flex: 1; padding: 13px 20px; font-size: 15px;">
+                            <button onclick="App.startGame()" class="btn-neon-primary"
+                                style="flex: 1; padding: 13px 20px; font-size: 15px;">
                                 ⚔️ BẮT ĐẦU CHƠI
                             </button>
-                            <button onclick="App.toggleShop(true)" class="glass-pill" style="padding: 12px 16px; font-weight: 800; font-size: 13px; color: var(--neon-gold); border-color: rgba(255, 170, 0, 0.45);">
+                            <button onclick="App.toggleShop(true)" class="glass-pill"
+                                style="padding: 12px 16px; font-weight: 800; font-size: 13px; color: var(--neon-gold); border-color: rgba(255, 170, 0, 0.45);">
                                 ✨ SKINS
                             </button>
                         </div>
@@ -772,8 +863,10 @@
                     <div class="overlay-scroll no-scrollbar">
                         <div class="overlay-icon btn-neon-primary">🏆</div>
                         <div>
-                            <h3 id="overlay-title" class="title-futuristic text-gradient-neon" style="font-size: 24px;">KẾT THÚC MÀN!</h3>
-                            <p id="overlay-subtitle" style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
+                            <h3 id="overlay-title" class="title-futuristic text-gradient-neon" style="font-size: 24px;">
+                                KẾT THÚC MÀN!</h3>
+                            <p id="overlay-subtitle"
+                                style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
                                 Bạn đã chiến đấu cực kỳ xuất sắc!
                             </p>
                         </div>
@@ -781,19 +874,23 @@
                         <div class="score-breakdown">
                             <div>
                                 <span class="stat-label">ĐIỂM ĐẠT ĐƯỢC</span>
-                                <span id="overlay-score" class="title-futuristic" style="font-size: 24px; color: var(--neon-orange);">0</span>
+                                <span id="overlay-score" class="title-futuristic"
+                                    style="font-size: 24px; color: var(--neon-orange);">0</span>
                             </div>
                             <div>
                                 <span class="stat-label">KỶ LỤC CAO NHẤT</span>
-                                <span id="overlay-best" class="title-futuristic" style="font-size: 24px; color: var(--neon-gold);">0</span>
+                                <span id="overlay-best" class="title-futuristic"
+                                    style="font-size: 24px; color: var(--neon-gold);">0</span>
                             </div>
                         </div>
 
                         <div class="overlay-actions">
-                            <button onclick="App.resumeOrRestartOverlay()" id="overlay-primary-btn" class="btn-neon-primary" style="flex: 1;">
+                            <button onclick="App.resumeOrRestartOverlay()" id="overlay-primary-btn"
+                                class="btn-neon-primary" style="flex: 1;">
                                 ▶ CHƠI TIẾP
                             </button>
-                            <button onclick="App.backToStartScreen()" class="glass-pill" style="padding: 12px 16px; font-weight: 800; font-size: 13px;">
+                            <button onclick="App.backToStartScreen()" class="glass-pill"
+                                style="padding: 12px 16px; font-weight: 800; font-size: 13px;">
                                 🏠 MENU
                             </button>
                         </div>
@@ -809,10 +906,13 @@
             <div class="shop-scroll no-scrollbar">
                 <div class="shop-header">
                     <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-                        <div class="btn-neon-primary" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; flex-shrink: 0;">✨</div>
+                        <div class="btn-neon-primary"
+                            style="width: 40px; height: 40px; padding: 0; border-radius: 12px; flex-shrink: 0;">✨</div>
                         <div style="min-width: 0;">
-                            <h3 class="title-futuristic text-gradient-neon" style="font-size: 18px;">CỬA HÀNG SKIN LƯỠI KIẾM</h3>
-                            <p style="font-size: 12px; color: var(--text-muted);">Trang bị hiệu ứng chém Neon Cam - Hồng - Tím</p>
+                            <h3 class="title-futuristic text-gradient-neon" style="font-size: 18px;">CỬA HÀNG SKIN LƯỠI
+                                KIẾM</h3>
+                            <p style="font-size: 12px; color: var(--text-muted);">Trang bị hiệu ứng chém Neon Cam - Hồng
+                                - Tím</p>
                         </div>
                     </div>
                     <button onclick="App.toggleShop(false)" class="glass-pill icon-btn">✕</button>
@@ -823,7 +923,8 @@
                         <div class="coin-badge" style="width: 28px; height: 28px; font-size: 15px;">¢</div>
                         <div>
                             <span class="stat-label">SỐ DƯ HIỆN TẠI</span>
-                            <span id="shop-coins" class="title-futuristic" style="font-size: 18px; color: var(--neon-gold);">250 XU</span>
+                            <span id="shop-coins" class="title-futuristic"
+                                style="font-size: 18px; color: var(--neon-gold);">250 XU</span>
                         </div>
                     </div>
                     <button onclick="App.claimBonusCoins()" class="btn-free-coins">
@@ -851,7 +952,7 @@
                     if (AudioCtx) this.ctx = new AudioCtx();
                 }
                 if (this.ctx && this.ctx.state === 'suspended') {
-                    this.ctx.resume().catch(() => {});
+                    this.ctx.resume().catch(() => { });
                 }
             },
 
@@ -1030,7 +1131,7 @@
                         this.equippedSkin = SKINS[data.equippedSkin] ? data.equippedSkin : 'sunset';
                         this.highScore = data.highScore || 0;
                     }
-                } catch (e) {}
+                } catch (e) { }
                 this.syncUI();
             },
 
@@ -1042,7 +1143,7 @@
                         equippedSkin: this.equippedSkin,
                         highScore: this.highScore
                     }));
-                } catch (e) {}
+                } catch (e) { }
                 this.syncUI();
             },
 
@@ -1973,9 +2074,9 @@
 
             toggleFullscreen() {
                 if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(() => {});
+                    document.documentElement.requestFullscreen().catch(() => { });
                 } else {
-                    document.exitFullscreen().catch(() => {});
+                    document.exitFullscreen().catch(() => { });
                 }
             },
 
@@ -2070,4 +2171,5 @@
         window.onload = () => App.init();
     </script>
 </body>
+
 </html>
