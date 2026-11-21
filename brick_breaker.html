@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BRICK BREAKER - Phá Gạch</title>
+    <title>BRICK BREAKER</title>
     <style>
         /* ==========================================================================
            1. CSS VARIABLES & RESET (STRICT ORANGE-PINK-PURPLE NEON)
@@ -63,6 +63,21 @@
             display: none !important;
         }
 
+        /* Ẩn hoàn toàn thanh cuộn dọc và ngang trên mọi trình duyệt */
+        .no-scrollbar {
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
         /* ==========================================================================
            2. NEON TYPOGRAPHY, LED BORDERS & BUTTONS
            ========================================================================== */
@@ -81,19 +96,21 @@
             filter: drop-shadow(0 2px 14px rgba(255, 0, 122, 0.38));
         }
 
+        /* Fix viền LED không tràn ra ngoài box gây lệch khung và xuất hiện scrollbar */
         .led-border {
             position: relative;
             background: var(--bg-panel);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-radius: 20px;
+            overflow: hidden;
         }
 
         .led-border::before {
             content: "";
             position: absolute;
-            inset: -2px;
-            border-radius: 22px;
+            inset: 0;
+            border-radius: inherit;
             padding: 2px;
             background: var(--grad-card-led);
             background-size: 300% 300%;
@@ -102,6 +119,7 @@
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
+            z-index: 20;
         }
 
         @keyframes ledFlow {
@@ -183,6 +201,7 @@
             justify-content: center;
             border-radius: 11px;
             color: #ffe4f0;
+            flex-shrink: 0;
         }
 
         /* ==========================================================================
@@ -266,6 +285,7 @@
             font-weight: 900;
             font-size: 11px;
             box-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
+            flex-shrink: 0;
         }
 
         .coin-amount {
@@ -365,12 +385,19 @@
             padding: 16px;
         }
 
+        /* Khung ngoài giữ viền LED cố định, phần cuộn nằm riêng bên trong */
         .overlay-card {
             max-width: 440px;
             width: 100%;
             max-height: 90dvh;
-            overflow-y: auto;
-            padding: 26px 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .overlay-scroll {
+            width: 100%;
+            max-height: 90dvh;
+            padding: 24px 22px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -467,23 +494,31 @@
             gap: 10px;
         }
 
+        /* Shop Modal đã fix lệch khung và ẩn hoàn toàn scrollbar */
         .shop-card {
-            max-width: 660px;
+            max-width: 680px;
             width: 100%;
-            max-height: 90dvh;
-            overflow-y: auto;
-            padding: 22px;
+            max-height: 92dvh;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+        }
+
+        .shop-scroll {
+            width: 100%;
+            max-height: 92dvh;
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
 
         .shop-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
             border-bottom: 1px solid var(--border-glass);
-            padding-bottom: 14px;
+            padding-bottom: 12px;
         }
 
         .shop-balance-bar {
@@ -493,7 +528,7 @@
             flex-wrap: wrap;
             gap: 10px;
             background: rgba(255, 255, 255, 0.04);
-            padding: 12px 16px;
+            padding: 10px 14px;
             border-radius: 14px;
             border: 1px solid var(--border-glass);
         }
@@ -507,26 +542,33 @@
             font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
+            transition: background 0.2s ease, transform 0.15s ease;
         }
+
         .btn-free-coins:hover {
             background: rgba(255, 170, 0, 0.28);
         }
 
+        .btn-free-coins:active {
+            transform: scale(0.97);
+        }
+
         .shop-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
         }
 
         .skin-item {
-            padding: 14px;
+            padding: 13px 14px;
             border-radius: 14px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border-glass);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 12px;
+            gap: 10px;
+            min-width: 0;
         }
 
         .skin-item.equipped {
@@ -548,6 +590,12 @@
             }
             .overlay-actions {
                 flex-direction: column;
+            }
+            .shop-grid {
+                grid-template-columns: 1fr;
+            }
+            .shop-scroll {
+                padding: 16px;
             }
         }
     </style>
@@ -613,56 +661,58 @@
             <!-- START SCREEN OVERLAY -->
             <div id="start-overlay" class="overlay-backdrop">
                 <div class="led-border overlay-card">
-                    <div class="start-art">
-                        <div class="mini-brick-grid">
-                            <div class="mini-brick" style="background: var(--neon-orange); box-shadow: 0 0 8px var(--neon-orange);"></div>
-                            <div class="mini-brick" style="background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink);"></div>
-                            <div class="mini-brick" style="background: var(--neon-purple); box-shadow: 0 0 8px var(--neon-purple);"></div>
-                            <div class="mini-brick" style="background: var(--neon-magenta); box-shadow: 0 0 8px var(--neon-magenta);"></div>
-                            <div class="mini-brick" style="background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink);"></div>
-                            <div class="mini-brick" style="background: var(--neon-gold); box-shadow: 0 0 10px var(--neon-gold);">TNT</div>
-                            <div class="mini-brick" style="background: var(--neon-magenta); box-shadow: 0 0 8px var(--neon-magenta);"></div>
-                            <div class="mini-brick" style="background: var(--neon-orange); box-shadow: 0 0 8px var(--neon-orange);"></div>
+                    <div class="overlay-scroll no-scrollbar">
+                        <div class="start-art">
+                            <div class="mini-brick-grid">
+                                <div class="mini-brick" style="background: var(--neon-orange); box-shadow: 0 0 8px var(--neon-orange);"></div>
+                                <div class="mini-brick" style="background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink);"></div>
+                                <div class="mini-brick" style="background: var(--neon-purple); box-shadow: 0 0 8px var(--neon-purple);"></div>
+                                <div class="mini-brick" style="background: var(--neon-magenta); box-shadow: 0 0 8px var(--neon-magenta);"></div>
+                                <div class="mini-brick" style="background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink);"></div>
+                                <div class="mini-brick" style="background: var(--neon-gold); box-shadow: 0 0 10px var(--neon-gold);">TNT</div>
+                                <div class="mini-brick" style="background: var(--neon-magenta); box-shadow: 0 0 8px var(--neon-magenta);"></div>
+                                <div class="mini-brick" style="background: var(--neon-orange); box-shadow: 0 0 8px var(--neon-orange);"></div>
+                            </div>
+                            <div class="mini-ball"></div>
+                            <div class="mini-paddle"></div>
                         </div>
-                        <div class="mini-ball"></div>
-                        <div class="mini-paddle"></div>
-                    </div>
 
-                    <div>
-                        <h2 class="title-futuristic text-gradient-neon" style="font-size: 26px; line-height: 1.15;">
-                            BRICK BREAKER
-                        </h2>
-                        <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px; line-height: 1.5;">
-                            Di chuyển chuột, kéo ngón tay hoặc dùng phím <strong>A / D / Mũi tên</strong> để đỡ bóng, kích nổ gạch <strong>TNT</strong> và thu thập Power-Ups!
-                        </p>
-                    </div>
-
-                    <div class="powerup-tags">
-                        <span class="powerup-tag" style="color: #ffaa00;">⚡ x3 BALL</span>
-                        <span class="powerup-tag" style="color: #ff6a00;">🔥 FIREBALL</span>
-                        <span class="powerup-tag" style="color: #ff007a;">🔫 LASER</span>
-                        <span class="powerup-tag" style="color: #e100ff;">↔️ EXPAND</span>
-                        <span class="powerup-tag" style="color: #c285ff;">🛡️ SHIELD</span>
-                    </div>
-
-                    <div class="score-breakdown">
                         <div>
-                            <span class="stat-label">KỶ LỤC CỦA BẠN</span>
-                            <span id="start-best" class="title-futuristic" style="font-size: 22px; color: var(--neon-gold);">0</span>
+                            <h2 class="title-futuristic text-gradient-neon" style="font-size: 26px; line-height: 1.15;">
+                                BRICK BREAKER
+                            </h2>
+                            <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px; line-height: 1.5;">
+                                Di chuyển chuột, kéo ngón tay hoặc dùng phím <strong>A / D / Mũi tên</strong> để đỡ bóng, kích nổ gạch <strong>TNT</strong> và thu thập Power-Ups!
+                            </p>
                         </div>
-                        <div>
-                            <span class="stat-label">XU HIỆN CÓ</span>
-                            <span id="start-coins" class="title-futuristic" style="font-size: 22px; color: var(--neon-orange);">250</span>
-                        </div>
-                    </div>
 
-                    <div class="overlay-actions">
-                        <button onclick="App.startGame()" class="btn-neon-primary" style="flex: 1; padding: 14px 20px; font-size: 15px;">
-                            🧱 BẮT ĐẦU CHƠI
-                        </button>
-                        <button onclick="App.toggleShop(true)" class="glass-pill" style="padding: 12px 16px; font-weight: 800; font-size: 13px; color: var(--neon-gold); border-color: rgba(255, 170, 0, 0.45);">
-                            ✨ SKINS
-                        </button>
+                        <div class="powerup-tags">
+                            <span class="powerup-tag" style="color: #ffaa00;">⚡ x3 BALL</span>
+                            <span class="powerup-tag" style="color: #ff6a00;">🔥 FIREBALL</span>
+                            <span class="powerup-tag" style="color: #ff007a;">🔫 LASER</span>
+                            <span class="powerup-tag" style="color: #e100ff;">↔️ EXPAND</span>
+                            <span class="powerup-tag" style="color: #c285ff;">🛡️ SHIELD</span>
+                        </div>
+
+                        <div class="score-breakdown">
+                            <div>
+                                <span class="stat-label">KỶ LỤC CỦA BẠN</span>
+                                <span id="start-best" class="title-futuristic" style="font-size: 22px; color: var(--neon-gold);">0</span>
+                            </div>
+                            <div>
+                                <span class="stat-label">XU HIỆN CÓ</span>
+                                <span id="start-coins" class="title-futuristic" style="font-size: 22px; color: var(--neon-orange);">250</span>
+                            </div>
+                        </div>
+
+                        <div class="overlay-actions">
+                            <button onclick="App.startGame()" class="btn-neon-primary" style="flex: 1; padding: 14px 20px; font-size: 15px;">
+                                🧱 BẮT ĐẦU CHƠI
+                            </button>
+                            <button onclick="App.toggleShop(true)" class="glass-pill" style="padding: 12px 16px; font-weight: 800; font-size: 13px; color: var(--neon-gold); border-color: rgba(255, 170, 0, 0.45);">
+                                ✨ SKINS
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -670,32 +720,34 @@
             <!-- PAUSE / GAME OVER OVERLAY -->
             <div id="canvas-overlay" class="overlay-backdrop hidden">
                 <div class="led-border overlay-card">
-                    <div class="overlay-icon btn-neon-primary">🏆</div>
-                    <div>
-                        <h3 id="overlay-title" class="title-futuristic text-gradient-neon" style="font-size: 24px;">KẾT THÚC MÀN!</h3>
-                        <p id="overlay-subtitle" style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
-                            Bạn đã chiến đấu cực kỳ xuất sắc!
-                        </p>
-                    </div>
-
-                    <div class="score-breakdown">
+                    <div class="overlay-scroll no-scrollbar">
+                        <div class="overlay-icon btn-neon-primary">🏆</div>
                         <div>
-                            <span class="stat-label">ĐIỂM ĐẠT ĐƯỢC</span>
-                            <span id="overlay-score" class="title-futuristic" style="font-size: 24px; color: var(--neon-orange);">0</span>
+                            <h3 id="overlay-title" class="title-futuristic text-gradient-neon" style="font-size: 24px;">KẾT THÚC MÀN!</h3>
+                            <p id="overlay-subtitle" style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
+                                Bạn đã chiến đấu cực kỳ xuất sắc!
+                            </p>
                         </div>
-                        <div>
-                            <span class="stat-label">KỶ LỤC CAO NHẤT</span>
-                            <span id="overlay-best" class="title-futuristic" style="font-size: 24px; color: var(--neon-gold);">0</span>
-                        </div>
-                    </div>
 
-                    <div class="overlay-actions">
-                        <button onclick="App.resumeOrRestartOverlay()" id="overlay-primary-btn" class="btn-neon-primary" style="flex: 1;">
-                            ▶ CHƠI TIẾP
-                        </button>
-                        <button onclick="App.backToStartScreen()" class="glass-pill" style="padding: 12px 16px; font-weight: 800; font-size: 13px;">
-                            🏠 MENU
-                        </button>
+                        <div class="score-breakdown">
+                            <div>
+                                <span class="stat-label">ĐIỂM ĐẠT ĐƯỢC</span>
+                                <span id="overlay-score" class="title-futuristic" style="font-size: 24px; color: var(--neon-orange);">0</span>
+                            </div>
+                            <div>
+                                <span class="stat-label">KỶ LỤC CAO NHẤT</span>
+                                <span id="overlay-best" class="title-futuristic" style="font-size: 24px; color: var(--neon-gold);">0</span>
+                            </div>
+                        </div>
+
+                        <div class="overlay-actions">
+                            <button onclick="App.resumeOrRestartOverlay()" id="overlay-primary-btn" class="btn-neon-primary" style="flex: 1;">
+                                ▶ CHƠI TIẾP
+                            </button>
+                            <button onclick="App.backToStartScreen()" class="glass-pill" style="padding: 12px 16px; font-weight: 800; font-size: 13px;">
+                                🏠 MENU
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -705,31 +757,33 @@
     <!-- ================= SKINS SHOP MODAL ================= -->
     <div id="shop-modal" class="modal-backdrop hidden">
         <div class="led-border shop-card">
-            <div class="shop-header">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div class="btn-neon-primary" style="width: 40px; height: 40px; padding: 0; border-radius: 12px;">✨</div>
-                    <div>
-                        <h3 class="title-futuristic text-gradient-neon" style="font-size: 18px;">CỬA HÀNG SKIN THANH ĐỠ &amp; BÓNG</h3>
-                        <p style="font-size: 12px; color: var(--text-muted);">Trang bị hiệu ứng Neon Cam - Hồng - Tím</p>
+            <div class="shop-scroll no-scrollbar">
+                <div class="shop-header">
+                    <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                        <div class="btn-neon-primary" style="width: 40px; height: 40px; padding: 0; border-radius: 12px; flex-shrink: 0;">✨</div>
+                        <div style="min-width: 0;">
+                            <h3 class="title-futuristic text-gradient-neon" style="font-size: 18px;">CỬA HÀNG SKIN THANH ĐỠ &amp; BÓNG</h3>
+                            <p style="font-size: 12px; color: var(--text-muted);">Trang bị hiệu ứng Neon Cam - Hồng - Tím</p>
+                        </div>
                     </div>
+                    <button onclick="App.toggleShop(false)" class="glass-pill icon-btn">✕</button>
                 </div>
-                <button onclick="App.toggleShop(false)" class="glass-pill icon-btn">✕</button>
-            </div>
 
-            <div class="shop-balance-bar">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="coin-badge" style="width: 28px; height: 28px; font-size: 15px;">¢</div>
-                    <div>
-                        <span class="stat-label">SỐ DƯ HIỆN TẠI</span>
-                        <span id="shop-coins" class="title-futuristic" style="font-size: 18px; color: var(--neon-gold);">250 XU</span>
+                <div class="shop-balance-bar">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="coin-badge" style="width: 28px; height: 28px; font-size: 15px;">¢</div>
+                        <div>
+                            <span class="stat-label">SỐ DƯ HIỆN TẠI</span>
+                            <span id="shop-coins" class="title-futuristic" style="font-size: 18px; color: var(--neon-gold);">250 XU</span>
+                        </div>
                     </div>
+                    <button onclick="App.claimBonusCoins()" class="btn-free-coins">
+                        🎁 +300 XU THƯỞNG MIỄN PHÍ
+                    </button>
                 </div>
-                <button onclick="App.claimBonusCoins()" class="btn-free-coins">
-                    🎁 +300 XU THƯỞNG MIỄN PHÍ
-                </button>
-            </div>
 
-            <div id="shop-skins-grid" class="shop-grid"></div>
+                <div id="shop-skins-grid" class="shop-grid"></div>
+            </div>
         </div>
     </div>
 
@@ -1800,13 +1854,13 @@
                     card.innerHTML = `
                         <div>
                             <div style="height: 10px; border-radius: 99px; margin-bottom: 10px; background: ${gradBar}; box-shadow: 0 0 12px ${skin.primary};"></div>
-                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
-                                <h4 class="title-futuristic" style="font-size: 14px;">${skin.name}</h4>
-                                <span style="font-size: 11px; font-weight: 800; color: ${unlocked ? 'var(--neon-gold)' : 'var(--neon-orange)'}; white-space: nowrap;">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+                                <h4 class="title-futuristic" style="font-size: 13.5px; line-height: 1.25;">${skin.name}</h4>
+                                <span style="font-size: 11px; font-weight: 800; color: ${unlocked ? 'var(--neon-gold)' : 'var(--neon-orange)'}; white-space: nowrap; flex-shrink: 0;">
                                     ${unlocked ? 'ĐÃ MỞ' : `¢ ${skin.price} XU`}
                                 </span>
                             </div>
-                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${skin.desc}</p>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">${skin.desc}</p>
                         </div>
                     `;
 
