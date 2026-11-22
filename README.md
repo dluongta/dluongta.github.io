@@ -2,7 +2,7 @@
 
 **Personal portfolio website and collection of web projects and interactive animation websites.**
 
-**Portfolio Website:** https://dluongta.github.io/
+**Portfolio:** https://dluongta.github.io/
 
 **Email:** dluongta@gmail.com
 
