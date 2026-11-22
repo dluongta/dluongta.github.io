@@ -31,7 +31,7 @@ You can explore all projects directly from the portfolio website:
 
 If you'd like to get in touch:
 
-- **Portfolio Website:** https://dluongta.github.io/
+- **Portfolio:** https://dluongta.github.io/
 - **Email:** dluongta@gmail.com
 - **GitHub:** https://github.com/dluongta
 
